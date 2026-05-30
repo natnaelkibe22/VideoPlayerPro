@@ -23,7 +23,8 @@
         android:layout_height="54dp"
         android:layout_gravity="bottom|end"
         android:gravity="center"
-        android:text="↘"
+        android:text="◇"
         android:textColor="#FFFFFF"
-        android:textSize="28sp" />
+        android:textSize="28sp"
+        android:background="#66000000" />
 </FrameLayout>

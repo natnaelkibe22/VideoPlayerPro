@@ -2,11 +2,14 @@ package com.natkibe.playerpro.player
 
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import android.view.View
 import android.view.WindowManager
 import android.widget.Button
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.MediaItem
@@ -19,6 +22,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.natkibe.playerpro.R
 import com.natkibe.playerpro.data.AppDatabase
 import com.natkibe.playerpro.features.audioonly.PlayAsMusicFeature
+import com.natkibe.playerpro.features.floating.FloatingPlayerFeature
 import com.natkibe.playerpro.settings.SettingsStore
 import com.natkibe.playerpro.ui.VideoAdapter
 import kotlinx.coroutines.flow.first
@@ -111,6 +115,23 @@ class PlayerActivity : AppCompatActivity() {
         }
         findViewById<Button>(R.id.playlistButton).setOnClickListener { togglePlaylist() }
         findViewById<Button>(R.id.audioOnlyButton).setOnClickListener { playAsMusic() }
+        findViewById<Button>(R.id.floatingButton).setOnClickListener { startFloatingIfEnabled() }
+    }
+
+    private fun startFloatingIfEnabled() {
+        val floating = FloatingPlayerFeature(this)
+        if (!floating.canDrawOverApps()) {
+            Toast.makeText(this, "Overlay permission required to float video", Toast.LENGTH_LONG).show()
+            if (Build.VERSION.SDK_INT >= 23) {
+                startActivity(floating.overlayPermissionIntent()!!)
+            }
+            return
+        }
+        // Save progress and detach player from current view before going floating
+        saveProgress()
+        playerView.player = null
+        player.clearVideoSurface()
+        floating.startIfAllowed()
     }
 
     private fun playAsMusic() {
