@@ -19,10 +19,7 @@ import androidx.media3.ui.PlayerView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.natkibe.playerpro.R
-import com.natkibe.playerpro.data.AppDatabase
-import com.natkibe.playerpro.features.audioonly.PlayAsMusicFeature
-import com.natkibe.playerpro.features.floating.FloatingPlayerFeature
-import com.natkibe.playerpro.settings.SettingsStore
+import com.natkibe.playerpro.core.contracts.PlayerProAppContainer
 import com.natkibe.playerpro.ui.VideoAdapter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
@@ -30,9 +27,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class PlayerActivity : AppCompatActivity() {
-    private val db by lazy { AppDatabase.get(this) }
-    private val settingsStore by lazy { SettingsStore(this) }
-    private val progress by lazy { ProgressService(db.videoDao()) }
+    private val appContainer by lazy { PlayerProAppContainer(this) }
+    private val progress get() = appContainer.progressService
 
     private lateinit var playerView: PlayerView
     private lateinit var player: ExoPlayer
@@ -95,7 +91,7 @@ class PlayerActivity : AppCompatActivity() {
             }
         })
         lifecycleScope.launch {
-            val settings = settingsStore.settings.first()
+            val settings = appContainer.settingsStore.settings.first()
             player.repeatMode = settings.defaultRepeatMode
             controls.initSpeed(settings.defaultSpeed)
             val resume = if (settings.resumePlayback) progress.resumePosition(uri) else 0L
@@ -139,7 +135,7 @@ class PlayerActivity : AppCompatActivity() {
     }
 
     private fun startFloatingIfEnabled() {
-        val floating = FloatingPlayerFeature(this)
+        val floating = appContainer.createFloatingPlayerFeature()
         if (!floating.canDrawOverApps()) {
             Toast.makeText(this, "Overlay permission required to float video", Toast.LENGTH_LONG).show()
             if (Build.VERSION.SDK_INT >= 23) {
@@ -162,7 +158,7 @@ class PlayerActivity : AppCompatActivity() {
         // Clear video surface on the player
         player.clearVideoSurface()
         // Use PlayAsMusicFeature to start AudioOnlyService (keeps audio alive)
-        PlayAsMusicFeature(this, player).detachVideoAndContinueAudio()
+        appContainer.createPlayAsMusicFeature(player).detachVideoAndContinueAudio()
     }
 
     private fun setupPlaylist() {
@@ -180,7 +176,7 @@ class PlayerActivity : AppCompatActivity() {
 
         if (folderName.isNotBlank()) {
             lifecycleScope.launch {
-                db.videoDao().observeVideosInFolder(folderName).collect { playlistAdapter?.submit(it, false) }
+                appContainer.database.videoDao().observeVideosInFolder(folderName).collect { playlistAdapter?.submit(it, false) }
             }
         }
     }
