@@ -11,11 +11,10 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.natkibe.playerpro.core.PermissionService
 import com.natkibe.playerpro.core.StorageClassifier
+import com.natkibe.playerpro.core.contracts.PlayerProAppContainer
 import com.natkibe.playerpro.data.VideoItemEntity
-import com.natkibe.playerpro.media.VideoLibraryRepository
 import com.natkibe.playerpro.model.StorageTab
 import com.natkibe.playerpro.player.PlayerActivity
-import com.natkibe.playerpro.settings.SettingsStore
 import com.natkibe.playerpro.ui.FolderAdapter
 import com.natkibe.playerpro.ui.VideoAdapter
 import kotlinx.coroutines.Job
@@ -24,8 +23,9 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
-    private val repository by lazy { VideoLibraryRepository(this) }
-    private val settings by lazy { SettingsStore(this) }
+    private val appContainer by lazy { PlayerProAppContainer(this) }
+    private val repository get() = appContainer.videoLibraryRepository
+    private val settings get() = appContainer.settingsStore
     private lateinit var recycler: RecyclerView
     private lateinit var status: TextView
     private var collectJob: Job? = null
