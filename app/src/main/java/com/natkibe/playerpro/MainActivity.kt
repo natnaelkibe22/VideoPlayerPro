@@ -10,6 +10,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.natkibe.playerpro.core.PermissionService
+import com.natkibe.playerpro.core.StorageClassifier
 import com.natkibe.playerpro.data.VideoItemEntity
 import com.natkibe.playerpro.media.VideoLibraryRepository
 import com.natkibe.playerpro.model.StorageTab
@@ -19,6 +20,7 @@ import com.natkibe.playerpro.ui.FolderAdapter
 import com.natkibe.playerpro.ui.VideoAdapter
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
@@ -92,8 +94,22 @@ class MainActivity : AppCompatActivity() {
 
     private fun showStorage() {
         collectJob?.cancel()
-        status.text = StorageTab.entries.joinToString("  •  ") { it.label } + "\nUSB/SD depends on what Android MediaStore exposes on the headunit."
+        status.text = "Storage categories — tap a category to browse"
         recycler.adapter = null
+        collectJob = lifecycleScope.launch {
+            val allVideos = repository.allVideos().first()
+            val categories = StorageTab.entries.map { tab ->
+                val count = when (tab) {
+                    StorageTab.ALL -> allVideos.size
+                    else -> allVideos.count { it.storageRoot == tab.label }
+                }
+                "${tab.label} ($count)"
+            }
+            status.text = buildString {
+                appendLine(categories.joinToString("  •  "))
+                appendLine("USB/SD depends on what Android MediaStore exposes on the headunit.")
+            }
+        }
     }
 
     private fun showSettings() {
@@ -103,12 +119,16 @@ class MainActivity : AppCompatActivity() {
             val s = settings.settings.first()
             status.text = buildString {
                 appendLine("Settings are DataStore-backed and toggle-based to stay lightweight.")
-                appendLine("Thumbnails: ${s.showThumbnails} (default false)")
+                appendLine("────────────────────────────")
+                appendLine("Thumbnails:     ${s.showThumbnails} (default false)")
                 appendLine("Floating Player: ${s.enableFloatingPlayer} (default false)")
-                appendLine("Playlist While Watching: ${s.showPlaylistWhileWatching}")
-                appendLine("Resume Playback: ${s.resumePlayback}")
-                appendLine("Autoplay Next: ${s.autoPlayNext}")
-                appendLine("Accent: ${s.accentColorName}")
+                appendLine("Playlist:       ${s.showPlaylistWhileWatching} (default true)")
+                appendLine("Resume:         ${s.resumePlayback} (default true)")
+                appendLine("Autoplay Next:  ${s.autoPlayNext} (default false)")
+                appendLine("Dark Theme:     ${s.darkTheme} (default true)")
+                appendLine("Accent Color:   ${s.accentColorName} (default Blue)")
+                appendLine("Repeat Mode:    ${s.defaultRepeatMode} (0=off)")
+                appendLine("Default Speed:  ${s.defaultSpeed}x")
             }
         }
     }
