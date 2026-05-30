@@ -63,28 +63,30 @@ class MainActivity : AppCompatActivity() {
         status.text = "Video folders. Cached Room data appears first; MediaStore refresh runs in background."
         val adapter = FolderAdapter(emptyList()) { folder -> showVideos(folder.folderName) }
         recycler.adapter = adapter
-        collectJob = lifecycleScope.launch { repository.folders().collect { adapter.submit(it) } }
+        collectJob = lifecycleScope.launch {
+            repository.folders().collect { adapter.submit(it) }
+        }
     }
 
     private fun showVideos(folderName: String) {
         collectJob?.cancel()
         status.text = "Folder: $folderName"
-        lifecycleScope.launch {
+        collectJob = lifecycleScope.launch {
             val prefs = settings.settings.first()
             val adapter = VideoAdapter(emptyList(), prefs.showThumbnails) { openVideo(it) }
             recycler.adapter = adapter
-            collectJob = lifecycleScope.launch { repository.videosInFolder(folderName).collect { adapter.submit(it, prefs.showThumbnails) } }
+            repository.videosInFolder(folderName).collect { adapter.submit(it, prefs.showThumbnails) }
         }
     }
 
     private fun showRecent() {
         collectJob?.cancel()
         status.text = "Recently watched videos"
-        lifecycleScope.launch {
+        collectJob = lifecycleScope.launch {
             val prefs = settings.settings.first()
             val adapter = VideoAdapter(emptyList(), prefs.showThumbnails) { openVideo(it) }
             recycler.adapter = adapter
-            collectJob = lifecycleScope.launch { repository.recentVideos().collect { adapter.submit(it, prefs.showThumbnails) } }
+            repository.recentVideos().collect { adapter.submit(it, prefs.showThumbnails) }
         }
     }
 

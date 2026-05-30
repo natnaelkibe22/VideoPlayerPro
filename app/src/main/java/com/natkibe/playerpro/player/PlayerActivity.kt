@@ -1,10 +1,8 @@
 package com.natkibe.playerpro.player
 
-import android.app.PictureInPictureParams
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.util.Rational
 import android.view.View
 import android.view.WindowManager
 import android.widget.Button
@@ -91,9 +89,7 @@ class PlayerActivity : AppCompatActivity() {
             val speed = controls.cycleSpeed()
             (it as Button).text = "${speed}x"
         }
-        findViewById<Button>(R.id.audioOnlyButton).setOnClickListener { playAsMusic() }
         findViewById<Button>(R.id.playlistButton).setOnClickListener { togglePlaylist() }
-        findViewById<Button>(R.id.floatingButton).setOnClickListener { startFloatingIfEnabled() }
     }
 
     private fun setupPlaylist() {
@@ -115,36 +111,9 @@ class PlayerActivity : AppCompatActivity() {
         }
     }
 
-    private fun playAsMusic() {
-        saveProgress()
-        playerView.player = null
-        player.clearVideoSurface()
-        startForegroundServiceCompat(Intent(this, AudioOnlyService::class.java))
-        moveTaskToBack(true)
-    }
-
     private fun togglePlaylist() {
         val panel = findViewById<View>(R.id.sidePlaylist)
         panel.visibility = if (panel.visibility == View.VISIBLE) View.GONE else View.VISIBLE
-    }
-
-    private fun startFloatingIfEnabled() = lifecycleScope.launch {
-        val settings = settingsStore.settings.first()
-        if (settings.enableFloatingPlayer) {
-            startForegroundServiceCompat(Intent(this@PlayerActivity, FloatingPlayerService::class.java))
-        } else {
-            enterPipIfSupported()
-        }
-    }
-
-    private fun enterPipIfSupported() {
-        if (android.os.Build.VERSION.SDK_INT >= 26) {
-            enterPictureInPictureMode(PictureInPictureParams.Builder().setAspectRatio(Rational(16, 9)).build())
-        }
-    }
-
-    private fun startForegroundServiceCompat(intent: Intent) {
-        if (android.os.Build.VERSION.SDK_INT >= 26) startForegroundService(intent) else startService(intent)
     }
 
     private fun saveProgress() {
