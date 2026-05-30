@@ -69,7 +69,12 @@ class MainActivity : AppCompatActivity() {
         val adapter = FolderAdapter(emptyList()) { folder -> showVideos(folder.folderName) }
         recycler.adapter = adapter
         collectJob = lifecycleScope.launch {
-            libraryFeature.folders().collect { adapter.submit(it) }
+            libraryFeature.folders().collect { folders ->
+                adapter.submit(folders)
+                if (folders.isEmpty()) {
+                    status.text = "No video folders found. Tap Refresh to scan USB/SD cards."
+                }
+            }
         }
     }
 
@@ -80,7 +85,12 @@ class MainActivity : AppCompatActivity() {
             val prefs = settingsFeature.observe().first()
             val adapter = VideoAdapter(emptyList(), prefs.showThumbnails) { openVideo(it) }
             recycler.adapter = adapter
-            libraryFeature.videosInFolder(folderName).collect { adapter.submit(it, prefs.showThumbnails) }
+            libraryFeature.videosInFolder(folderName).collect { videos ->
+                adapter.submit(videos, prefs.showThumbnails)
+                if (videos.isEmpty()) {
+                    status.text = "Folder \"$folderName\" is empty. Tap Refresh to scan for new videos."
+                }
+            }
         }
     }
 
@@ -91,7 +101,12 @@ class MainActivity : AppCompatActivity() {
             val prefs = settingsFeature.observe().first()
             val adapter = VideoAdapter(emptyList(), prefs.showThumbnails) { openVideo(it) }
             recycler.adapter = adapter
-            libraryFeature.recentVideos().collect { adapter.submit(it, prefs.showThumbnails) }
+            libraryFeature.recentVideos().collect { videos ->
+                adapter.submit(videos, prefs.showThumbnails)
+                if (videos.isEmpty()) {
+                    status.text = "No recently watched videos. Play a video to see it here."
+                }
+            }
         }
     }
 
@@ -101,6 +116,10 @@ class MainActivity : AppCompatActivity() {
         recycler.adapter = null
         collectJob = lifecycleScope.launch {
             val allVideos = libraryFeature.allVideos().first()
+            if (allVideos.isEmpty()) {
+                status.text = "No videos found. Tap Refresh to scan USB/SD cards."
+                return@launch
+            }
             val categories = StorageTab.entries.map { tab ->
                 val count = when (tab) {
                     StorageTab.ALL -> allVideos.size
