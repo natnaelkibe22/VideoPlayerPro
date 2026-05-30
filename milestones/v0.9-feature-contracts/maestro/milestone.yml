@@ -1,6 +1,6 @@
 appId: com.natkibe.playerpro
 ---
 - launchApp
-- assertVisible: "Videos"
+- assertVisible: "Player Pro"
 - tapOn: "Settings"
-- assertVisible: "Settings"
+- assertVisible: "Settings are DataStore-backed"
