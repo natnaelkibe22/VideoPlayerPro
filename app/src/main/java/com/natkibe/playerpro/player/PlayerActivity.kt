@@ -4,7 +4,6 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.provider.Settings
 import android.view.View
 import android.view.WindowManager
 import android.widget.Button
@@ -25,8 +24,10 @@ import com.natkibe.playerpro.features.audioonly.PlayAsMusicFeature
 import com.natkibe.playerpro.features.floating.FloatingPlayerFeature
 import com.natkibe.playerpro.settings.SettingsStore
 import com.natkibe.playerpro.ui.VideoAdapter
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class PlayerActivity : AppCompatActivity() {
     private val db by lazy { AppDatabase.get(this) }
@@ -48,6 +49,8 @@ class PlayerActivity : AppCompatActivity() {
         uri = intent.getStringExtra(EXTRA_VIDEO_URI) ?: return finish()
         folderName = intent.getStringExtra(EXTRA_FOLDER_NAME).orEmpty()
         playerView = findViewById(R.id.playerView)
+
+        // Initialize the shared player instance (thread-safe singleton)
         player = PlayerHolder.get(this)
         controls = PlayerControlService(player)
         playerView.player = player
@@ -62,8 +65,25 @@ class PlayerActivity : AppCompatActivity() {
         player.prepare()
         player.addListener(object : Player.Listener {
             override fun onPlayerError(error: PlaybackException) {
+                val errorMsg = buildString {
+                    append("Cannot play this video on this headunit.")
+                    when {
+                        error.errorCode == PlaybackException.ERROR_CODE_IO_UNSPECIFIED -> {
+                            append(" USB/SD card may have been removed or is unreadable.")
+                        }
+                        error.errorCode == PlaybackException.ERROR_CODE_DECODING_FAILED -> {
+                            append(" Unsupported codec, 4K/HEVC limit, or corrupt file.")
+                        }
+                        error.errorCode == PlaybackException.ERROR_CODE_DECODER_INIT_FAILED -> {
+                            append(" Codec initialization failed — format not supported on this device.")
+                        }
+                        else -> {
+                            append(" Unsupported codec, 4K/HEVC limit, slow USB, or corrupt file.")
+                        }
+                    }
+                }
                 findViewById<TextView>(R.id.playerErrorText).apply {
-                    text = "Cannot play this video on this headunit. Unsupported codec, 4K/HEVC limit, slow USB, or corrupt file."
+                    text = errorMsg
                     visibility = View.VISIBLE
                 }
             }
@@ -182,10 +202,14 @@ class PlayerActivity : AppCompatActivity() {
     override fun onStop() { saveProgress(); super.onStop() }
 
     override fun onDestroy() {
-        // Use runBlocking to ensure progress is saved before the lifecycle scope is destroyed
+        // Save progress off the main thread — never use runBlocking on the UI thread.
         if (::player.isInitialized && uri.isNotBlank()) {
-            kotlinx.coroutines.runBlocking {
-                progress.save(uri, player.currentPosition, player.duration)
+            val pos = player.currentPosition
+            val dur = player.duration
+            lifecycleScope.launch {
+                withContext(Dispatchers.IO) {
+                    progress.save(uri, pos, dur)
+                }
             }
         }
         playerView.player = null
