@@ -1,0 +1,8 @@
+appId: com.natkibe.playerpro
+---
+- launchApp
+- assertVisible: "Player Pro"
+- tapOn: "Folders"
+- assertVisible: "Cached video folders"
+- tapOn: "Refresh"
+- assertVisible: "Refreshing videos"

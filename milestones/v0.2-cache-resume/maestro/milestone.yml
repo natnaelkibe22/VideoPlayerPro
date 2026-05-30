@@ -1,0 +1,7 @@
+appId: com.natkibe.playerpro
+---
+- launchApp
+- assertVisible: "Player Pro"
+- assertVisible: "Folders"
+# Room cache and resume playback
+# Add device-specific steps after installing on a headunit/emulator with videos.

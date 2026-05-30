@@ -1,0 +1,7 @@
+appId: com.natkibe.playerpro
+---
+- launchApp
+- assertVisible: "Player Pro"
+- assertVisible: "Folders"
+# Play as Music only
+# Add device-specific steps after installing on a headunit/emulator with videos.
