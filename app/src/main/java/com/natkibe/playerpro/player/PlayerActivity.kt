@@ -18,6 +18,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.natkibe.playerpro.R
 import com.natkibe.playerpro.data.AppDatabase
+import com.natkibe.playerpro.features.audioonly.PlayAsMusicFeature
 import com.natkibe.playerpro.settings.SettingsStore
 import com.natkibe.playerpro.ui.VideoAdapter
 import kotlinx.coroutines.flow.first
@@ -109,6 +110,18 @@ class PlayerActivity : AppCompatActivity() {
             (it as Button).text = "${speed}x"
         }
         findViewById<Button>(R.id.playlistButton).setOnClickListener { togglePlaylist() }
+        findViewById<Button>(R.id.audioOnlyButton).setOnClickListener { playAsMusic() }
+    }
+
+    private fun playAsMusic() {
+        // Save current progress before detaching video
+        saveProgress()
+        // Detach PlayerView from the player so video surface is released
+        playerView.player = null
+        // Clear video surface on the player
+        player.clearVideoSurface()
+        // Use PlayAsMusicFeature to start AudioOnlyService (keeps audio alive)
+        PlayAsMusicFeature(this, player).detachVideoAndContinueAudio()
     }
 
     private fun setupPlaylist() {
