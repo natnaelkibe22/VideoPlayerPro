@@ -1,0 +1,44 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#101114"
+    android:padding="12dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Player Pro"
+            android:textColor="#FFFFFF"
+            android:textSize="26sp"
+            android:textStyle="bold" />
+
+        <Button android:id="@+id/videoTab" android:layout_width="110dp" android:layout_height="50dp" android:text="Folders" />
+        <Button android:id="@+id/recentTab" android:layout_width="110dp" android:layout_height="50dp" android:text="Recent" />
+        <Button android:id="@+id/storageTab" android:layout_width="110dp" android:layout_height="50dp" android:text="Storage" />
+        <Button android:id="@+id/settingsTab" android:layout_width="120dp" android:layout_height="50dp" android:text="Settings" />
+        <Button android:id="@+id/refreshButton" android:layout_width="120dp" android:layout_height="50dp" android:text="Refresh" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/statusText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="8dp"
+        android:text="Cached video folders load first. Refresh runs in background."
+        android:textColor="#B8BDC7"
+        android:textSize="16sp" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recycler"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+</LinearLayout>

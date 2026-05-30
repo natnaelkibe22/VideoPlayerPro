@@ -1,0 +1,8 @@
+appId: com.natkibe.playerpro
+---
+- launchApp
+- assertVisible: "Videos"
+- tapOn: "Refresh"
+- assertVisible: "Refreshing"
+- tapOn: "Settings"
+- assertVisible: "Thumbnails"

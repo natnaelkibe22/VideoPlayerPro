@@ -1,0 +1,8 @@
+appId: com.natkibe.playerpro
+---
+- launchApp
+# Requires opening a video first.
+# Once in PlayerActivity:
+# - assertVisible: "Play as Music"
+# - tapOn: "Play as Music"
+# - app should remain stable and audio notification should appear on real device.

@@ -1,0 +1,44 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
+    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <application
+        android:allowBackup="true"
+        android:theme="@style/Theme.PlayerPro"
+        android:label="Player Pro"
+        android:resizeableActivity="true"
+        android:supportsRtl="true">
+
+        <activity
+            android:name=".player.PlayerActivity"
+            android:configChanges="orientation|screenSize|keyboardHidden"
+            android:screenOrientation="landscape"
+            android:supportsPictureInPicture="true"
+            android:exported="false" />
+
+        <activity
+            android:name=".MainActivity"
+            android:screenOrientation="landscape"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <service
+            android:name=".player.AudioOnlyService"
+            android:foregroundServiceType="mediaPlayback"
+            android:exported="false" />
+
+        <service
+            android:name=".player.FloatingPlayerService"
+            android:foregroundServiceType="mediaPlayback"
+            android:exported="false" />
+    </application>
+</manifest>

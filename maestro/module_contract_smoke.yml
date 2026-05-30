@@ -1,0 +1,7 @@
+appId: com.natkibe.playerpro
+---
+- launchApp
+- assertVisible: "Videos"
+- tapOn: "Settings"
+- assertVisible: "Settings"
+- tapOn: "Videos"

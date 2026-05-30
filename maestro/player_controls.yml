@@ -1,0 +1,11 @@
+appId: com.natkibe.playerpro
+---
+- launchApp
+- tapOn: "Folders"
+# Requires at least one indexed video. Select first visible folder/video manually or adapt selectors for fixture media.
+# Player screen expected controls:
+# - Repeat
+# - Repeat Folder
+# - 1.0x
+# - Playlist
+# - Float

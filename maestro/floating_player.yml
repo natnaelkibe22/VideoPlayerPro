@@ -1,0 +1,6 @@
+appId: com.natkibe.playerpro
+---
+- launchApp
+- tapOn: "Settings"
+- assertVisible: "Floating Player"
+# Enable draw-over-apps permission manually on physical headunit before validating overlay.
