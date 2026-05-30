@@ -13,6 +13,7 @@ class VideoLibraryFeature(
     override val milestone = "v0.2-cache-resume"
 
     fun folders(): Flow<List<VideoFolderSummary>> = repository.folders()
+    fun allVideos(): Flow<List<VideoItemEntity>> = repository.allVideos()
     fun videosInFolder(folderName: String): Flow<List<VideoItemEntity>> = repository.videosInFolder(folderName)
     fun recentVideos(): Flow<List<VideoItemEntity>> = repository.recentVideos()
     fun refreshInBackground() = repository.refreshInBackground()
