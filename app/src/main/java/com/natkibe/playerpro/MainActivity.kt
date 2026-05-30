@@ -19,13 +19,16 @@ import com.natkibe.playerpro.ui.FolderAdapter
 import com.natkibe.playerpro.ui.VideoAdapter
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
     private val appContainer by lazy { PlayerProAppContainer(this) }
-    private val repository get() = appContainer.videoLibraryRepository
-    private val settings get() = appContainer.settingsStore
+
+    // Use feature contracts instead of directly accessing repositories/settings.
+    // This keeps activities decoupled from implementation details.
+    private val libraryFeature get() = appContainer.libraryFeature
+    private val settingsFeature get() = appContainer.settingsFeature
+
     private lateinit var recycler: RecyclerView
     private lateinit var status: TextView
     private var collectJob: Job? = null
@@ -33,7 +36,7 @@ class MainActivity : AppCompatActivity() {
     private val permissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
         if (granted) {
             showFolders()
-            repository.refreshInBackground()
+            libraryFeature.refreshInBackground()
         } else {
             status.text = "Video permission is required to show folders."
         }
@@ -50,11 +53,11 @@ class MainActivity : AppCompatActivity() {
         findViewById<Button>(R.id.recentTab).setOnClickListener { showRecent() }
         findViewById<Button>(R.id.storageTab).setOnClickListener { showStorage() }
         findViewById<Button>(R.id.settingsTab).setOnClickListener { showSettings() }
-        findViewById<Button>(R.id.refreshButton).setOnClickListener { repository.refreshInBackground(); status.text = "Refreshing videos in background..." }
+        findViewById<Button>(R.id.refreshButton).setOnClickListener { libraryFeature.refreshInBackground(); status.text = "Refreshing videos in background..." }
 
         if (PermissionService.hasVideoPermission(this)) {
             showFolders()
-            repository.refreshInBackground()
+            libraryFeature.refreshInBackground()
         } else {
             permissionLauncher.launch(PermissionService.videoPermission())
         }
@@ -66,7 +69,7 @@ class MainActivity : AppCompatActivity() {
         val adapter = FolderAdapter(emptyList()) { folder -> showVideos(folder.folderName) }
         recycler.adapter = adapter
         collectJob = lifecycleScope.launch {
-            repository.folders().collect { adapter.submit(it) }
+            libraryFeature.folders().collect { adapter.submit(it) }
         }
     }
 
@@ -74,10 +77,10 @@ class MainActivity : AppCompatActivity() {
         collectJob?.cancel()
         status.text = "Folder: $folderName"
         collectJob = lifecycleScope.launch {
-            val prefs = settings.settings.first()
+            val prefs = settingsFeature.observe().first()
             val adapter = VideoAdapter(emptyList(), prefs.showThumbnails) { openVideo(it) }
             recycler.adapter = adapter
-            repository.videosInFolder(folderName).collect { adapter.submit(it, prefs.showThumbnails) }
+            libraryFeature.videosInFolder(folderName).collect { adapter.submit(it, prefs.showThumbnails) }
         }
     }
 
@@ -85,10 +88,10 @@ class MainActivity : AppCompatActivity() {
         collectJob?.cancel()
         status.text = "Recently watched videos"
         collectJob = lifecycleScope.launch {
-            val prefs = settings.settings.first()
+            val prefs = settingsFeature.observe().first()
             val adapter = VideoAdapter(emptyList(), prefs.showThumbnails) { openVideo(it) }
             recycler.adapter = adapter
-            repository.recentVideos().collect { adapter.submit(it, prefs.showThumbnails) }
+            libraryFeature.recentVideos().collect { adapter.submit(it, prefs.showThumbnails) }
         }
     }
 
@@ -97,7 +100,7 @@ class MainActivity : AppCompatActivity() {
         status.text = "Storage categories — tap a category to browse"
         recycler.adapter = null
         collectJob = lifecycleScope.launch {
-            val allVideos = repository.allVideos().first()
+            val allVideos = libraryFeature.allVideos().first()
             val categories = StorageTab.entries.map { tab ->
                 val count = when (tab) {
                     StorageTab.ALL -> allVideos.size
@@ -116,7 +119,7 @@ class MainActivity : AppCompatActivity() {
         collectJob?.cancel()
         recycler.adapter = null
         lifecycleScope.launch {
-            val s = settings.settings.first()
+            val s = settingsFeature.observe().first()
             status.text = buildString {
                 appendLine("Settings are DataStore-backed and toggle-based to stay lightweight.")
                 appendLine("────────────────────────────")
