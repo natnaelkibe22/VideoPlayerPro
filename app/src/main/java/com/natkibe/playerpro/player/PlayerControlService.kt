@@ -23,4 +23,11 @@ class PlayerControlService(private val player: ExoPlayer) {
         player.setPlaybackSpeed(speed)
         return speed
     }
+
+    fun initSpeed(speed: Float) {
+        speedIndex = speeds.indexOf(speed).coerceAtLeast(0)
+        player.setPlaybackSpeed(speeds[speedIndex])
+    }
+
+    fun currentSpeed(): Float = speeds[speedIndex]
 }

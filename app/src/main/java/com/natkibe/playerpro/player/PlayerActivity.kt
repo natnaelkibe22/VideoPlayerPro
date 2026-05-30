@@ -62,14 +62,33 @@ class PlayerActivity : AppCompatActivity() {
                     visibility = View.VISIBLE
                 }
             }
+
+            override fun onPlayerErrorChanged(error: PlaybackException?) {
+                if (error == null) {
+                    findViewById<TextView>(R.id.playerErrorText).visibility = View.GONE
+                }
+            }
         })
         lifecycleScope.launch {
             val settings = settingsStore.settings.first()
             player.repeatMode = settings.defaultRepeatMode
-            player.setPlaybackSpeed(settings.defaultSpeed)
+            controls.initSpeed(settings.defaultSpeed)
             val resume = if (settings.resumePlayback) progress.resumePosition(uri) else 0L
             if (resume > 0L) player.seekTo(resume)
-            if (settings.showPlaylistWhileWatching) findViewById<View>(R.id.sidePlaylist).visibility = View.VISIBLE
+            if (settings.showPlaylistWhileWatching) {
+                findViewById<View>(R.id.sidePlaylist).visibility = View.VISIBLE
+                findViewById<Button>(R.id.playlistButton).text = "Hide Playlist"
+            }
+            // Initialize button texts from saved settings
+            findViewById<Button>(R.id.repeatButton).text = when (settings.defaultRepeatMode) {
+                Player.REPEAT_MODE_ONE -> "Repeat 1"
+                else -> "Repeat"
+            }
+            findViewById<Button>(R.id.repeatAllButton).text = when (settings.defaultRepeatMode) {
+                Player.REPEAT_MODE_ALL -> "Repeat All"
+                else -> "Repeat Folder"
+            }
+            findViewById<Button>(R.id.speedButton).text = "${settings.defaultSpeed}x"
             player.play()
         }
     }
@@ -98,6 +117,7 @@ class PlayerActivity : AppCompatActivity() {
         playlistAdapter = VideoAdapter(emptyList(), showThumbnails = false) { item ->
             saveProgress()
             uri = item.uri
+            player.stop()
             player.setMediaItem(MediaItem.fromUri(Uri.parse(item.uri)))
             player.prepare()
             player.play()
@@ -113,7 +133,10 @@ class PlayerActivity : AppCompatActivity() {
 
     private fun togglePlaylist() {
         val panel = findViewById<View>(R.id.sidePlaylist)
-        panel.visibility = if (panel.visibility == View.VISIBLE) View.GONE else View.VISIBLE
+        val button = findViewById<Button>(R.id.playlistButton)
+        val showing = panel.visibility == View.VISIBLE
+        panel.visibility = if (showing) View.GONE else View.VISIBLE
+        button.text = if (showing) "Playlist" else "Hide Playlist"
     }
 
     private fun saveProgress() {
