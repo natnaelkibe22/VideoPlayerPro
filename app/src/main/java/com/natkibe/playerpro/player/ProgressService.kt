@@ -17,7 +17,7 @@ class ProgressService(private val dao: VideoDao) {
                 durationMs = safeDuration,
                 updatedAt = System.currentTimeMillis(),
                 completed = completed,
-                playCount = old?.playCount ?: 0
+                playCount = (old?.playCount ?: 0) + 1
             )
         )
     }

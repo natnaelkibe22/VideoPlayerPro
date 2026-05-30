@@ -123,7 +123,17 @@ class PlayerActivity : AppCompatActivity() {
 
     override fun onPause() { saveProgress(); super.onPause() }
     override fun onStop() { saveProgress(); super.onStop() }
-    override fun onDestroy() { saveProgress(); playerView.player = null; super.onDestroy() }
+
+    override fun onDestroy() {
+        // Use runBlocking to ensure progress is saved before the lifecycle scope is destroyed
+        if (::player.isInitialized && uri.isNotBlank()) {
+            kotlinx.coroutines.runBlocking {
+                progress.save(uri, player.currentPosition, player.duration)
+            }
+        }
+        playerView.player = null
+        super.onDestroy()
+    }
 
     companion object {
         const val EXTRA_VIDEO_URI = "video_uri"
