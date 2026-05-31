@@ -1,0 +1,28 @@
+appId: com.natkibe.videoplayerpro
+---
+# Micro-Module: Audio Only
+# Validates PlayAsMusicFeature and AudioOnlyService
+# Requires a mock video file pushed to the emulator at /sdcard/Movies/test_video_720p.mp4
+- launchApp
+- assertVisible: "VideoPlayer Pro"
+# AudioOnlyService is a foreground service with:
+# - mediaPlayback foreground service type
+# - Notification with playback controls
+# - Background playback capability
+# Navigate to the mock video and open it
+- tapOn: "Folders"
+- assertVisible: "Movies"
+- tapOn: "Movies"
+- assertVisible: "test_video_720p"
+- tapOn: "test_video_720p"
+# Wait for player to load
+- assertVisible:
+    id: "com.natkibe.videoplayerpro:id/playerView"
+# Verify Play as Music button exists and tap it
+- assertVisible:
+    id: "com.natkibe.videoplayerpro:id/audioOnlyButton"
+- assertVisible: "Play as Music"
+- tapOn: "Play as Music"
+# After playAsMusic(), PlayerActivity finishes and returns to MainActivity
+# Verify we're back on the main screen
+- assertVisible: "VideoPlayer Pro"

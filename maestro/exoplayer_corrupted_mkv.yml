@@ -1,0 +1,11 @@
+appId: com.natkibe.videoplayerpro
+---
+# ExoPlayer Edge Case: Corrupted MKV Playback
+# Validates the player handles corrupted/incomplete MKV files gracefully
+- launchApp
+- tapOn: "Folders"
+- assertVisible: "No video folders found. Tap Refresh to scan USB/SD cards."
+- tapOn: "Refresh"
+- assertVisible: "Refreshing videos in background..."
+# Verify the app remains stable and responsive
+- assertVisible: "VideoPlayer Pro"

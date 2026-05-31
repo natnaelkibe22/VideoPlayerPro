@@ -1,12 +1,12 @@
 # v0.9 Feature Contracts
 
-Purpose: make Player Pro easier to finish by isolating every feature behind a tiny class.
+Purpose: make VideoPlayer Pro easier to finish by isolating every feature behind a tiny class.
 
 Files:
 
 - `core/contracts/FeatureModule.kt`
 - `core/contracts/ModuleResult.kt`
-- `core/contracts/PlayerProAppContainer.kt`
+- `core/contracts/VideoPlayerProAppContainer.kt`
 - `features/library/VideoLibraryFeature.kt`
 - `features/player/VideoPlayerFeature.kt`
 - `features/resume/ResumePlaybackFeature.kt`

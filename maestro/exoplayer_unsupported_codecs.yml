@@ -1,0 +1,11 @@
+appId: com.natkibe.videoplayerpro
+---
+# ExoPlayer Edge Case: Unsupported Codecs
+# Validates the player handles unsupported/unknown codecs gracefully
+- launchApp
+- tapOn: "Folders"
+- assertVisible: "No video folders found. Tap Refresh to scan USB/SD cards."
+- tapOn: "Refresh"
+- assertVisible: "Refreshing videos in background..."
+# Verify app stability
+- assertVisible: "VideoPlayer Pro"

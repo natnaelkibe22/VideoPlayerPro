@@ -1,6 +1,6 @@
-# Player Pro — Video-Only Android Headunit Player
+# VideoPlayer Pro — Video-Only Android Headunit Player
 
-Player Pro is a lightweight Kotlin Android project for Android headunits. It is intentionally **video-only**. The only audio-related feature is **Play as Music**, which keeps audio from the current video playing while the video surface is detached to reduce GPU/video-rendering load.
+VideoPlayer Pro is a lightweight Kotlin Android project for Android headunits. It is intentionally **video-only**. The only audio-related feature is **Play as Music**, which keeps audio from the current video playing while the video surface is detached to reduce GPU/video-rendering load.
 
 ## Goal
 

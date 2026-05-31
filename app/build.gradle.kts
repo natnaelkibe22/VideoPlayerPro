@@ -5,11 +5,11 @@ plugins {
 }
 
 android {
-    namespace = "com.natkibe.playerpro"
+    namespace = "com.natkibe.videoplayerpro"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.natkibe.playerpro"
+        applicationId = "com.natkibe.videoplayerpro"
         minSdk = 23
         targetSdk = 35
         versionCode = 2

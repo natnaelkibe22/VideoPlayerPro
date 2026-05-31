@@ -1,7 +1,7 @@
-appId: com.natkibe.playerpro
+appId: com.natkibe.videoplayerpro
 ---
 - launchApp
-- assertVisible: "Player Pro"
+- assertVisible: "VideoPlayer Pro"
 - assertVisible: "Folders"
 # Ultra-light video-only browser
 # Add device-specific steps after installing on a headunit/emulator with videos.

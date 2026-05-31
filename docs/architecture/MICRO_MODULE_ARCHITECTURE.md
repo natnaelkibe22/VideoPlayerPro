@@ -1,4 +1,4 @@
-# Player Pro Micro-Module Architecture
+# VideoPlayer Pro Micro-Module Architecture
 
 This project avoids one giant Activity by splitting each responsibility into one small service-like file. This is not real backend microservices; it is a contained Android architecture that lets Codex/agentic tools edit one feature at a time.
 

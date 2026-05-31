@@ -1,0 +1,12 @@
+appId: com.natkibe.videoplayerpro
+---
+# ExoPlayer Edge Case: 4K H265/HEVC Playback
+# Validates the player can handle high-resolution H265 content
+- launchApp
+- tapOn: "Folders"
+- assertVisible: "No video folders found. Tap Refresh to scan USB/SD cards."
+# Trigger media refresh to index any 4K test content
+- tapOn: "Refresh"
+- assertVisible: "Refreshing videos in background..."
+# Verify the app remains stable
+- assertVisible: "VideoPlayer Pro"

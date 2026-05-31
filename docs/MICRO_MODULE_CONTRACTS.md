@@ -1,4 +1,4 @@
-# Player Pro Micro-Module Contracts
+# VideoPlayer Pro Micro-Module Contracts
 
 Goal: make the app easier for Codex/agentic chat to improve safely by keeping every feature small and replaceable.
 

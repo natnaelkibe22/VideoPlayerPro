@@ -1,0 +1,21 @@
+appId: com.natkibe.videoplayerpro
+---
+# Micro-Module: Media Store
+# Validates MediaStoreVideoScanner integration
+- launchApp
+- assertVisible: "VideoPlayer Pro"
+# MediaStoreVideoScanner scans:
+# - External storage for video files
+# - USB OTG storage
+# - SD cards
+- tapOn: "Folders"
+- assertVisible: "No video folders found. Tap Refresh to scan USB/SD cards."
+# Trigger media scan
+- tapOn: "Refresh"
+- assertVisible: "Refreshing videos in background..."
+# Verify scan completes without crash
+# MediaStore should index videos by:
+# - Title
+# - Duration
+# - Date added
+# - File path

@@ -1,0 +1,42 @@
+appId: com.natkibe.videoplayerpro
+---
+# Micro-Module: Player
+# Validates VideoPlayerFeature, PlayerHolder, PlayerActivity
+# Requires a mock video file pushed to the emulator at /sdcard/Movies/test_video_720p.mp4
+- launchApp
+- assertVisible: "VideoPlayer Pro"
+# Player module components:
+# - PlayerActivity: main video playback activity
+# - PlayerHolder: ExoPlayer instance management
+# - PlayerControlService: play/pause/seek controls
+# - ProgressService: playback progress tracking
+- tapOn: "Folders"
+# Verify the mock video folder is visible (video was indexed by MediaStore)
+- assertVisible: "Movies"
+- tapOn: "Movies"
+# Verify the mock video is visible in the folder
+- assertVisible: "test_video_720p"
+- tapOn: "test_video_720p"
+# Now in PlayerActivity - verify player loads and controls are visible
+- assertVisible:
+    id: "com.natkibe.videoplayerpro:id/playerView"
+# Verify all player control buttons are present
+- assertVisible:
+    id: "com.natkibe.videoplayerpro:id/repeatButton"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro:id/repeatAllButton"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro:id/speedButton"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro:id/playlistButton"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro:id/audioOnlyButton"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro:id/floatingButton"
+# Verify default button texts
+- assertVisible: "Repeat"
+- assertVisible: "Repeat Folder"
+- assertVisible: "1.0x"
+- assertVisible: "Playlist"
+- assertVisible: "Play as Music"
+- assertVisible: "Float"

@@ -1,5 +1,5 @@
 <resources>
-    <style name="Theme.PlayerPro" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+    <style name="Theme.VideoPlayerPro" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <item name="android:windowNoTitle">true</item>
         <item name="android:fontFamily">sans</item>
         <item name="colorPrimary">@color/accent_blue</item>

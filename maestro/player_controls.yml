@@ -1,11 +1,38 @@
-appId: com.natkibe.playerpro
+appId: com.natkibe.videoplayerpro
 ---
+# Player Controls Test
+# Requires a mock video file pushed to the emulator at /sdcard/Movies/test_video_720p.mp4
+# This test verifies all player UI controls are functional:
+# - Repeat, Repeat Folder, 1.0x, Playlist, Play as Music, Float
 - launchApp
+- assertVisible: "VideoPlayer Pro"
 - tapOn: "Folders"
-# Requires at least one indexed video. Select first visible folder/video manually or adapt selectors for fixture media.
-# Player screen expected controls:
-# - Repeat
-# - Repeat Folder
-# - 1.0x
-# - Playlist
-# - Float
+# Wait for the folder list to load
+- assertVisible: "Movies"
+- tapOn: "Movies"
+# Wait for video list to load
+- assertVisible: "test_video_720p"
+- tapOn: "test_video_720p"
+# Now in PlayerActivity - wait for player to initialize
+- assertVisible:
+    id: "com.natkibe.videoplayerpro:id/playerView"
+# Verify all control buttons are visible in the bottom bar
+- assertVisible:
+    id: "com.natkibe.videoplayerpro:id/repeatButton"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro:id/repeatAllButton"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro:id/speedButton"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro:id/playlistButton"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro:id/audioOnlyButton"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro:id/floatingButton"
+# Verify default button texts
+- assertVisible: "Repeat"
+- assertVisible: "Repeat Folder"
+- assertVisible: "1.0x"
+- assertVisible: "Playlist"
+- assertVisible: "Play as Music"
+- assertVisible: "Float"

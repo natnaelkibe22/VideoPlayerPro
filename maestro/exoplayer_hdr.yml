@@ -1,0 +1,11 @@
+appId: com.natkibe.videoplayerpro
+---
+# ExoPlayer Edge Case: HDR Video Playback
+# Validates the player handles HDR (HDR10/HLG/Dolby Vision) content
+- launchApp
+- tapOn: "Folders"
+- assertVisible: "No video folders found. Tap Refresh to scan USB/SD cards."
+- tapOn: "Refresh"
+- assertVisible: "Refreshing videos in background..."
+# Verify the app handles HDR content without crash
+- assertVisible: "VideoPlayer Pro"

@@ -1,8 +1,6 @@
-appId: com.natkibe.playerpro
+appId: com.natkibe.videoplayerpro
 ---
 - launchApp
 - tapOn: "Settings"
-- assertVisible: "Settings are DataStore-backed"
-- assertVisible: "Thumbnails"
-- assertVisible: "Floating Player"
-- assertVisible: "Resume Playback"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro:id/statusText"

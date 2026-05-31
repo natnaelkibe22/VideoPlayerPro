@@ -1,0 +1,13 @@
+appId: com.natkibe.videoplayerpro
+---
+# Debug: Resizing & Multi-Window
+# Validates resizeableActivity="true" and multi-window support
+- launchApp
+- assertVisible: "VideoPlayer Pro"
+# Verify app handles configuration changes gracefully
+- tapOn: "Folders"
+- assertVisible: "No video folders found. Tap Refresh to scan USB/SD cards."
+# Verify all UI elements are properly sized and not clipped
+- tapOn: "Settings"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro:id/statusText"

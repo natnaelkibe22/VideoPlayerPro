@@ -1,0 +1,8 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<testsuites>
+  <testsuite name="Test Suite" device="S26_Ultra" tests="1" failures="1" time="39.0">
+    <testcase id="debug_overlay_permissions" name="debug_overlay_permissions" classname="debug_overlay_permissions" time="39.0" status="ERROR">
+      <failure>Assertion is false: "Floating Player" is visible</failure>
+    </testcase>
+  </testsuite>
+</testsuites>

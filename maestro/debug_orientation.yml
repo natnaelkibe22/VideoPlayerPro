@@ -1,0 +1,16 @@
+appId: com.natkibe.videoplayerpro
+---
+# Debug: Orientation Handling
+# Validates landscape-locked activities handle orientation correctly
+- launchApp
+- assertVisible: "VideoPlayer Pro"
+# Verify landscape UI is properly laid out
+- tapOn: "Folders"
+- assertVisible: "No video folders found. Tap Refresh to scan USB/SD cards."
+# Verify the app doesn't crash on tab switching
+- tapOn: "Refresh"
+- assertVisible: "Refreshing videos in background..."
+# Verify no ANR or crash when switching between tabs
+- tapOn: "Settings"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro:id/statusText"

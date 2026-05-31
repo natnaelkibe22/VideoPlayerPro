@@ -1,0 +1,26 @@
+appId: com.natkibe.videoplayerpro
+---
+# Micro-Module: Maestro (Integration Orchestrator)
+# Validates end-to-end integration across all micromodules
+- launchApp
+- assertVisible: "VideoPlayer Pro"
+# Full integration flow:
+# 1. Core: PermissionService initializes
+- tapOn: "Folders"
+- assertVisible: "No video folders found. Tap Refresh to scan USB/SD cards."
+# 2. MediaStore: Scans for videos
+- tapOn: "Refresh"
+- assertVisible: "Refreshing videos in background..."
+# 3. Room: Caches results
+# 4. Storage: Classifies storage locations
+# 5. Settings: DataStore-backed preferences
+- tapOn: "Settings"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro:id/statusText"
+# 6. Player: Ready for playback
+# 7. AudioOnly: Background audio service
+# 8. FloatingPlayer: Overlay window
+# 9. Thumbnail: Coil image loading
+# Verify all modules integrate without conflict
+- tapOn: "Folders"
+- assertVisible: "No video folders found. Tap Refresh to scan USB/SD cards."

@@ -1,0 +1,36 @@
+appId: com.natkibe.videoplayerpro
+---
+# Playlist Panel Test
+# Requires a mock video file pushed to the emulator at /sdcard/Movies/test_video_720p.mp4
+# This test verifies the side playlist panel toggle functionality:
+# - Tap "Playlist" button to show side panel with "Folder Playlist" title
+# - Tap "Hide Playlist" button to hide the side panel
+- launchApp
+- assertVisible: "VideoPlayer Pro"
+- tapOn: "Folders"
+- assertVisible: "Movies"
+- tapOn: "Movies"
+- assertVisible: "test_video_720p"
+- tapOn: "test_video_720p"
+# Wait for player to load
+- assertVisible:
+    id: "com.natkibe.videoplayerpro:id/playerView"
+# Verify Playlist button exists
+- assertVisible:
+    id: "com.natkibe.videoplayerpro:id/playlistButton"
+- assertVisible: "Playlist"
+# Tap Playlist to show the side panel
+- tapOn: "Playlist"
+# Verify side playlist panel is now visible with "Folder Playlist" title
+- assertVisible: "Folder Playlist"
+# Verify the button text changed to "Hide Playlist"
+- assertVisible: "Hide Playlist"
+# Verify the playlist RecyclerView is visible
+- assertVisible:
+    id: "com.natkibe.videoplayerpro:id/playlistRecycler"
+# Tap "Hide Playlist" to hide the side panel
+- tapOn: "Hide Playlist"
+# Verify the button text changed back to "Playlist"
+- assertVisible: "Playlist"
+# Verify the side panel is hidden (Folder Playlist title should not be visible)
+- assertNotVisible: "Folder Playlist"

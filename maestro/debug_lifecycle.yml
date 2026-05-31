@@ -1,0 +1,21 @@
+appId: com.natkibe.videoplayerpro
+---
+# Debug: Activity & Service Lifecycle
+# Validates lifecycle handling across foreground/background transitions
+- launchApp
+- assertVisible: "VideoPlayer Pro"
+# Background the app (simulate home button)
+- back
+# Wait briefly to simulate background state
+- launchApp
+- assertVisible: "VideoPlayer Pro"
+# Verify state is preserved after background/foreground cycle
+- tapOn: "Folders"
+- assertVisible: "No video folders found. Tap Refresh to scan USB/SD cards."
+# Background again
+- back
+- launchApp
+# Verify no crash on rapid lifecycle transitions
+- tapOn: "Settings"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro:id/statusText"

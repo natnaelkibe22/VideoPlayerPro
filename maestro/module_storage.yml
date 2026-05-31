@@ -1,0 +1,19 @@
+appId: com.natkibe.videoplayerpro
+---
+# Micro-Module: Storage
+# Validates StorageClassifier and storage tab functionality
+- launchApp
+- assertVisible: "VideoPlayer Pro"
+# StorageClassifier categorizes:
+# - Internal storage
+# - USB OTG (external USB drives)
+# - SD card
+- tapOn: "Folders"
+- assertVisible: "No video folders found. Tap Refresh to scan USB/SD cards."
+# Verify storage tabs are displayed
+# Storage tabs show:
+# - Folder name
+# - Video count
+# - Storage type indicator
+- tapOn: "Refresh"
+- assertVisible: "Refreshing videos in background..."

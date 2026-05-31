@@ -1,0 +1,17 @@
+appId: com.natkibe.videoplayerpro
+---
+# Micro-Module: Thumbnail
+# Validates thumbnail loading via Coil image loader
+- launchApp
+- assertVisible: "VideoPlayer Pro"
+# Thumbnails are loaded using Coil (io.coil-kt:coil:2.7.0)
+# Coil provides:
+# - Async image loading
+# - Disk caching
+# - Memory caching
+- tapOn: "Settings"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro:id/statusText"
+# Verify thumbnails load in folder view without crash
+- tapOn: "Folders"
+- assertVisible: "No video folders found. Tap Refresh to scan USB/SD cards."

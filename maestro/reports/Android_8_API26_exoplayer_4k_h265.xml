@@ -1,0 +1,8 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<testsuites>
+  <testsuite name="Test Suite" device="S26_Ultra" tests="1" failures="1" time="37.0">
+    <testcase id="exoplayer_4k_h265" name="exoplayer_4k_h265" classname="exoplayer_4k_h265" time="37.0" status="ERROR">
+      <failure>Assertion is false: "Cached video folders" is visible</failure>
+    </testcase>
+  </testsuite>
+</testsuites>

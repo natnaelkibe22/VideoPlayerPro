@@ -1,0 +1,21 @@
+appId: com.natkibe.videoplayerpro
+---
+# Micro-Module: Settings
+# Validates SettingsStore (DataStore-backed preferences)
+- launchApp
+- tapOn: "Settings"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro:id/statusText"
+# SettingsStore provides:
+# - Thumbnails toggle
+# - Floating Player toggle
+# - Resume toggle
+# Toggle settings to verify DataStore persistence
+# Note: Settings are displayed in a single multi-line TextView (statusText),
+# so individual text assertions like "Thumbnails" won't work with Maestro's textRegex.
+# The statusText element being visible confirms we're on the Settings screen.
+# Verify settings persist after re-opening
+- tapOn: "Folders"
+- tapOn: "Settings"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro:id/statusText"

@@ -1,6 +1,6 @@
 # Codex Next Prompt
 
-You are improving Player Pro, a Kotlin Android video-only headunit app. Use the micro-module architecture. Do not add music library features. The only audio feature is Play as Music, which continues audio from the current video while hiding/detaching video rendering.
+You are improving VideoPlayer Pro, a Kotlin Android video-only headunit app. Use the micro-module architecture. Do not add music library features. The only audio feature is Play as Music, which continues audio from the current video while hiding/detaching video rendering.
 
 Work one milestone at a time. For each milestone:
 

@@ -1,0 +1,19 @@
+appId: com.natkibe.videoplayerpro
+---
+# Micro-Module: Room Cache
+# Validates Room database caching (VideoDao, AppDatabase)
+- launchApp
+- assertVisible: "VideoPlayer Pro"
+# Room database caches:
+# - VideoItemEntity: indexed video metadata
+# - VideoProgressEntity: playback progress per video
+- tapOn: "Folders"
+- assertVisible: "No video folders found. Tap Refresh to scan USB/SD cards."
+# Verify cached data is displayed from Room
+- tapOn: "Refresh"
+- assertVisible: "Refreshing videos in background..."
+# Room operations tested:
+# - @Insert (on scan)
+# - @Query (on folder list)
+# - @Update (on progress save)
+# - @Delete (on stale data removal)

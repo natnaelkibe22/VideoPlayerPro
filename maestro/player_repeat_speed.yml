@@ -1,0 +1,64 @@
+appId: com.natkibe.videoplayerpro
+---
+# Repeat & Speed Controls Test
+# Requires a mock video file pushed to the emulator at /sdcard/Movies/test_video_720p.mp4
+# This test verifies the Repeat and Speed button toggle functionality:
+# - Tap "Repeat" to toggle repeat-one mode (text changes to "Repeat 1")
+# - Tap "Repeat" again to toggle repeat-one off (text changes back to "Repeat")
+# - Tap "Repeat Folder" to toggle repeat-all mode (text changes to "Repeat All")
+# - Tap "Repeat Folder" again to toggle repeat-all off (text changes back to "Repeat Folder")
+# - Tap "1.0x" to cycle through playback speeds (0.75x -> 1.0x -> 1.25x -> 1.5x -> 2.0x)
+- launchApp
+- assertVisible: "VideoPlayer Pro"
+- tapOn: "Folders"
+- assertVisible: "Movies"
+- tapOn: "Movies"
+- assertVisible: "test_video_720p"
+- tapOn: "test_video_720p"
+# Wait for player to load
+- assertVisible:
+    id: "com.natkibe.videoplayerpro:id/playerView"
+# --- Test Repeat button ---
+- assertVisible:
+    id: "com.natkibe.videoplayerpro:id/repeatButton"
+- assertVisible: "Repeat"
+# Tap Repeat to enable repeat-one mode
+- tapOn: "Repeat"
+# Button text should change to "Repeat 1"
+- assertVisible: "Repeat 1"
+# Tap Repeat again to disable repeat-one mode
+- tapOn: "Repeat 1"
+# Button text should change back to "Repeat"
+- assertVisible: "Repeat"
+# --- Test Repeat Folder button ---
+- assertVisible:
+    id: "com.natkibe.videoplayerpro:id/repeatAllButton"
+- assertVisible: "Repeat Folder"
+# Tap Repeat Folder to enable repeat-all mode
+- tapOn: "Repeat Folder"
+# Button text should change to "Repeat All"
+- assertVisible: "Repeat All"
+# Tap Repeat All to disable repeat-all mode
+- tapOn: "Repeat All"
+# Button text should change back to "Repeat Folder"
+- assertVisible: "Repeat Folder"
+# --- Test Speed button ---
+# Speed cycle: 0.75x -> 1.0x (default) -> 1.25x -> 1.5x -> 2.0x
+- assertVisible:
+    id: "com.natkibe.videoplayerpro:id/speedButton"
+- assertVisible: "1.0x"
+# Tap speed button to cycle from 1.0x to 1.25x
+- tapOn: "1.0x"
+- assertVisible: "1.25x"
+# Tap again to cycle from 1.25x to 1.5x
+- tapOn: "1.25x"
+- assertVisible: "1.5x"
+# Tap again to cycle from 1.5x to 2.0x
+- tapOn: "1.5x"
+- assertVisible: "2.0x"
+# Tap again to cycle from 2.0x to 0.75x
+- tapOn: "2.0x"
+- assertVisible: "0.75x"
+# Tap again to cycle back to 1.0x
+- tapOn: "0.75x"
+- assertVisible: "1.0x"

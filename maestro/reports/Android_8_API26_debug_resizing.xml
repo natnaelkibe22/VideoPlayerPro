@@ -1,0 +1,8 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<testsuites>
+  <testsuite name="Test Suite" device="S26_Ultra" tests="1" failures="1" time="9.0">
+    <testcase id="debug_resizing" name="debug_resizing" classname="debug_resizing" time="9.0" status="ERROR">
+      <failure>Unknown error</failure>
+    </testcase>
+  </testsuite>
+</testsuites>
