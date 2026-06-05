@@ -1,0 +1,135 @@
+# Milestone 02 - Playlist Drawer Interactions
+# Tests: Open by swipe, close by overlay tap, close by swipe, select video, toggle button, verify player controls after close
+appId: com.natkibe.videoplayerpro
+---
+# Setup: Launch app and navigate to a video
+- launchApp
+- assertVisible: "VideoPlayer Pro"
+- tapOn: "Folders"
+- assertVisible: "Movies"
+- tapOn: "Movies"
+- assertVisible: "test_video_720p.mp4"
+- tapOn: "test_video_720p.mp4"
+
+# Wait for player to load and reveal controls
+- assertVisible:
+    id: "com.natkibe.videoplayerpro:id/playerView"
+- tapOn:
+    id: "com.natkibe.videoplayerpro:id/playerView"
+- waitForAnimationToEnd
+- assertVisible:
+    id: "com.natkibe.videoplayerpro:id/playlistButton"
+
+# ============================================================
+# Flow 1: Open Playlist Drawer from right edge swipe
+# ============================================================
+- swipe:
+    from:
+      x: 95%          # start near right edge
+    to:
+      x: 70%           # swipe inward
+    durationMs: 400
+- waitForAnimationToEnd
+- assertVisible:
+    id: "com.natkibe.videoplayerpro:id/sidePlaylist"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro:id/playlistDimOverlay"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro:id/playlistRecycler"
+
+# ============================================================
+# Flow 2: Close drawer by tapping outside (dim overlay)
+# ============================================================
+- tapOn:
+    id: "com.natkibe.videoplayerpro:id/playlistDimOverlay"
+- waitForAnimationToEnd
+# After close, player controls should be visible again
+- assertVisible:
+    id: "com.natkibe.videoplayerpro:id/playerView"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro:id/playlistButton"
+
+# ============================================================
+# Flow 3: Close drawer by swiping right on drawer
+# ============================================================
+# First open drawer by tapping the playlist button
+- tapOn:
+    id: "com.natkibe.videoplayerpro:id/playlistButton"
+- waitForAnimationToEnd
+- assertVisible:
+    id: "com.natkibe.videoplayerpro:id/sidePlaylist"
+# Swipe right on the drawer (from drawer center to far right)
+- swipe:
+    from:
+      x: 80%
+      y: 50%
+    to:
+      x: 95%
+      y: 50%
+    durationMs: 300
+- waitForAnimationToEnd
+# Verify drawer closed — playlistRecycler should no longer be interactable
+- assertVisible:
+    id: "com.natkibe.videoplayerpro:id/playerView"
+
+# ============================================================
+# Flow 4: Select a video from playlist
+# ============================================================
+- tapOn:
+    id: "com.natkibe.videoplayerpro:id/playlistButton"
+- waitForAnimationToEnd
+- assertVisible:
+    id: "com.natkibe.videoplayerpro:id/sidePlaylist"
+# Tap on a playlist item title (first visible item in the RecyclerView)
+- tapOn:
+    id: "com.natkibe.videoplayerpro:id/itemTitle"
+- waitForAnimationToEnd
+# Player should still be visible and responsive
+- assertVisible:
+    id: "com.natkibe.videoplayerpro:id/playerView"
+- tapOn:
+    id: "com.natkibe.videoplayerpro:id/playerView"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro:id/centerPlayPause"
+
+# ============================================================
+# Flow 5: Toggle drawer with playlist button
+# ============================================================
+# Open drawer via playlist button
+- tapOn:
+    id: "com.natkibe.videoplayerpro:id/playlistButton"
+- waitForAnimationToEnd
+- assertVisible:
+    id: "com.natkibe.videoplayerpro:id/sidePlaylist"
+# Close drawer by tapping playlist button again
+- tapOn:
+    id: "com.natkibe.videoplayerpro:id/playlistButton"
+- waitForAnimationToEnd
+# Assert drawer is closed (player controls are visible)
+- assertVisible:
+    id: "com.natkibe.videoplayerpro:id/playerView"
+
+# ============================================================
+# Flow 6: Verify player controls work after closing drawer
+# ============================================================
+# Open then close drawer
+- tapOn:
+    id: "com.natkibe.videoplayerpro:id/playlistButton"
+- waitForAnimationToEnd
+- tapOn:
+    id: "com.natkibe.videoplayerpro:id/playlistButton"
+- waitForAnimationToEnd
+# Tap player to reveal controls
+- tapOn:
+    id: "com.natkibe.videoplayerpro:id/playerView"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro:id/centerPlayPause"
+# Tap play/pause button
+- tapOn:
+    id: "com.natkibe.videoplayerpro:id/centerPlayPause"
+- waitForAnimationToEnd
+# Verify player view still visible after play/pause interaction
+- assertVisible:
+    id: "com.natkibe.videoplayerpro:id/playerView"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro:id/playlistButton"

@@ -252,6 +252,14 @@
         </HorizontalScrollView>
     </LinearLayout>
 
+    <!-- Dim overlay behind the playlist drawer -->
+    <View
+        android:id="@+id/playlistDimOverlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#000000"
+        android:visibility="gone" />
+
     <!-- ===== RIGHT SIDE PLAYLIST DRAWER ===== -->
     <LinearLayout
         android:id="@+id/sidePlaylist"
@@ -261,7 +269,7 @@
         android:background="#DD101114"
         android:orientation="vertical"
         android:padding="10dp"
-        android:visibility="gone">
+        android:visibility="visible">
 
         <TextView
             android:layout_width="match_parent"
