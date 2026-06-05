@@ -7,15 +7,12 @@ import android.content.IntentFilter
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
-import android.widget.AdapterView
-import android.widget.ArrayAdapter
 import android.widget.ImageButton
-import android.widget.ListView
 import android.widget.Button
 import android.widget.LinearLayout
-import android.widget.PopupWindow
 import android.widget.SeekBar
 import android.widget.TextView
 import android.widget.Toast
@@ -30,10 +27,16 @@ import com.natkibe.videoplayerpro.R
 import com.natkibe.videoplayerpro.core.TimeFormat
 import com.natkibe.videoplayerpro.core.contracts.VideoPlayerProAppContainer
 import com.natkibe.videoplayerpro.data.VideoItemEntity
+import com.natkibe.videoplayerpro.controls.PlayerControlsController
+import com.natkibe.videoplayerpro.controls.PlaybackMenuController
+import com.natkibe.videoplayerpro.controls.PlaybackSpeedSheet
+import com.natkibe.videoplayerpro.controls.RepeatModeSheet
 import com.natkibe.videoplayerpro.playlist.PlaylistDrawerController
 import com.natkibe.videoplayerpro.playlist.PlaylistInteractionListener
 import com.natkibe.videoplayerpro.playlist.PlaylistItemAdapter
 import com.natkibe.videoplayerpro.playlist.PlaylistItemUiModel
+import android.view.animation.AlphaAnimation
+import android.view.animation.Animation
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -83,23 +86,30 @@ class PlayerActivity : AppCompatActivity() {
     private lateinit var errorSkipButton: Button
 
     // Bottom action ImageButtons
-    private lateinit var repeatButton: ImageButton
-    private lateinit var speedButton: ImageButton
     private lateinit var playlistButton: ImageButton
-    private lateinit var audioOnlyButton: ImageButton
-    private lateinit var floatingButton: ImageButton
 
     // Playlist components (new package)
     private lateinit var playlistDrawerController: PlaylistDrawerController
     private lateinit var playlistAdapter: PlaylistItemAdapter
     private var playlistItems: List<PlaylistItemUiModel> = emptyList()
 
+    // Controls controller (auto-hide logic)
+    private lateinit var controlsController: PlayerControlsController
+
+    // Playback menu and sheet controllers
+    private lateinit var playbackMenu: PlaybackMenuController
+    private lateinit var speedSheet: PlaybackSpeedSheet
+    private lateinit var repeatSheet: RepeatModeSheet
+
+    // New view refs for top bar
+    private lateinit var speedLabel: TextView
+    private lateinit var musicStatusLabel: TextView
+    private lateinit var closeButton: ImageButton
+
     // State
-    private var controlsVisible = false
     private var currentMode: PlayerMode = PlayerMode.FULLSCREEN
     private var isSeeking = false
     private var progressUpdateJob: Job? = null
-    private var autoHideJob: Job? = null
     private var lastProgressSaveMs = 0L
     private val progressSaveThrottleMs = 5_000L
 
@@ -174,11 +184,12 @@ class PlayerActivity : AppCompatActivity() {
         playerErrorText = findViewById(R.id.playerErrorText)
 
         // Bottom action buttons
-        repeatButton = findViewById(R.id.repeatButton)
-        speedButton = findViewById(R.id.speedButton)
         playlistButton = findViewById(R.id.playlistButton)
-        audioOnlyButton = findViewById(R.id.audioOnlyButton)
-        floatingButton = findViewById(R.id.floatingButton)
+
+        // New top bar views
+        speedLabel = findViewById(R.id.speedLabel)
+        musicStatusLabel = findViewById(R.id.musicStatusLabel)
+        closeButton = findViewById(R.id.closeButton)
 
         // Set title
         videoTitleView.text = videoTitle.ifBlank { "Now Playing" }
@@ -199,8 +210,23 @@ class PlayerActivity : AppCompatActivity() {
         // Attach PlayerView to engine
         playerEngine.attachFullscreenPlayerView(playerView)
 
-        // Tap video to toggle controls
-        playerView.setOnClickListener { toggleControls() }
+        initControlsController()
+
+        // Tap video to toggle controls, swipe from right edge to open drawer.
+        // Use setOnTouchListener so we can forward events to the drawer's edge
+        // gesture detector — PlayerView's SurfaceView would consume clicks otherwise.
+        playerView.setOnTouchListener { _, event ->
+            // Let drawer controller check for edge swipe first
+            if (::playlistDrawerController.isInitialized && playlistDrawerController.onTouchEvent(event)) {
+                return@setOnTouchListener true
+            }
+            // Tap detection: toggle controls on ACTION_UP
+            if (event.action == MotionEvent.ACTION_UP) {
+                controlsController.toggleControls()
+                if (controlsController.state.controlsVisible) showControls() else hideControls()
+            }
+            false // don't consume, let PlayerView handle internally
+        }
 
         setupControls()
         setupPlaylist()
@@ -216,12 +242,89 @@ class PlayerActivity : AppCompatActivity() {
     override fun onDestroy() {
         try { unregisterReceiver(floatingClosedReceiver) } catch (_: Exception) {}
         progressUpdateJob?.cancel()
-        autoHideJob?.cancel()
         collectJob?.cancel()
+        controlsController.destroy()
+        playbackMenu.dismiss()
+        speedSheet.dismiss()
+        repeatSheet.dismiss()
         // Detach view and destroy player through engine
         playerEngine.detachFullscreenPlayerView()
         playerEngine.destroyPlayer()
         super.onDestroy()
+    }
+
+    private fun initControlsController() {
+        // Initialize controlsController synchronously with defaults first
+        // (so click listeners can reference it immediately).
+        controlsController = PlayerControlsController(
+            autoHideEnabled = true,
+            headunitSafeMode = false,
+            scope = lifecycleScope
+        ) { state ->
+            if (state.controlsVisible) showControls() else hideControls()
+        }
+
+        // Initialize menu and sheets synchronously
+        playbackMenu = PlaybackMenuController(
+            context = this@PlayerActivity,
+            anchorView = findViewById(R.id.menuButton),
+            callbacks = object : PlaybackMenuController.MenuCallbacks {
+                override fun onSpeedClicked() {
+                    val currentSpeed = playerEngine.state.value.speed
+                    speedSheet.show(currentSpeed)
+                }
+                override fun onRepeatClicked() {
+                    val currentRepeat = playerEngine.state.value.repeatMode
+                    repeatSheet.show(currentRepeat)
+                }
+                override fun onAudioOnlyClicked() { toggleAudioOnly() }
+                override fun onFloatingClicked() { toggleFloating() }
+                override fun onSettingsClicked() {
+                    Toast.makeText(this@PlayerActivity, "Settings", Toast.LENGTH_SHORT).show()
+                }
+                override fun onRefreshClicked() {
+                    Toast.makeText(this@PlayerActivity, "Library refreshed", Toast.LENGTH_SHORT).show()
+                }
+            }
+        )
+
+        speedSheet = PlaybackSpeedSheet(this@PlayerActivity) { speed ->
+            playerEngine.dispatch(PlaybackCommand.SetSpeed(speed))
+            speedLabel.text = "${speed}x"
+            Toast.makeText(this@PlayerActivity, "Speed: ${speed}x", Toast.LENGTH_SHORT).show()
+        }
+
+        repeatSheet = RepeatModeSheet(this@PlayerActivity) { mode ->
+            val engineState = playerEngine.state.value
+            var current = engineState.repeatMode
+            while (current != mode) {
+                playerEngine.dispatch(PlaybackCommand.CycleRepeatMode)
+                current = (current + 1) % 3
+            }
+        }
+
+        // Touch listeners on control layers to reset auto-hide timer
+        topBar.setOnTouchListener { _, _ ->
+            controlsController.onUserInteraction()
+            false
+        }
+        centerControls.setOnTouchListener { _, _ ->
+            controlsController.onUserInteraction()
+            false
+        }
+        bottomBar.setOnTouchListener { _, _ ->
+            controlsController.onUserInteraction()
+            false
+        }
+
+        // Now read actual settings and update the controller
+        lifecycleScope.launch {
+            val settings = appContainer.settingsStore.settings.first()
+            controlsController.updateSettings(
+                autoHideEnabled = settings.autoHideControls,
+                headunitSafeMode = settings.headunitSafeMode
+            )
+        }
     }
 
     private fun setupControls() {
@@ -232,8 +335,11 @@ class PlayerActivity : AppCompatActivity() {
         findViewById<ImageButton>(R.id.seekBack5).setOnClickListener { seekRelative(-5_000) }
         findViewById<ImageButton>(R.id.seekForward15).setOnClickListener { seekRelative(15_000) }
 
-        // Menu button
+        // Menu button opens playback menu
         findViewById<ImageButton>(R.id.menuButton).setOnClickListener { showMenu() }
+
+        // Close button
+        closeButton.setOnClickListener { finish() }
 
         // Seek bar
         seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
@@ -244,7 +350,10 @@ class PlayerActivity : AppCompatActivity() {
                     currentTimeView.text = TimeFormat.duration(pos)
                 }
             }
-            override fun onStartTrackingTouch(seekBar: SeekBar?) { isSeeking = true; cancelAutoHide() }
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {
+                isSeeking = true
+                controlsController.onSeekStart()
+            }
             override fun onStopTrackingTouch(seekBar: SeekBar?) {
                 isSeeking = false
                 val dur = playerEngine.state.value.durationMs
@@ -252,26 +361,12 @@ class PlayerActivity : AppCompatActivity() {
                     val pos = ((seekBar?.progress?.toFloat() ?: 0f) / 1000f * dur).toLong()
                     playerEngine.dispatch(PlaybackCommand.SeekTo(pos))
                 }
-                scheduleAutoHide()
+                controlsController.onSeekEnd()
             }
         })
 
-        // Bottom action buttons
-        repeatButton.setOnClickListener {
-            playerEngine.dispatch(PlaybackCommand.CycleRepeatMode)
-            updateRepeatIcon(playerEngine.state.value.repeatMode)
-        }
-        speedButton.setOnClickListener {
-            val currentSpeed = playerEngine.state.value.speed
-            val speeds = listOf(0.75f, 1.0f, 1.25f, 1.5f, 2.0f)
-            val nextIndex = (speeds.indexOf(currentSpeed).coerceAtLeast(0) + 1) % speeds.size
-            val newSpeed = speeds[nextIndex]
-            playerEngine.dispatch(PlaybackCommand.SetSpeed(newSpeed))
-            showSpeedToast(newSpeed)
-        }
+        // Playlist button
         playlistButton.setOnClickListener { playlistDrawerController.toggleDrawer() }
-        audioOnlyButton.setOnClickListener { toggleAudioOnly() }
-        floatingButton.setOnClickListener { toggleFloating() }
     }
 
     private fun setupPlayer() {
@@ -297,11 +392,11 @@ class PlayerActivity : AppCompatActivity() {
                 }
             }
 
-            // Initialize button icons from saved settings
-            updateRepeatIcon(settings.defaultRepeatMode)
+            // Initialize speed label
+            speedLabel.text = "${settings.defaultSpeed}x"
 
-            // Show controls briefly on start, then auto-hide
-            showControls()
+            // Show controls briefly on start via controller
+            controlsController.showControls()
         }
 
         // Observe engine state for errors and playback state changes
@@ -311,8 +406,24 @@ class PlayerActivity : AppCompatActivity() {
                     // Handle errors from PlayerEngine
                     if (engineState.error != null) {
                         showErrorUI(engineState.error)
+                        // Ensure controls are visible for error display
+                        controlsController.showControls()
                     } else {
                         hideErrorUI()
+                    }
+
+                    // Update controls controller with playback state
+                    controlsController.onPlaybackStateChanged(engineState.isPlaying)
+
+                    // Update speed label
+                    speedLabel.text = "${engineState.speed}x"
+
+                    // Update music status label visibility
+                    musicStatusLabel.visibility = if (engineState.isAudioOnly) View.VISIBLE else View.GONE
+                    if (engineState.isAudioOnly) {
+                        speedLabel.visibility = View.GONE
+                    } else {
+                        speedLabel.visibility = View.VISIBLE
                     }
 
                     // Update play/pause and duration display
@@ -428,42 +539,66 @@ class PlayerActivity : AppCompatActivity() {
 
     // ── Controls visibility ──────────────────────────────────────────────
 
-    private fun toggleControls() {
-        if (controlsVisible) hideControls() else showControls()
-    }
-
     private fun showControls() {
-        controlsVisible = true
-        controlsOverlay.visibility = View.VISIBLE
-        topBar.visibility = View.VISIBLE
-        centerControls.visibility = View.VISIBLE
-        bottomBar.visibility = View.VISIBLE
+        val state = controlsController.state
         updatePlayPauseIcon()
-        scheduleAutoHide()
+
+        if (state.headunitSafeMode) {
+            // Instant without animation
+            controlsOverlay.visibility = View.VISIBLE
+            topBar.visibility = View.VISIBLE
+            centerControls.visibility = View.VISIBLE
+            bottomBar.visibility = View.VISIBLE
+            return
+        }
+
+        // Fade in animation
+        val fadeIn = AlphaAnimation(0f, 1f).apply {
+            duration = 250
+            fillAfter = true
+        }
+        showWithFade(controlsOverlay, fadeIn)
+        showWithFade(topBar, fadeIn)
+        showWithFade(centerControls, fadeIn)
+        showWithFade(bottomBar, fadeIn)
     }
 
     private fun hideControls() {
-        controlsVisible = false
-        controlsOverlay.visibility = View.GONE
-        topBar.visibility = View.GONE
-        centerControls.visibility = View.GONE
-        bottomBar.visibility = View.GONE
-        cancelAutoHide()
-    }
+        val state = controlsController.state
 
-    private fun scheduleAutoHide() {
-        cancelAutoHide()
-        autoHideJob = lifecycleScope.launch {
-            delay(3_000) // Auto-hide after 3 seconds
-            if (!isSeeking && playerEngine.state.value.isPlaying) {
-                hideControls()
-            }
+        if (state.headunitSafeMode) {
+            // Instant without animation
+            controlsOverlay.visibility = View.GONE
+            topBar.visibility = View.GONE
+            centerControls.visibility = View.GONE
+            bottomBar.visibility = View.GONE
+            return
         }
+
+        // Fade out animation
+        val fadeOut = AlphaAnimation(1f, 0f).apply {
+            duration = 250
+            fillAfter = true
+            setAnimationListener(object : Animation.AnimationListener {
+                override fun onAnimationStart(animation: Animation?) {}
+                override fun onAnimationRepeat(animation: Animation?) {}
+                override fun onAnimationEnd(animation: Animation?) {
+                    controlsOverlay.visibility = View.GONE
+                    topBar.visibility = View.GONE
+                    centerControls.visibility = View.GONE
+                    bottomBar.visibility = View.GONE
+                }
+            })
+        }
+        controlsOverlay.startAnimation(fadeOut)
+        topBar.startAnimation(fadeOut)
+        centerControls.startAnimation(fadeOut)
+        bottomBar.startAnimation(fadeOut)
     }
 
-    private fun cancelAutoHide() {
-        autoHideJob?.cancel()
-        autoHideJob = null
+    private fun showWithFade(view: View, animation: AlphaAnimation) {
+        view.visibility = View.VISIBLE
+        view.startAnimation(animation)
     }
 
     // ── Playback controls ────────────────────────────────────────────────
@@ -476,7 +611,7 @@ class PlayerActivity : AppCompatActivity() {
             playerEngine.dispatch(PlaybackCommand.Resume)
         }
         updatePlayPauseIcon()
-        scheduleAutoHide()
+        controlsController.onUserInteraction()
     }
 
     private fun updatePlayPauseIcon() {
@@ -515,20 +650,7 @@ class PlayerActivity : AppCompatActivity() {
         val newPos = (pos + ms).coerceIn(0, dur)
         playerEngine.dispatch(PlaybackCommand.SeekTo(newPos))
         // Show controls briefly after seek
-        if (!controlsVisible) showControls() else scheduleAutoHide()
-    }
-
-    private fun showSpeedToast(speed: Float) {
-        Toast.makeText(this, "Speed: ${speed}x", Toast.LENGTH_SHORT).show()
-        scheduleAutoHide()
-    }
-
-    private fun updateRepeatIcon(mode: Int) {
-        repeatButton.setImageResource(when (mode) {
-            Player.REPEAT_MODE_ONE -> R.drawable.ic_repeat_one
-            Player.REPEAT_MODE_ALL -> R.drawable.ic_repeat_all
-            else -> R.drawable.ic_repeat
-        })
+        controlsController.onUserInteraction()
     }
 
     // ── Progress updates ─────────────────────────────────────────────────
@@ -585,10 +707,9 @@ class PlayerActivity : AppCompatActivity() {
 
     private fun enterFloatingMode() {
         currentMode = PlayerMode.FLOATING_VIDEO
-        floatingButton.setImageResource(R.drawable.ic_close)
-        // If coming from audio-only, reset its button icon and stop its service
+        // If coming from audio-only, reset its status and stop its service
         if (playerEngine.state.value.isAudioOnly) {
-            audioOnlyButton.setImageResource(R.drawable.ic_music_note)
+            musicStatusLabel.visibility = View.GONE
             stopService(Intent(this, AudioOnlyService::class.java))
         }
         saveProgress()
@@ -598,7 +719,6 @@ class PlayerActivity : AppCompatActivity() {
 
     private fun exitFloatingMode() {
         currentMode = PlayerMode.FULLSCREEN
-        floatingButton.setImageResource(R.drawable.ic_float)
         // Stop the floating service
         stopService(Intent(this, FloatingPlayerService::class.java))
         // Re-attach player to this view via engine
@@ -609,7 +729,6 @@ class PlayerActivity : AppCompatActivity() {
     private fun onFloatingServiceStopped() {
         if (playerEngine.state.value.isFloating) {
             currentMode = PlayerMode.FULLSCREEN
-            floatingButton.setImageResource(R.drawable.ic_float)
             // Re-attach player to this view via engine
             playerEngine.returnToFullscreen()
         }
@@ -619,20 +738,17 @@ class PlayerActivity : AppCompatActivity() {
         if (playerEngine.state.value.isAudioOnly) {
             // Exit audio-only mode - restore video surface
             currentMode = PlayerMode.FULLSCREEN
-            audioOnlyButton.setImageResource(R.drawable.ic_music_note)
             playerEngine.dispatch(PlaybackCommand.ToggleAudioOnly)
             // Stop AudioOnlyService if running
             stopService(Intent(this, AudioOnlyService::class.java))
             // Re-attach video surface
             playerEngine.surfaceRouter.attachToFullscreen()
         } else {
-            // If coming from floating mode, reset its button icon and stop its service
+            // If coming from floating mode, stop its service
             if (playerEngine.state.value.isFloating) {
-                floatingButton.setImageResource(R.drawable.ic_float)
                 stopService(Intent(this, FloatingPlayerService::class.java))
             }
             currentMode = PlayerMode.AUDIO_ONLY
-            audioOnlyButton.setImageResource(R.drawable.ic_close)
             saveProgress()
             playerEngine.dispatch(PlaybackCommand.ToggleAudioOnly)
             // Start AudioOnlyService (surface already detached by ToggleAudioOnly)
@@ -642,42 +758,19 @@ class PlayerActivity : AppCompatActivity() {
     }
 
     private fun showMenu() {
-        // Show a popup listing all folders for quick folder switching
-        lifecycleScope.launch {
-            try {
-                val folders = withContext(Dispatchers.IO) {
-                    appContainer.database.videoDao().observeFolders().first()
-                }
-                val folderNames = folders.map { "${it.folderName} (${it.videoCount})" }
-
-                if (folderNames.isEmpty()) {
-                    Toast.makeText(this@PlayerActivity, "No folders found", Toast.LENGTH_SHORT).show()
-                    return@launch
-                }
-
-                val anchor = findViewById<ImageButton>(R.id.menuButton)
-                val listView = ListView(this@PlayerActivity)
-                listView.adapter = ArrayAdapter(
-                    this@PlayerActivity,
-                    android.R.layout.simple_list_item_1,
-                    folderNames
-                )
-                listView.setOnItemClickListener { _: AdapterView<*>, _: View, position: Int, _: Long ->
-                    val selected = folderNames[position].substringBeforeLast(" (")
-                    playFirstVideoInFolder(selected)
-                }
-
-                val popup = PopupWindow(
-                    listView,
-                    500,
-                    600,
-                    true
-                )
-                popup.showAsDropDown(anchor, -200, 0)
-            } catch (e: Exception) {
-                Toast.makeText(this@PlayerActivity, "Error loading folders: ${e.message}", Toast.LENGTH_SHORT).show()
-            }
+        val engineState = playerEngine.state.value
+        val currentSpeed = "${engineState.speed}x"
+        val currentRepeat = when (engineState.repeatMode) {
+            Player.REPEAT_MODE_ONE -> "Repeat One"
+            Player.REPEAT_MODE_ALL -> "Repeat All"
+            else -> "Repeat Off"
         }
+        playbackMenu.show(
+            currentSpeed = currentSpeed,
+            currentRepeat = currentRepeat,
+            isAudioOnly = engineState.isAudioOnly,
+            isFloating = engineState.isFloating
+        )
     }
 
     private fun playFirstVideoInFolder(targetFolder: String) {
@@ -811,14 +904,12 @@ class PlayerActivity : AppCompatActivity() {
         // If we were in floating mode and came back, re-attach and stop service
         if (engineState.isFloating) {
             currentMode = PlayerMode.FULLSCREEN
-            floatingButton.setImageResource(R.drawable.ic_float)
             stopService(Intent(this, FloatingPlayerService::class.java))
             playerEngine.returnToFullscreen()
         }
         // If we were in audio-only mode and came back, re-attach and stop service
         if (engineState.isAudioOnly) {
             currentMode = PlayerMode.FULLSCREEN
-            audioOnlyButton.setImageResource(R.drawable.ic_music_note)
             stopService(Intent(this, AudioOnlyService::class.java))
             playerEngine.returnToFullscreen()
         }

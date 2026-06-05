@@ -87,6 +87,20 @@ class PlaylistDrawerController(
     // Public API
     // ──────────────────────────────────────────────────────────────────────
 
+    /**
+     * Forward touch events to the edge-swipe gesture detector.
+     * Call this from the PlayerView touch listener so that swipes
+     * over the video surface are detected alongside rootContainer touches.
+     *
+     * @return true if the gesture detector consumed the event.
+     */
+    fun onTouchEvent(event: MotionEvent): Boolean {
+        if (!drawerState.isOpen && !isAnimating) {
+            return edgeGestureDetector.onTouchEvent(event)
+        }
+        return false
+    }
+
     /** Animate the drawer open. */
     fun openDrawer() {
         if (drawerState.isOpen || isAnimating) return
