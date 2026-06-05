@@ -19,7 +19,7 @@ class AudioOnlyService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         // PlayerActivity detaches PlayerView before starting this service.
-        // The shared PlayerHolder keeps audio alive while video rendering is off.
+        // The shared PlayerEngine keeps audio alive while video rendering is off.
         return START_STICKY
     }
 

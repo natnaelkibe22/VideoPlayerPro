@@ -7,14 +7,14 @@ import android.content.IntentFilter
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.view.View
 import android.view.WindowManager
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.ImageButton
 import android.widget.ListView
+import android.widget.Button
+import android.widget.LinearLayout
 import android.widget.PopupWindow
 import android.widget.SeekBar
 import android.widget.TextView
@@ -22,10 +22,7 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
-import androidx.media3.common.MediaItem
-import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
-import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.PlayerView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -59,8 +56,7 @@ class PlayerActivity : AppCompatActivity() {
     private val progress get() = appContainer.progressService
 
     private lateinit var playerView: PlayerView
-    private lateinit var player: ExoPlayer
-    private lateinit var controls: PlayerControlService
+    private val playerEngine: PlayerEngine get() = PlayerEngine.get()
 
     private var uri: String = ""
     private var videoTitle: String = ""
@@ -79,6 +75,9 @@ class PlayerActivity : AppCompatActivity() {
     private lateinit var currentTimeView: TextView
     private lateinit var totalTimeView: TextView
     private lateinit var playerErrorText: TextView
+    private lateinit var errorActionBar: LinearLayout
+    private lateinit var errorRetryButton: Button
+    private lateinit var errorSkipButton: Button
     private lateinit var playlistPanel: View
     private lateinit var playlistCurrentLabel: TextView
 
@@ -90,11 +89,8 @@ class PlayerActivity : AppCompatActivity() {
     private lateinit var floatingButton: ImageButton
 
     // State
-    private var isPlaying = false
     private var controlsVisible = false
     private var currentMode: PlayerMode = PlayerMode.FULLSCREEN
-    private var isFloatingMode = false
-    private var isAudioOnlyMode = false
     private var isPlaylistOpen = false
     private var isSeeking = false
     private var progressUpdateJob: Job? = null
@@ -158,11 +154,21 @@ class PlayerActivity : AppCompatActivity() {
         // Set title
         videoTitleView.text = videoTitle.ifBlank { "Now Playing" }
 
-        // Initialize the shared player instance (thread-safe singleton)
-        player = PlayerHolder.get(this)
-        controls = PlayerControlService(player)
-        playerView.player = player
+        // Create error action bar programmatically (retry/skip buttons)
+        initErrorActionBar()
+
+        // Initialize PlayerEngine singleton with progress callback
+        PlayerEngine.init(this) { videoUri, position, duration ->
+            lifecycleScope.launch {
+                withContext(Dispatchers.IO) {
+                    progress.save(videoUri.toString(), position, duration)
+                }
+            }
+        }
         playerView.useController = false // We use custom controls
+
+        // Attach PlayerView to engine
+        playerEngine.attachFullscreenPlayerView(playerView)
 
         // Tap video to toggle controls
         playerView.setOnClickListener { toggleControls() }
@@ -183,17 +189,9 @@ class PlayerActivity : AppCompatActivity() {
         progressUpdateJob?.cancel()
         autoHideJob?.cancel()
         collectJob?.cancel()
-        // Save progress off the main thread
-        if (::player.isInitialized && uri.isNotBlank()) {
-            val pos = player.currentPosition
-            val dur = player.duration
-            lifecycleScope.launch {
-                withContext(Dispatchers.IO) {
-                    progress.save(uri, pos, dur)
-                }
-            }
-        }
-        playerView.player = null
+        // Detach view and destroy player through engine
+        playerEngine.detachFullscreenPlayerView()
+        playerEngine.destroyPlayer()
         super.onDestroy()
     }
 
@@ -211,17 +209,19 @@ class PlayerActivity : AppCompatActivity() {
         // Seek bar
         seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                if (fromUser && player.duration > 0) {
-                    val pos = (progress / 1000f * player.duration).toLong()
+                val dur = playerEngine.state.value.durationMs
+                if (fromUser && dur > 0L) {
+                    val pos = ((progress.toFloat() / 1000f) * dur).toLong()
                     currentTimeView.text = TimeFormat.duration(pos)
                 }
             }
             override fun onStartTrackingTouch(seekBar: SeekBar?) { isSeeking = true; cancelAutoHide() }
             override fun onStopTrackingTouch(seekBar: SeekBar?) {
                 isSeeking = false
-                if (player.duration > 0) {
-                    val pos = (seekBar?.progress?.toFloat()?.div(1000f)?.times(player.duration)?.toLong() ?: 0)
-                    player.seekTo(pos)
+                val dur = playerEngine.state.value.durationMs
+                if (dur > 0L) {
+                    val pos = ((seekBar?.progress?.toFloat() ?: 0f) / 1000f * dur).toLong()
+                    playerEngine.dispatch(PlaybackCommand.SeekTo(pos))
                 }
                 scheduleAutoHide()
             }
@@ -229,12 +229,16 @@ class PlayerActivity : AppCompatActivity() {
 
         // Bottom action buttons
         repeatButton.setOnClickListener {
-            val mode = controls.cycleRepeatMode()
-            updateRepeatIcon(mode)
+            playerEngine.dispatch(PlaybackCommand.CycleRepeatMode)
+            updateRepeatIcon(playerEngine.state.value.repeatMode)
         }
         speedButton.setOnClickListener {
-            val speed = controls.cycleSpeed()
-            showSpeedToast(speed)
+            val currentSpeed = playerEngine.state.value.speed
+            val speeds = listOf(0.75f, 1.0f, 1.25f, 1.5f, 2.0f)
+            val nextIndex = (speeds.indexOf(currentSpeed).coerceAtLeast(0) + 1) % speeds.size
+            val newSpeed = speeds[nextIndex]
+            playerEngine.dispatch(PlaybackCommand.SetSpeed(newSpeed))
+            showSpeedToast(newSpeed)
         }
         playlistButton.setOnClickListener { togglePlaylist() }
         audioOnlyButton.setOnClickListener { toggleAudioOnly() }
@@ -242,69 +246,154 @@ class PlayerActivity : AppCompatActivity() {
     }
 
     private fun setupPlayer() {
-        player.setMediaItem(MediaItem.fromUri(Uri.parse(uri)))
-        player.prepare()
-        player.addListener(object : Player.Listener {
-            override fun onPlaybackStateChanged(state: Int) {
-                updatePlayPauseIcon()
-                when (state) {
-                    Player.STATE_READY -> {
-                        playerErrorText.visibility = View.GONE
-                        totalTimeView.text = TimeFormat.duration(player.duration)
-                    }
-                    Player.STATE_ENDED -> {
-                        centerPlayPause.setImageResource(R.drawable.ic_replay_5)
-                    }
-                }
-            }
-
-            override fun onIsPlayingChanged(isPlaying: Boolean) {
-                this@PlayerActivity.isPlaying = isPlaying
-                updatePlayPauseIcon()
-            }
-
-            override fun onPlayerError(error: PlaybackException) {
-                val errorMsg = buildString {
-                    append("Cannot play this video on this headunit.")
-                    when {
-                        error.errorCode == PlaybackException.ERROR_CODE_IO_UNSPECIFIED -> {
-                            append(" USB/SD card may have been removed or is unreadable.")
-                        }
-                        error.errorCode == PlaybackException.ERROR_CODE_DECODING_FAILED -> {
-                            append(" Unsupported codec, 4K/HEVC limit, or corrupt file.")
-                        }
-                        error.errorCode == PlaybackException.ERROR_CODE_DECODER_INIT_FAILED -> {
-                            append(" Codec initialization failed — format not supported on this device.")
-                        }
-                        else -> {
-                            append(" Unsupported codec, 4K/HEVC limit, slow USB, or corrupt file.")
-                        }
-                    }
-                }
-                playerErrorText.text = errorMsg
-                playerErrorText.visibility = View.VISIBLE
-            }
-
-            override fun onPlayerErrorChanged(error: PlaybackException?) {
-                if (error == null) {
-                    playerErrorText.visibility = View.GONE
-                }
-            }
-        })
-
         lifecycleScope.launch {
             val settings = appContainer.settingsStore.settings.first()
-            player.repeatMode = settings.defaultRepeatMode
-            controls.initSpeed(settings.defaultSpeed)
-            val resume = if (settings.resumePlayback) progress.resumePosition(uri) else 0L
-            if (resume > 0L) player.seekTo(resume)
+            val resumePos = if (settings.resumePlayback) progress.resumePosition(uri) else 0L
+
+            // Dispatch Play command through engine — this handles prepare, seek, and play
+            playerEngine.dispatch(PlaybackCommand.Play(
+                uri = Uri.parse(uri),
+                title = videoTitle,
+                startPositionMs = resumePos
+            ))
+
+            // Apply saved speed and repeat mode
+            if (settings.defaultSpeed != 1.0f) {
+                playerEngine.dispatch(PlaybackCommand.SetSpeed(settings.defaultSpeed))
+            }
+            if (settings.defaultRepeatMode != Player.REPEAT_MODE_OFF) {
+                // Cycle to reach the desired mode (engine starts at REPEAT_MODE_OFF)
+                while (playerEngine.state.value.repeatMode != settings.defaultRepeatMode) {
+                    playerEngine.dispatch(PlaybackCommand.CycleRepeatMode)
+                }
+            }
 
             // Initialize button icons from saved settings
             updateRepeatIcon(settings.defaultRepeatMode)
 
             // Show controls briefly on start, then auto-hide
             showControls()
-            player.play()
+        }
+
+        // Observe engine state for errors and playback state changes
+        lifecycleScope.launch {
+            playerEngine.state.collect { engineState ->
+                try {
+                    // Handle errors from PlayerEngine
+                    if (engineState.error != null) {
+                        showErrorUI(engineState.error)
+                    } else {
+                        hideErrorUI()
+                    }
+
+                    // Update play/pause and duration display
+                    updatePlayPauseIcon()
+                    val dur = engineState.durationMs
+                    if (dur > 0L) {
+                        totalTimeView.text = TimeFormat.duration(dur)
+                    }
+                } catch (e: Exception) {
+                    // Never crash on state updates
+                }
+            }
+        }
+    }
+
+    // ── Error UI ──────────────────────────────────────────────────────────
+
+    private fun initErrorActionBar() {
+        // Programmatically create error action bar with Retry and Skip buttons,
+        // because the existing layout does not include them.
+        errorActionBar = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = android.view.Gravity.CENTER
+            // LayoutParams will be set via FrameLayout below
+            visibility = View.GONE
+            setPadding(8, 8, 8, 8)
+            setBackgroundColor(0xCC8B0000.toInt())
+        }
+
+        errorRetryButton = Button(this).apply {
+            text = "Retry"
+            setTextColor(0xFFFFFFFF.toInt())
+            setBackgroundColor(0xFF2F80ED.toInt())
+            setOnClickListener {
+                try {
+                    PlayerEngine.get().dispatch(PlaybackCommand.Retry)
+                    hideErrorUI()
+                } catch (e: Exception) {
+                    // Dispatch failed, keep UI visible
+                }
+            }
+        }
+
+        errorSkipButton = Button(this).apply {
+            text = "Skip"
+            setTextColor(0xFFFFFFFF.toInt())
+            setBackgroundColor(0xFF555555.toInt())
+            setOnClickListener {
+                try {
+                    PlayerEngine.get().dispatch(PlaybackCommand.SkipNext)
+                    hideErrorUI()
+                } catch (e: Exception) {
+                    // Dispatch failed, keep UI visible
+                }
+            }
+        }
+
+        val buttonParams = LinearLayout.LayoutParams(
+            0,
+            LinearLayout.LayoutParams.WRAP_CONTENT,
+            1.0f
+        ).apply {
+            setMargins(8, 0, 8, 0)
+        }
+        errorRetryButton.layoutParams = buttonParams
+        errorSkipButton.layoutParams = buttonParams
+
+        errorActionBar.addView(errorRetryButton)
+        errorActionBar.addView(errorSkipButton)
+
+        // Add to the root FrameLayout, positioned below the error text (top-area)
+        val rootLayout = (playerView.parent as? android.widget.FrameLayout)
+        rootLayout?.let { frame ->
+            val params = android.widget.FrameLayout.LayoutParams(
+                android.widget.FrameLayout.LayoutParams.MATCH_PARENT,
+                android.widget.FrameLayout.LayoutParams.WRAP_CONTENT
+            ).apply {
+                gravity = android.view.Gravity.TOP or android.view.Gravity.CENTER_HORIZONTAL
+                // Position below playerErrorText — roughly 48dp margin to sit below the error banner
+                topMargin = (48 * resources.displayMetrics.density).toInt()
+            }
+            frame.addView(errorActionBar, params)
+        }
+    }
+
+    private fun showErrorUI(errorInfo: PlayerErrorInfo) {
+        try {
+            playerErrorText.text = errorInfo.userMessage
+            playerErrorText.visibility = View.VISIBLE
+            errorActionBar.visibility = View.VISIBLE
+
+            // If error is not recoverable, disable/disable retry
+            if (!errorInfo.isRecoverable) {
+                errorRetryButton.isEnabled = false
+                errorRetryButton.alpha = 0.4f
+            } else {
+                errorRetryButton.isEnabled = true
+                errorRetryButton.alpha = 1.0f
+            }
+        } catch (e: Exception) {
+            // Never crash on UI updates
+        }
+    }
+
+    private fun hideErrorUI() {
+        try {
+            playerErrorText.visibility = View.GONE
+            errorActionBar.visibility = View.GONE
+        } catch (e: Exception) {
+            // Never crash on UI updates
         }
     }
 
@@ -337,7 +426,7 @@ class PlayerActivity : AppCompatActivity() {
         cancelAutoHide()
         autoHideJob = lifecycleScope.launch {
             delay(3_000) // Auto-hide after 3 seconds
-            if (!isSeeking && isPlaying) {
+            if (!isSeeking && playerEngine.state.value.isPlaying) {
                 hideControls()
             }
         }
@@ -351,21 +440,24 @@ class PlayerActivity : AppCompatActivity() {
     // ── Playback controls ────────────────────────────────────────────────
 
     private fun togglePlayPause() {
-        if (player.playWhenReady) {
-            player.pause()
+        val engineState = playerEngine.state.value
+        if (engineState.isPlaying) {
+            playerEngine.dispatch(PlaybackCommand.Pause)
         } else {
-            player.play()
+            playerEngine.dispatch(PlaybackCommand.Resume)
         }
         updatePlayPauseIcon()
         scheduleAutoHide()
     }
 
     private fun updatePlayPauseIcon() {
-        centerPlayPause.setImageResource(if (player.isPlaying) R.drawable.ic_pause else R.drawable.ic_play)
+        centerPlayPause.setImageResource(
+            if (playerEngine.state.value.isPlaying) R.drawable.ic_pause else R.drawable.ic_play
+        )
     }
 
     private fun skipPrevious() {
-        player.seekTo(0)
+        playerEngine.dispatch(PlaybackCommand.SeekTo(0L))
     }
 
     private fun skipNext() {
@@ -379,13 +471,16 @@ class PlayerActivity : AppCompatActivity() {
             playlistAdapter?.getItemAt(currentIndex + 1)?.let { playVideoItem(it) }
         } else {
             // No next item, restart current
-            player.seekTo(0)
+            playerEngine.dispatch(PlaybackCommand.SeekTo(0L))
         }
     }
 
     private fun seekRelative(ms: Long) {
-        val newPos = (player.currentPosition + ms).coerceIn(0, player.duration.coerceAtLeast(0))
-        player.seekTo(newPos)
+        val engineState = playerEngine.state.value
+        val dur = engineState.durationMs.coerceAtLeast(0L)
+        val pos = engineState.positionMs
+        val newPos = (pos + ms).coerceIn(0, dur)
+        playerEngine.dispatch(PlaybackCommand.SeekTo(newPos))
         // Show controls briefly after seek
         if (!controlsVisible) showControls() else scheduleAutoHide()
     }
@@ -408,10 +503,11 @@ class PlayerActivity : AppCompatActivity() {
     private fun startProgressUpdates() {
         progressUpdateJob = lifecycleScope.launch {
             while (isActive) {
-                if (::player.isInitialized && player.isPlaying && !isSeeking) {
-                    val pos = player.currentPosition
-                    val dur = player.duration
-                    if (dur > 0) {
+                val engineState = playerEngine.state.value
+                if (engineState.isPlaying && !isSeeking) {
+                    val pos = engineState.positionMs
+                    val dur = engineState.durationMs
+                    if (dur > 0L) {
                         seekBar.progress = ((pos.toFloat() / dur) * 1000f).toInt().coerceIn(0, 1000)
                     }
                     currentTimeView.text = TimeFormat.duration(pos)
@@ -425,21 +521,17 @@ class PlayerActivity : AppCompatActivity() {
     // ── Progress save with throttling ────────────────────────────────────
 
     private fun saveProgress() {
-        if (!::player.isInitialized || uri.isBlank()) return
+        if (uri.isBlank()) return
         val now = System.currentTimeMillis()
         if (now - lastProgressSaveMs < progressSaveThrottleMs) return
         lastProgressSaveMs = now
-        lifecycleScope.launch {
-            withContext(Dispatchers.IO) {
-                progress.save(uri, player.currentPosition, player.duration)
-            }
-        }
+        playerEngine.saveProgress()
     }
 
     // ── Toggle modes ─────────────────────────────────────────────────────
 
     private fun toggleFloating() {
-        if (isFloatingMode) {
+        if (playerEngine.state.value.isFloating) {
             exitFloatingMode()
         } else {
             val floating = appContainer.createFloatingPlayerFeature()
@@ -459,56 +551,60 @@ class PlayerActivity : AppCompatActivity() {
     }
 
     private fun enterFloatingMode() {
-        isFloatingMode = true
         currentMode = PlayerMode.FLOATING_VIDEO
         floatingButton.setImageResource(R.drawable.ic_close)
+        // If coming from audio-only, reset its button icon and stop its service
+        if (playerEngine.state.value.isAudioOnly) {
+            audioOnlyButton.setImageResource(R.drawable.ic_music_note)
+            stopService(Intent(this, AudioOnlyService::class.java))
+        }
         saveProgress()
-        playerView.player = null
-        player.clearVideoSurface()
+        playerEngine.dispatch(PlaybackCommand.ToggleFloating)
         appContainer.createFloatingPlayerFeature().startIfAllowed()
     }
 
     private fun exitFloatingMode() {
-        isFloatingMode = false
         currentMode = PlayerMode.FULLSCREEN
         floatingButton.setImageResource(R.drawable.ic_float)
         // Stop the floating service
         stopService(Intent(this, FloatingPlayerService::class.java))
-        // Re-attach player to this view
-        playerView.player = player
-        player.play()
+        // Re-attach player to this view via engine
+        playerEngine.returnToFullscreen()
     }
 
     /** Called when FloatingPlayerService stops on its own (user tapped close button). */
     private fun onFloatingServiceStopped() {
-        if (isFloatingMode) {
-            isFloatingMode = false
+        if (playerEngine.state.value.isFloating) {
             currentMode = PlayerMode.FULLSCREEN
             floatingButton.setImageResource(R.drawable.ic_float)
-            // Re-attach player to this view
-            playerView.player = player
-            player.play()
+            // Re-attach player to this view via engine
+            playerEngine.returnToFullscreen()
         }
     }
 
     private fun toggleAudioOnly() {
-        if (isAudioOnlyMode) {
+        if (playerEngine.state.value.isAudioOnly) {
             // Exit audio-only mode - restore video surface
-            isAudioOnlyMode = false
             currentMode = PlayerMode.FULLSCREEN
             audioOnlyButton.setImageResource(R.drawable.ic_music_note)
-            playerView.player = player
-            player.play()
+            playerEngine.dispatch(PlaybackCommand.ToggleAudioOnly)
             // Stop AudioOnlyService if running
             stopService(Intent(this, AudioOnlyService::class.java))
+            // Re-attach video surface
+            playerEngine.surfaceRouter.attachToFullscreen()
         } else {
-            isAudioOnlyMode = true
+            // If coming from floating mode, reset its button icon and stop its service
+            if (playerEngine.state.value.isFloating) {
+                floatingButton.setImageResource(R.drawable.ic_float)
+                stopService(Intent(this, FloatingPlayerService::class.java))
+            }
             currentMode = PlayerMode.AUDIO_ONLY
             audioOnlyButton.setImageResource(R.drawable.ic_close)
             saveProgress()
-            playerView.player = null
-            player.clearVideoSurface()
-            appContainer.createPlayAsMusicFeature(player).detachVideoAndContinueAudio()
+            playerEngine.dispatch(PlaybackCommand.ToggleAudioOnly)
+            // Start AudioOnlyService (surface already detached by ToggleAudioOnly)
+            val intent = Intent(this, AudioOnlyService::class.java)
+            if (Build.VERSION.SDK_INT >= 26) startForegroundService(intent) else startService(intent)
         }
     }
 
@@ -604,10 +700,10 @@ class PlayerActivity : AppCompatActivity() {
         uri = item.uri
         videoTitle = item.displayName
         videoTitleView.text = videoTitle
-        player.stop()
-        player.setMediaItem(MediaItem.fromUri(Uri.parse(item.uri)))
-        player.prepare()
-        player.play()
+        playerEngine.dispatch(PlaybackCommand.Play(
+            uri = Uri.parse(item.uri),
+            title = item.displayName
+        ))
         // Highlight current in playlist
         playlistCurrentLabel.visibility = View.VISIBLE
         playlistCurrentLabel.text = "Now: ${item.displayName}"
@@ -627,19 +723,20 @@ class PlayerActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        // If we were in floating mode and came back, re-attach
-        if (isFloatingMode && ::player.isInitialized) {
-            isFloatingMode = false
+        val engineState = playerEngine.state.value
+        // If we were in floating mode and came back, re-attach and stop service
+        if (engineState.isFloating) {
             currentMode = PlayerMode.FULLSCREEN
             floatingButton.setImageResource(R.drawable.ic_float)
-            playerView.player = player
+            stopService(Intent(this, FloatingPlayerService::class.java))
+            playerEngine.returnToFullscreen()
         }
-        // If we were in audio-only mode and came back, re-attach
-        if (isAudioOnlyMode && ::player.isInitialized) {
-            isAudioOnlyMode = false
+        // If we were in audio-only mode and came back, re-attach and stop service
+        if (engineState.isAudioOnly) {
             currentMode = PlayerMode.FULLSCREEN
             audioOnlyButton.setImageResource(R.drawable.ic_music_note)
-            playerView.player = player
+            stopService(Intent(this, AudioOnlyService::class.java))
+            playerEngine.returnToFullscreen()
         }
     }
 

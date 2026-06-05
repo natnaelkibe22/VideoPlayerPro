@@ -33,9 +33,9 @@ class VideoPlayerProAppContainer(context: Context) {
     val resumeFeature: ResumePlaybackFeature by lazy { ResumePlaybackFeature(progressService) }
     val settingsFeature: SettingsFeature by lazy { SettingsFeature(settingsStore) }
 
-    /** Factory methods for features that need a per-call Context or player reference. */
-    fun createPlayAsMusicFeature(player: androidx.media3.exoplayer.ExoPlayer): PlayAsMusicFeature =
-        PlayAsMusicFeature(appContext, player)
+    /** Factory methods for features that need a per-call Context. */
+    fun createPlayAsMusicFeature(): PlayAsMusicFeature =
+        PlayAsMusicFeature(appContext)
 
     fun createFloatingPlayerFeature(): FloatingPlayerFeature =
         FloatingPlayerFeature(appContext)

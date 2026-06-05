@@ -3,7 +3,7 @@ package com.natkibe.videoplayerpro.player
 /**
  * Player mode enum for the single-ExoPlayer architecture.
  *
- * All modes share the same PlayerHolder ExoPlayer instance.
+ * All modes share the same PlayerEngine ExoPlayer instance.
  * Only one mode is active at a time (except PLAYLIST_DRAWER which can overlay).
  */
 enum class PlayerMode {
