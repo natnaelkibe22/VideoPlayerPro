@@ -29,7 +29,11 @@ import androidx.recyclerview.widget.RecyclerView
 import com.natkibe.videoplayerpro.R
 import com.natkibe.videoplayerpro.core.TimeFormat
 import com.natkibe.videoplayerpro.core.contracts.VideoPlayerProAppContainer
-import com.natkibe.videoplayerpro.ui.VideoAdapter
+import com.natkibe.videoplayerpro.data.VideoItemEntity
+import com.natkibe.videoplayerpro.playlist.PlaylistDrawerController
+import com.natkibe.videoplayerpro.playlist.PlaylistInteractionListener
+import com.natkibe.videoplayerpro.playlist.PlaylistItemAdapter
+import com.natkibe.videoplayerpro.playlist.PlaylistItemUiModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -61,7 +65,6 @@ class PlayerActivity : AppCompatActivity() {
     private var uri: String = ""
     private var videoTitle: String = ""
     private var folderName: String = ""
-    private var playlistAdapter: VideoAdapter? = null
     private var collectJob: Job? = null
 
     // UI elements
@@ -78,8 +81,6 @@ class PlayerActivity : AppCompatActivity() {
     private lateinit var errorActionBar: LinearLayout
     private lateinit var errorRetryButton: Button
     private lateinit var errorSkipButton: Button
-    private lateinit var playlistPanel: View
-    private lateinit var playlistCurrentLabel: TextView
 
     // Bottom action ImageButtons
     private lateinit var repeatButton: ImageButton
@@ -88,10 +89,14 @@ class PlayerActivity : AppCompatActivity() {
     private lateinit var audioOnlyButton: ImageButton
     private lateinit var floatingButton: ImageButton
 
+    // Playlist components (new package)
+    private lateinit var playlistDrawerController: PlaylistDrawerController
+    private lateinit var playlistAdapter: PlaylistItemAdapter
+    private var playlistItems: List<PlaylistItemUiModel> = emptyList()
+
     // State
     private var controlsVisible = false
     private var currentMode: PlayerMode = PlayerMode.FULLSCREEN
-    private var isPlaylistOpen = false
     private var isSeeking = false
     private var progressUpdateJob: Job? = null
     private var autoHideJob: Job? = null
@@ -120,6 +125,32 @@ class PlayerActivity : AppCompatActivity() {
         }
     }
 
+    // Playlist interaction listener shared by adapter and controller
+    private val playlistInteractionListener = object : PlaylistInteractionListener {
+        override fun onVideoSelected(uri: String) {
+            lifecycleScope.launch {
+                val entity = withContext(Dispatchers.IO) {
+                    appContainer.database.videoDao().videoByUri(uri)
+                }
+                if (entity != null) {
+                    playVideoItem(entity)
+                }
+            }
+        }
+
+        override fun onDrawerOpen() {
+            playlistButton.setImageResource(R.drawable.ic_close)
+        }
+
+        override fun onDrawerClose() {
+            playlistButton.setImageResource(R.drawable.ic_playlist)
+        }
+
+        override fun onToggleDrawer() {
+            playlistDrawerController.toggleDrawer()
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
@@ -141,8 +172,6 @@ class PlayerActivity : AppCompatActivity() {
         currentTimeView = findViewById(R.id.currentTime)
         totalTimeView = findViewById(R.id.totalTime)
         playerErrorText = findViewById(R.id.playerErrorText)
-        playlistPanel = findViewById(R.id.sidePlaylist)
-        playlistCurrentLabel = findViewById(R.id.playlistCurrentLabel)
 
         // Bottom action buttons
         repeatButton = findViewById(R.id.repeatButton)
@@ -240,7 +269,7 @@ class PlayerActivity : AppCompatActivity() {
             playerEngine.dispatch(PlaybackCommand.SetSpeed(newSpeed))
             showSpeedToast(newSpeed)
         }
-        playlistButton.setOnClickListener { togglePlaylist() }
+        playlistButton.setOnClickListener { playlistDrawerController.toggleDrawer() }
         audioOnlyButton.setOnClickListener { toggleAudioOnly() }
         floatingButton.setOnClickListener { toggleFloating() }
     }
@@ -461,14 +490,18 @@ class PlayerActivity : AppCompatActivity() {
     }
 
     private fun skipNext() {
-        // If we have a playlist, play next item
-        val currentIndex = playlistAdapter?.let { adapter ->
-            (0 until adapter.itemCount).indexOfFirst { i ->
-                adapter.getItemAt(i)?.uri == uri
+        // Find the current index in the playlist and advance to next item
+        val currentIndex = (0 until playlistAdapter.itemCount).indexOfFirst { i ->
+            playlistAdapter.getItemAt(i)?.uri == uri
+        }
+        if (currentIndex >= 0 && currentIndex + 1 < playlistAdapter.itemCount) {
+            val nextUri = playlistAdapter.getItemAt(currentIndex + 1)?.uri ?: return
+            lifecycleScope.launch {
+                val entity = withContext(Dispatchers.IO) {
+                    appContainer.database.videoDao().videoByUri(nextUri)
+                }
+                if (entity != null) playVideoItem(entity) else playByUri(nextUri)
             }
-        } ?: -1
-        if (currentIndex >= 0 && currentIndex + 1 < (playlistAdapter?.itemCount ?: 0)) {
-            playlistAdapter?.getItemAt(currentIndex + 1)?.let { playVideoItem(it) }
         } else {
             // No next item, restart current
             playerEngine.dispatch(PlaybackCommand.SeekTo(0L))
@@ -608,14 +641,6 @@ class PlayerActivity : AppCompatActivity() {
         }
     }
 
-    private fun togglePlaylist() {
-        isPlaylistOpen = !isPlaylistOpen
-        currentMode = if (isPlaylistOpen) PlayerMode.PLAYLIST_DRAWER else PlayerMode.FULLSCREEN
-        playlistPanel.visibility = if (isPlaylistOpen) View.VISIBLE else View.GONE
-        playlistButton.setImageResource(if (isPlaylistOpen) R.drawable.ic_close else R.drawable.ic_playlist)
-        if (isPlaylistOpen) scheduleAutoHide() else cancelAutoHide()
-    }
-
     private fun showMenu() {
         // Show a popup listing all folders for quick folder switching
         lifecycleScope.launch {
@@ -662,12 +687,24 @@ class PlayerActivity : AppCompatActivity() {
             }
             if (videos.isNotEmpty()) {
                 playVideoItem(videos.first())
-                if (isPlaylistOpen) togglePlaylist()
+                // Close drawer if open when switching folders
+                if (playlistDrawerController.isOpen()) playlistDrawerController.closeDrawer()
                 // Refresh the playlist with the new folder
                 collectJob?.cancel()
                 collectJob = lifecycleScope.launch {
                     appContainer.database.videoDao().observeVideosInFolder(targetFolder).collect { list ->
-                        playlistAdapter?.submit(list, false)
+                        val uiModels = list.map { entity ->
+                            PlaylistItemUiModel(
+                                id = entity.uri,
+                                uri = entity.uri,
+                                title = entity.displayName,
+                                durationMs = entity.durationMs,
+                                folderName = entity.folderName,
+                                isCurrentlyPlaying = entity.uri == uri
+                            )
+                        }
+                        playlistItems = uiModels
+                        playlistDrawerController.updateItems(uiModels, false)
                     }
                 }
             } else {
@@ -679,23 +716,51 @@ class PlayerActivity : AppCompatActivity() {
     // ── Playlist ─────────────────────────────────────────────────────────
 
     private fun setupPlaylist() {
+        // Create playlist adapter with listener that routes to playVideoItem
+        playlistAdapter = PlaylistItemAdapter(
+            items = emptyList(),
+            showThumbnails = false,
+            listener = playlistInteractionListener
+        )
+
         val recycler = findViewById<RecyclerView>(R.id.playlistRecycler)
         recycler.layoutManager = LinearLayoutManager(this)
-        playlistAdapter = VideoAdapter(emptyList(), showThumbnails = false) { item ->
-            playVideoItem(item)
-        }
         recycler.adapter = playlistAdapter
 
+        // Find the dim overlay from the layout
+        val dimOverlay: View = findViewById(R.id.playlistDimOverlay)
+
+        // Create the drawer controller
+        playlistDrawerController = PlaylistDrawerController(
+            drawerView = findViewById(R.id.sidePlaylist),
+            recyclerView = recycler,
+            dimOverlay = dimOverlay,
+            adapter = playlistAdapter,
+            listener = playlistInteractionListener
+        )
+
+        // Observe the current folder's videos and populate the playlist
         if (folderName.isNotBlank()) {
             collectJob = lifecycleScope.launch {
-                appContainer.database.videoDao().observeVideosInFolder(folderName).collect { videos ->
-                    playlistAdapter?.submit(videos, false)
+                appContainer.database.videoDao().observeVideosInFolder(folderName).collect { list ->
+                    val uiModels = list.map { entity ->
+                        PlaylistItemUiModel(
+                            id = entity.uri,
+                            uri = entity.uri,
+                            title = entity.displayName,
+                            durationMs = entity.durationMs,
+                            folderName = entity.folderName,
+                            isCurrentlyPlaying = entity.uri == uri
+                        )
+                    }
+                    playlistItems = uiModels
+                    playlistDrawerController.updateItems(uiModels, false)
                 }
             }
         }
     }
 
-    private fun playVideoItem(item: com.natkibe.videoplayerpro.data.VideoItemEntity) {
+    private fun playVideoItem(item: VideoItemEntity) {
         saveProgress()
         uri = item.uri
         videoTitle = item.displayName
@@ -704,9 +769,28 @@ class PlayerActivity : AppCompatActivity() {
             uri = Uri.parse(item.uri),
             title = item.displayName
         ))
-        // Highlight current in playlist
-        playlistCurrentLabel.visibility = View.VISIBLE
-        playlistCurrentLabel.text = "Now: ${item.displayName}"
+        // Update playlist highlight to reflect the currently playing item
+        playlistItems = playlistItems.map { it.copy(isCurrentlyPlaying = it.uri == item.uri) }
+        playlistDrawerController.updateItems(playlistItems, false)
+        playlistDrawerController.setSelectedUri(item.uri)
+    }
+
+    /**
+     * Fallback playback by URI when no VideoItemEntity is available.
+     * Used by skipNext when database lookup fails.
+     */
+    private fun playByUri(videoUri: String) {
+        saveProgress()
+        uri = videoUri
+        videoTitle = "" // title unknown without entity lookup
+        videoTitleView.text = "Now Playing"
+        playerEngine.dispatch(PlaybackCommand.Play(
+            uri = Uri.parse(videoUri),
+            title = ""
+        ))
+        playlistItems = playlistItems.map { it.copy(isCurrentlyPlaying = it.uri == videoUri) }
+        playlistDrawerController.updateItems(playlistItems, false)
+        playlistDrawerController.setSelectedUri(videoUri)
     }
 
     // ── Lifecycle ────────────────────────────────────────────────────────
