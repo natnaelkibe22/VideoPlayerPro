@@ -82,7 +82,7 @@ class DiagnosticsActivity : AppCompatActivity() {
 
         // Player state
         appendLine("── Player ──")
-        appendLine("Shared ExoPlayer: ${PlayerHolder.isInitialized()}")
+        appendLine("Shared ExoPlayer: ${PlayerEngine.isInitialized()}")
         appendLine("Player architecture: single instance, all modes share")
         appendLine()
 

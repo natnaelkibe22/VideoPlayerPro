@@ -2,21 +2,25 @@ package com.natkibe.videoplayerpro.features.audioonly
 
 import android.content.Context
 import android.content.Intent
-import android.os.Build
-import androidx.media3.exoplayer.ExoPlayer
 import com.natkibe.videoplayerpro.core.contracts.FeatureModule
 import com.natkibe.videoplayerpro.player.AudioOnlyService
+import com.natkibe.videoplayerpro.player.PlaybackCommand
+import com.natkibe.videoplayerpro.player.PlayerEngine
 
-class PlayAsMusicFeature(
-    private val context: Context,
-    private val player: ExoPlayer
-) : FeatureModule {
-    override val name = "Play as Music"
-    override val milestone = "v0.4-play-as-music-only-audio-feature"
+class PlayAsMusicFeature(private val context: Context) : FeatureModule {
+    override val name: String = "feature.audio_only"
+    override val milestone = "v0.9-audio-only"
 
     fun detachVideoAndContinueAudio() {
-        player.clearVideoSurface()
+        PlayerEngine.get().dispatch(PlaybackCommand.ToggleAudioOnly)
         val intent = Intent(context, AudioOnlyService::class.java)
-        if (Build.VERSION.SDK_INT >= 26) context.startForegroundService(intent) else context.startService(intent)
+        intent.action = "START_AUDIO_ONLY"
+        context.startForegroundService(intent)
+    }
+
+    fun returnToVideo() {
+        PlayerEngine.get().returnToFullscreen()
+        val intent = Intent(context, AudioOnlyService::class.java)
+        context.stopService(intent)
     }
 }

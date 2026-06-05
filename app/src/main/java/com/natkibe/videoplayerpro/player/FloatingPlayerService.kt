@@ -24,7 +24,7 @@ import com.natkibe.videoplayerpro.R
 
 /**
  * Floating video overlay service.
- * Uses the shared PlayerHolder ExoPlayer instance.
+ * Uses the shared PlayerEngine ExoPlayer instance.
  * Draggable, resizable, snaps to corners, can be closed.
  * Sends broadcast ACTION_FLOATING_CLOSED when stopped so PlayerActivity can re-attach player.
  */
@@ -57,6 +57,10 @@ class FloatingPlayerService : Service() {
     override fun onDestroy() {
         // Detach player from floating view before removing overlay
         overlay?.findViewById<PlayerView>(R.id.floatingPlayerView)?.player = null
+        // Unregister floating view from engine
+        if (PlayerEngine.isInitialized()) {
+            PlayerEngine.get().detachFloatingPlayerView()
+        }
         overlay?.let { windowManager?.removeView(it) }
         overlay = null
         stopForeground(STOP_FOREGROUND_REMOVE)
@@ -76,12 +80,11 @@ class FloatingPlayerService : Service() {
         windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
         overlay = LayoutInflater.from(this).inflate(R.layout.floating_player, null)
 
-        // Guard: only attach if PlayerHolder exists and no other view holds it
+        // Guard: only attach if PlayerEngine exists and no other view holds it
         val pv = overlay?.findViewById<PlayerView>(R.id.floatingPlayerView)
-        val shared = PlayerHolder.get(this)
-        // Detach from any previous PlayerView to avoid double-attach crash
-        if (pv?.player !== shared) {
-            pv?.player = shared
+        if (PlayerEngine.isInitialized() && pv != null) {
+            val engine = PlayerEngine.get()
+            engine.attachFloatingPlayerView(pv, pv.parent as android.view.ViewGroup)
         }
 
         params = WindowManager.LayoutParams(
