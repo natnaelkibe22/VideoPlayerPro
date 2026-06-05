@@ -1,0 +1,38 @@
+appId: com.natkibe.videoplayerpro
+---
+# Single Player Modes Test: floating + audio-only
+- launchApp
+- tapOn: "Folders"
+- assertVisible: "Movies"
+- tapOn: "Movies"
+- assertVisible: "test_video_720p.mp4"
+- tapOn: "test_video_720p.mp4"
+# Wait for PlayerActivity to load
+- assertVisible:
+    id: "com.natkibe.videoplayerpro:id/playerView"
+# ── Floating mode toggle ──
+- tapOn:
+    id: "com.natkibe.videoplayerpro:id/playerView"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro:id/floatingButton"
+# Open floating player
+- tapOn:
+    id: "com.natkibe.videoplayerpro:id/floatingButton"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro:id/floatingPlayerView"
+# Close floating player - relaunch app fresh for next mode
+- launchApp
+# ── Audio-only mode ──
+- tapOn: "Folders"
+- tapOn: "Movies"
+- tapOn: "test_video_720p.mp4"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro:id/playerView"
+- tapOn:
+    id: "com.natkibe.videoplayerpro:id/playerView"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro:id/audioOnlyButton"
+- tapOn:
+    id: "com.natkibe.videoplayerpro:id/audioOnlyButton"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro:id/playerView"

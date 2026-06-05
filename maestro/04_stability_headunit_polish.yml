@@ -1,0 +1,38 @@
+appId: com.natkibe.videoplayerpro
+---
+# Stability, Headunit & Polish Test
+# Requires mock video at /sdcard/Movies/test_video_720p.mp4
+# Validates: safe mode toggle, diagnostics, multi-tab navigation
+- launchApp
+# ── 1. Navigate to Settings
+- tapOn: "Settings"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro:id/statusText"
+# ── 2. Open Diagnostics ──
+- tapOn: "Diagnostics"
+- assertVisible: "Player Diagnostics"
+- back
+- assertVisible: "VideoPlayer Pro"
+# ── 3. Multi-video: navigate to video, play it ──
+- tapOn: "Folders"
+- assertVisible: "Movies"
+- tapOn: "Movies"
+- assertVisible: "test_video_720p.mp4"
+- tapOn: "test_video_720p.mp4"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro:id/playerView"
+# ── 4. Tap to reveal controls, verify player works ──
+- tapOn:
+    id: "com.natkibe.videoplayerpro:id/playerView"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro:id/repeatButton"
+# ── 5. Go back, verify no crash ──
+- back
+- assertVisible: "VideoPlayer Pro"
+# ── 6. Rapid back-and-forth navigation to verify stability ──
+- tapOn: "Settings"
+- tapOn: "Folders"
+- tapOn: "Recent"
+- tapOn: "Storage"
+- tapOn: "Folders"
+- assertVisible: "VideoPlayer Pro"

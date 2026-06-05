@@ -1,0 +1,30 @@
+appId: com.natkibe.videoplayerpro
+---
+# Folder Navigation Test
+# Requires mock video at /sdcard/Movies/test_video_720p.mp4
+# Validates: folder navigation, tab switching, content visibility
+- launchApp
+- assertVisible: "VideoPlayer Pro"
+# ── 1. Main Folders tab is active by default ──
+- tapOn: "Folders"
+- assertVisible: "Movies"
+# ── 2. Navigate into Movies folder ──
+- tapOn: "Movies"
+# ── 3. Verify mock video is visible ──
+- assertVisible: "test_video_720p.mp4"
+# ── 4. Go back to folder list ──
+- tapOn: "Folders"
+- assertVisible: "Movies"
+# ── 5. Switch to other tabs, verify no crash ──
+- tapOn: "Recent"
+- tapOn: "Storage"
+- tapOn: "Folders"
+- assertVisible: "Movies"
+# ── 6. Navigate into Movies and play a video ──
+- tapOn: "Movies"
+- tapOn: "test_video_720p.mp4"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro:id/playerView"
+# ── 7. Go back, verify no crash ──
+- back
+- assertVisible: "VideoPlayer Pro"

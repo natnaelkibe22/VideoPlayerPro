@@ -1,26 +1,29 @@
 appId: com.natkibe.videoplayerpro
 ---
-# Floating Player Test
+# Advanced Floating Player Test
 # Requires mock video at /sdcard/Movies/test_video_720p.mp4
-# Verifies floating player launches successfully.
-#
-# Prerequisites:
-#   adb push mock_video.mp4 /sdcard/Movies/test_video_720p.mp4
+# Validates: open floating player, verify overlay, close it
 - launchApp
-- assertVisible: "VideoPlayer Pro"
 - tapOn: "Folders"
 - assertVisible: "Movies"
 - tapOn: "Movies"
 - assertVisible: "test_video_720p.mp4"
 - tapOn: "test_video_720p.mp4"
-# Wait for player to load
+# Verify player loads
 - assertVisible:
     id: "com.natkibe.videoplayerpro:id/playerView"
-# Tap player to reveal controls, then tap floating button
+# Tap player to reveal controls, open floating player
 - tapOn:
     id: "com.natkibe.videoplayerpro:id/playerView"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro:id/floatingButton"
 - tapOn:
     id: "com.natkibe.videoplayerpro:id/floatingButton"
-# Verify floating player service started
+# Verify floating overlay exists
 - assertVisible:
     id: "com.natkibe.videoplayerpro:id/floatingPlayerView"
+# Close via back
+- pressKey: Back
+# Verify player view is back
+- assertVisible:
+    id: "com.natkibe.videoplayerpro:id/playerView"

@@ -1,30 +1,26 @@
 appId: com.natkibe.videoplayerpro
 ---
-# Playlist Panel Test
+# Audio-Only ("Play as Music") Full Test
 # Requires mock video at /sdcard/Movies/test_video_720p.mp4
-# Verifies side playlist panel can be toggled.
-#
-# Prerequisites:
-#   adb push mock_video.mp4 /sdcard/Movies/test_video_720p.mp4
+# Validates: Play as Music button visible and tappable
 - launchApp
 - assertVisible: "VideoPlayer Pro"
+# ── 1. Open a video ──
 - tapOn: "Folders"
 - assertVisible: "Movies"
 - tapOn: "Movies"
 - assertVisible: "test_video_720p.mp4"
 - tapOn: "test_video_720p.mp4"
-# Wait for player to load
 - assertVisible:
     id: "com.natkibe.videoplayerpro:id/playerView"
-# Tap player to reveal controls
+# ── 2. Tap player to reveal controls ──
 - tapOn:
     id: "com.natkibe.videoplayerpro:id/playerView"
-# Verify playlist button exists
 - assertVisible:
-    id: "com.natkibe.videoplayerpro:id/playlistButton"
-# Toggle playlist panel
+    id: "com.natkibe.videoplayerpro:id/audioOnlyButton"
+# ── 3. Tap Play as Music ──
 - tapOn:
-    id: "com.natkibe.videoplayerpro:id/playlistButton"
-# Verify player is still visible (no crash after toggle)
+    id: "com.natkibe.videoplayerpro:id/audioOnlyButton"
+# ── 4. Verify player still visible (activity stays) ──
 - assertVisible:
     id: "com.natkibe.videoplayerpro:id/playerView"

@@ -2,18 +2,22 @@ package com.natkibe.videoplayerpro
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
 import android.widget.Button
+import android.widget.ImageButton
+import android.widget.ScrollView
 import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.SwitchCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.natkibe.videoplayerpro.core.PermissionService
-import com.natkibe.videoplayerpro.core.StorageClassifier
 import com.natkibe.videoplayerpro.core.contracts.VideoPlayerProAppContainer
 import com.natkibe.videoplayerpro.data.VideoItemEntity
 import com.natkibe.videoplayerpro.model.StorageTab
+import com.natkibe.videoplayerpro.player.DiagnosticsActivity
 import com.natkibe.videoplayerpro.player.PlayerActivity
 import com.natkibe.videoplayerpro.ui.FolderAdapter
 import com.natkibe.videoplayerpro.ui.VideoAdapter
@@ -24,13 +28,14 @@ import kotlinx.coroutines.launch
 class MainActivity : AppCompatActivity() {
     private val appContainer by lazy { VideoPlayerProAppContainer(this) }
 
-    // Use feature contracts instead of directly accessing repositories/settings.
-    // This keeps activities decoupled from implementation details.
     private val libraryFeature get() = appContainer.libraryFeature
     private val settingsFeature get() = appContainer.settingsFeature
+    private val settingsStore get() = appContainer.settingsStore
 
     private lateinit var recycler: RecyclerView
     private lateinit var status: TextView
+    private lateinit var settingsPanel: ScrollView
+    private lateinit var settingsTextInfo: TextView
     private var collectJob: Job? = null
 
     private val permissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
@@ -47,13 +52,18 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         recycler = findViewById(R.id.recycler)
         status = findViewById(R.id.statusText)
+        settingsPanel = findViewById(R.id.settingsPanel)
+        settingsTextInfo = findViewById(R.id.settingsTextInfo)
         recycler.layoutManager = LinearLayoutManager(this)
 
-        findViewById<Button>(R.id.videoTab).setOnClickListener { showFolders() }
-        findViewById<Button>(R.id.recentTab).setOnClickListener { showRecent() }
-        findViewById<Button>(R.id.storageTab).setOnClickListener { showStorage() }
-        findViewById<Button>(R.id.settingsTab).setOnClickListener { showSettings() }
-        findViewById<Button>(R.id.refreshButton).setOnClickListener { libraryFeature.refreshInBackground(); status.text = "Refreshing videos in background..." }
+        findViewById<ImageButton>(R.id.videoTab).setOnClickListener { showFolders() }
+        findViewById<ImageButton>(R.id.recentTab).setOnClickListener { showRecent() }
+        findViewById<ImageButton>(R.id.storageTab).setOnClickListener { showStorage() }
+        findViewById<ImageButton>(R.id.settingsTab).setOnClickListener { showSettings() }
+        findViewById<ImageButton>(R.id.refreshButton).setOnClickListener { libraryFeature.refreshInBackground(); status.text = "Refreshing videos in background..." }
+
+        // Settings: 13 interactive toggles
+        setupSettingsToggles()
 
         if (PermissionService.hasVideoPermission(this)) {
             showFolders()
@@ -65,6 +75,9 @@ class MainActivity : AppCompatActivity() {
 
     private fun showFolders() {
         collectJob?.cancel()
+        settingsPanel.visibility = View.GONE
+        settingsTextInfo.visibility = View.GONE
+        recycler.visibility = View.VISIBLE
         status.text = "Video folders. Cached Room data appears first; MediaStore refresh runs in background."
         val adapter = FolderAdapter(emptyList()) { folder -> showVideos(folder.folderName) }
         recycler.adapter = adapter
@@ -80,13 +93,17 @@ class MainActivity : AppCompatActivity() {
 
     private fun showVideos(folderName: String) {
         collectJob?.cancel()
+        settingsPanel.visibility = View.GONE
+        settingsTextInfo.visibility = View.GONE
+        recycler.visibility = View.VISIBLE
         status.text = "Folder: $folderName"
         collectJob = lifecycleScope.launch {
             val prefs = settingsFeature.observe().first()
-            val adapter = VideoAdapter(emptyList(), prefs.showThumbnails) { openVideo(it) }
+            val showThumbs = prefs.showThumbnails && !prefs.headunitSafeMode
+            val adapter = VideoAdapter(emptyList(), showThumbs) { openVideo(it) }
             recycler.adapter = adapter
             libraryFeature.videosInFolder(folderName).collect { videos ->
-                adapter.submit(videos, prefs.showThumbnails)
+                adapter.submit(videos, showThumbs)
                 if (videos.isEmpty()) {
                     status.text = "Folder \"$folderName\" is empty. Tap Refresh to scan for new videos."
                 }
@@ -96,13 +113,17 @@ class MainActivity : AppCompatActivity() {
 
     private fun showRecent() {
         collectJob?.cancel()
+        settingsPanel.visibility = View.GONE
+        settingsTextInfo.visibility = View.GONE
+        recycler.visibility = View.VISIBLE
         status.text = "Recently watched videos"
         collectJob = lifecycleScope.launch {
             val prefs = settingsFeature.observe().first()
-            val adapter = VideoAdapter(emptyList(), prefs.showThumbnails) { openVideo(it) }
+            val showThumbs = prefs.showThumbnails && !prefs.headunitSafeMode
+            val adapter = VideoAdapter(emptyList(), showThumbs) { openVideo(it) }
             recycler.adapter = adapter
             libraryFeature.recentVideos().collect { videos ->
-                adapter.submit(videos, prefs.showThumbnails)
+                adapter.submit(videos, showThumbs)
                 if (videos.isEmpty()) {
                     status.text = "No recently watched videos. Play a video to see it here."
                 }
@@ -136,22 +157,111 @@ class MainActivity : AppCompatActivity() {
 
     private fun showSettings() {
         collectJob?.cancel()
-        recycler.adapter = null
+        recycler.visibility = View.GONE
+        settingsTextInfo.visibility = View.GONE
+        settingsPanel.visibility = View.VISIBLE
+        status.text = "Settings — toggle each option below"
+
         lifecycleScope.launch {
-            val s = settingsFeature.observe().first()
-            status.text = buildString {
-                appendLine("Settings are DataStore-backed and toggle-based to stay lightweight.")
-                appendLine("────────────────────────────")
-                appendLine("Thumbnails:     ${s.showThumbnails} (default false)")
-                appendLine("Floating Player: ${s.enableFloatingPlayer} (default false)")
-                appendLine("Playlist:       ${s.showPlaylistWhileWatching} (default true)")
-                appendLine("Resume:         ${s.resumePlayback} (default true)")
-                appendLine("Autoplay Next:  ${s.autoPlayNext} (default false)")
-                appendLine("Dark Theme:     ${s.darkTheme} (default true)")
-                appendLine("Accent Color:   ${s.accentColorName} (default Blue)")
-                appendLine("Repeat Mode:    ${s.defaultRepeatMode} (0=off)")
-                appendLine("Default Speed:  ${s.defaultSpeed}x")
+            val s = settingsStore.settings.first()
+            findViewById<SwitchCompat>(R.id.switchThumbnails).isChecked = s.showThumbnails
+            findViewById<SwitchCompat>(R.id.switchFloating).isChecked = s.enableFloatingPlayer
+            findViewById<SwitchCompat>(R.id.switchFloatingControls).isChecked = s.enableFloatingControlsOnly
+            findViewById<SwitchCompat>(R.id.switchPlaylist).isChecked = s.showPlaylistWhileWatching
+            findViewById<SwitchCompat>(R.id.switchDarkTheme).isChecked = s.darkTheme
+            findViewById<SwitchCompat>(R.id.switchResume).isChecked = s.resumePlayback
+            findViewById<SwitchCompat>(R.id.switchAutoplayNext).isChecked = s.autoPlayNext
+            findViewById<SwitchCompat>(R.id.switchSafeMode).isChecked = s.headunitSafeMode
+            findViewById<SwitchCompat>(R.id.switchAutoHideControls).isChecked = s.autoHideControls
+            findViewById<SwitchCompat>(R.id.switchFancyBlur).isChecked = s.useFancyBlur
+            findViewById<Button>(R.id.btnAccentColor).text = s.accentColorName
+            findViewById<Button>(R.id.btnDefaultSpeed).text = "${s.defaultSpeed}x"
+            findViewById<Button>(R.id.btnRepeatMode).text = repeatModeLabel(s.defaultRepeatMode)
+        }
+    }
+
+    private fun repeatModeLabel(mode: Int): String = when (mode) {
+        1 -> "One"
+        2 -> "All"
+        else -> "Off"
+    }
+
+    private fun setupSettingsToggles() {
+        // Boolean switches (10 total)
+        findViewById<SwitchCompat>(R.id.switchThumbnails).setOnCheckedChangeListener { _, checked ->
+            lifecycleScope.launch { settingsStore.setShowThumbnails(checked) }
+        }
+        findViewById<SwitchCompat>(R.id.switchFloating).setOnCheckedChangeListener { _, checked ->
+            lifecycleScope.launch { settingsStore.setFloating(checked) }
+        }
+        findViewById<SwitchCompat>(R.id.switchFloatingControls).setOnCheckedChangeListener { _, checked ->
+            lifecycleScope.launch { settingsStore.setFloatingControlsOnly(checked) }
+        }
+        findViewById<SwitchCompat>(R.id.switchPlaylist).setOnCheckedChangeListener { _, checked ->
+            lifecycleScope.launch { settingsStore.setPlaylist(checked) }
+        }
+        findViewById<SwitchCompat>(R.id.switchDarkTheme).setOnCheckedChangeListener { _, checked ->
+            lifecycleScope.launch { settingsStore.setDarkTheme(checked) }
+        }
+        findViewById<SwitchCompat>(R.id.switchResume).setOnCheckedChangeListener { _, checked ->
+            lifecycleScope.launch { settingsStore.setResume(checked) }
+        }
+        findViewById<SwitchCompat>(R.id.switchAutoplayNext).setOnCheckedChangeListener { _, checked ->
+            lifecycleScope.launch { settingsStore.setAutoplayNext(checked) }
+        }
+        findViewById<SwitchCompat>(R.id.switchSafeMode).setOnCheckedChangeListener { _, checked ->
+            lifecycleScope.launch {
+                settingsStore.setHeadunitSafeMode(checked)
+                if (checked) {
+                    settingsStore.setShowThumbnails(false)
+                    settingsStore.setFloating(false)
+                }
+                showSettings()
             }
+        }
+        findViewById<SwitchCompat>(R.id.switchAutoHideControls).setOnCheckedChangeListener { _, checked ->
+            lifecycleScope.launch { settingsStore.setAutoHideControls(checked) }
+        }
+        findViewById<SwitchCompat>(R.id.switchFancyBlur).setOnCheckedChangeListener { _, checked ->
+            lifecycleScope.launch { settingsStore.setUseFancyBlur(checked) }
+        }
+
+        // Accent color cycle
+        val accents = listOf("Blue", "Teal", "Orange", "Purple", "Red", "Green")
+        findViewById<Button>(R.id.btnAccentColor).setOnClickListener {
+            lifecycleScope.launch {
+                val current = settingsStore.settings.first().accentColorName
+                val next = accents[(accents.indexOf(current) + 1) % accents.size]
+                settingsStore.setAccent(next)
+                findViewById<Button>(R.id.btnAccentColor).text = next
+            }
+        }
+
+        // Default speed cycle
+        val speeds = listOf(0.75f, 1.0f, 1.25f, 1.5f, 2.0f)
+        findViewById<Button>(R.id.btnDefaultSpeed).setOnClickListener {
+            lifecycleScope.launch {
+                val current = settingsStore.settings.first().defaultSpeed
+                val next = speeds[(speeds.indexOf(current) + 1) % speeds.size]
+                settingsStore.setDefaultSpeed(next)
+                findViewById<Button>(R.id.btnDefaultSpeed).text = "${next}x"
+            }
+        }
+
+        // Default repeat mode cycle
+        val repeatModes = listOf(0, 1, 2) // off, one, all
+        findViewById<Button>(R.id.btnRepeatMode).setOnClickListener {
+            lifecycleScope.launch {
+                val current = settingsStore.settings.first().defaultRepeatMode
+                val next = repeatModes[(repeatModes.indexOf(current) + 1) % repeatModes.size]
+                settingsStore.setRepeatMode(next)
+                findViewById<Button>(R.id.btnRepeatMode).text = repeatModeLabel(next)
+            }
+        }
+
+        // Diagnostics
+        findViewById<Button>(R.id.openDiagnostics).setOnClickListener {
+            startActivity(Intent(this, DiagnosticsActivity::class.java))
         }
     }
 

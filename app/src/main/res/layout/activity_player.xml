@@ -2,26 +2,257 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#000000">
+    android:background="#000000"
+    android:keepScreenOn="true">
 
+    <!-- Fullscreen Video Surface -->
     <androidx.media3.ui.PlayerView
         android:id="@+id/playerView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:show_buffering="when_playing"
-        app:use_controller="true" />
+        app:use_controller="false"
+        app:resize_mode="fit" />
 
+    <!-- Error Banner -->
     <TextView
         android:id="@+id/playerErrorText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="top"
         android:background="#CC8B0000"
+        android:gravity="center"
         android:padding="14dp"
         android:textColor="#FFFFFF"
-        android:textSize="18sp"
+        android:textSize="16sp"
         android:visibility="gone" />
 
+    <!-- Semi-transparent dark overlay for controls -->
+    <View
+        android:id="@+id/controlsOverlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#88000000"
+        android:visibility="gone" />
+
+    <!-- ===== TOP BAR: Title + Menu ===== -->
+    <RelativeLayout
+        android:id="@+id/topBar"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:layout_gravity="top"
+        android:background="#AA000000"
+        android:gravity="center_vertical"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/videoTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="16dp"
+            android:layout_toStartOf="@+id/menuButton"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:textColor="#FFFFFF"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+        <ImageButton
+            android:id="@+id/menuButton"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:layout_marginEnd="8dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_menu"
+            android:contentDescription="Menu"
+            android:scaleType="centerInside" />
+    </RelativeLayout>
+
+    <!-- ===== CENTER CONTROLS: Play/Pause + Prev/Next + Seek buttons ===== -->
+    <LinearLayout
+        android:id="@+id/centerControls"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <!-- Previous / Play-Pause / Next -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <ImageButton
+                android:id="@+id/prevButton"
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/ic_skip_previous"
+                android:contentDescription="Previous"
+                android:scaleType="centerInside" />
+
+            <ImageButton
+                android:id="@+id/centerPlayPause"
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:layout_marginHorizontal="24dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/ic_play"
+                android:contentDescription="Play/Pause"
+                android:scaleType="centerInside" />
+
+            <ImageButton
+                android:id="@+id/nextButton"
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/ic_skip_next"
+                android:contentDescription="Next"
+                android:scaleType="centerInside" />
+        </LinearLayout>
+
+        <!-- 5s back / 15s forward -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <ImageButton
+                android:id="@+id/seekBack5"
+                android:layout_width="72dp"
+                android:layout_height="48dp"
+                android:layout_marginEnd="16dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/ic_replay_5"
+                android:contentDescription="Rewind 5 seconds"
+                android:scaleType="centerInside" />
+
+            <ImageButton
+                android:id="@+id/seekForward15"
+                android:layout_width="72dp"
+                android:layout_height="48dp"
+                android:layout_marginStart="16dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/ic_forward_15"
+                android:contentDescription="Forward 15 seconds"
+                android:scaleType="centerInside" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- ===== BOTTOM BAR: Seek bar + time + action buttons ===== -->
+    <LinearLayout
+        android:id="@+id/bottomBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:background="#AA000000"
+        android:orientation="vertical"
+        android:paddingBottom="8dp"
+        android:visibility="gone">
+
+        <!-- Seek bar + time -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingHorizontal="12dp">
+
+            <TextView
+                android:id="@+id/currentTime"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0:00"
+                android:textColor="#FFFFFF"
+                android:textSize="14sp" />
+
+            <SeekBar
+                android:id="@+id/seekBar"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_weight="1"
+                android:layout_marginHorizontal="8dp"
+                android:max="1000" />
+
+            <TextView
+                android:id="@+id/totalTime"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0:00"
+                android:textColor="#FFFFFF"
+                android:textSize="14sp" />
+        </LinearLayout>
+
+        <!-- Action buttons row -->
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:scrollbars="none">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingHorizontal="8dp">
+
+                <ImageButton
+                    android:id="@+id/repeatButton"
+                    android:layout_width="48dp"
+                    android:layout_height="44dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:src="@drawable/ic_repeat"
+                    android:contentDescription="Repeat mode"
+                    android:scaleType="centerInside" />
+
+                <ImageButton
+                    android:id="@+id/speedButton"
+                    android:layout_width="48dp"
+                    android:layout_height="44dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:src="@drawable/ic_speed"
+                    android:contentDescription="Playback Speed"
+                    android:scaleType="centerInside" />
+
+                <ImageButton
+                    android:id="@+id/playlistButton"
+                    android:layout_width="48dp"
+                    android:layout_height="44dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:src="@drawable/ic_playlist"
+                    android:contentDescription="Playlist"
+                    android:scaleType="centerInside" />
+
+                <ImageButton
+                    android:id="@+id/audioOnlyButton"
+                    android:layout_width="48dp"
+                    android:layout_height="44dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:src="@drawable/ic_music_note"
+                    android:contentDescription="Play as Music"
+                    android:scaleType="centerInside" />
+
+                <ImageButton
+                    android:id="@+id/floatingButton"
+                    android:layout_width="48dp"
+                    android:layout_height="44dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:src="@drawable/ic_float"
+                    android:contentDescription="Floating Player"
+                    android:scaleType="centerInside" />
+            </LinearLayout>
+        </HorizontalScrollView>
+    </LinearLayout>
+
+    <!-- ===== RIGHT SIDE PLAYLIST DRAWER ===== -->
     <LinearLayout
         android:id="@+id/sidePlaylist"
         android:layout_width="300dp"
@@ -35,10 +266,24 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:padding="8dp"
             android:text="Folder Playlist"
             android:textColor="#FFFFFF"
-            android:textSize="20sp"
+            android:textSize="18sp"
             android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/playlistCurrentLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingLeft="8dp"
+            android:paddingRight="8dp"
+            android:paddingTop="4dp"
+            android:paddingBottom="4dp"
+            android:text="Current"
+            android:textColor="#2F80ED"
+            android:textSize="14sp"
+            android:visibility="gone" />
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/playlistRecycler"
@@ -47,25 +292,4 @@
             android:layout_weight="1" />
     </LinearLayout>
 
-    <HorizontalScrollView
-        android:layout_width="match_parent"
-        android:layout_height="78dp"
-        android:layout_gravity="bottom"
-        android:background="#AA000000">
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:gravity="center_vertical"
-            android:orientation="horizontal"
-            android:padding="8dp">
-
-            <Button android:id="@+id/repeatButton" android:layout_width="110dp" android:layout_height="54dp" android:text="Repeat" />
-            <Button android:id="@+id/repeatAllButton" android:layout_width="140dp" android:layout_height="54dp" android:text="Repeat Folder" />
-            <Button android:id="@+id/speedButton" android:layout_width="90dp" android:layout_height="54dp" android:text="1.0x" />
-            <Button android:id="@+id/playlistButton" android:layout_width="120dp" android:layout_height="54dp" android:text="Playlist" />
-            <Button android:id="@+id/audioOnlyButton" android:layout_width="140dp" android:layout_height="54dp" android:text="Play as Music" />
-            <Button android:id="@+id/floatingButton" android:layout_width="90dp" android:layout_height="54dp" android:text="Float" />
-        </LinearLayout>
-    </HorizontalScrollView>
 </FrameLayout>

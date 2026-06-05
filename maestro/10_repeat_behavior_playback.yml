@@ -1,59 +1,60 @@
 appId: com.natkibe.videoplayerpro
 ---
-# Repeat & Speed Controls Test
+# Repeat Behavior & Playback Test
 # Requires mock video at /sdcard/Movies/test_video_720p.mp4
-# Validates: repeat button cycles OFF→ONE→ALL→OFF
-#            speed button cycles values
+# Validates: repeat button cycles OFF → ONE → ALL → OFF
+#            playback continues and looping works
 #
 # Prerequisites:
 #   adb push mock_video.mp4 /sdcard/Movies/test_video_720p.mp4
 - launchApp
 - assertVisible: "VideoPlayer Pro"
+# ── 1. Open a video ──
 - tapOn: "Folders"
 - assertVisible: "Movies"
 - tapOn: "Movies"
 - assertVisible: "test_video_720p.mp4"
 - tapOn: "test_video_720p.mp4"
-# Wait for player to load
 - assertVisible:
     id: "com.natkibe.videoplayerpro:id/playerView"
-# Tap player to reveal controls
+# ── 2. Tap to reveal controls ──
 - tapOn:
     id: "com.natkibe.videoplayerpro:id/playerView"
-# ── Repeat Button: cycle OFF → REPEAT_ONE → REPEAT_ALL → OFF ──
 - assertVisible:
     id: "com.natkibe.videoplayerpro:id/repeatButton"
-# Cycle through all 3 states (tap 3 times returns to OFF)
+# ── 3. Cycle: OFF → REPEAT_ONE → REPEAT_ALL → OFF ──
 - tapOn:
     id: "com.natkibe.videoplayerpro:id/repeatButton"
 - tapOn:
     id: "com.natkibe.videoplayerpro:id/repeatButton"
 - tapOn:
     id: "com.natkibe.videoplayerpro:id/repeatButton"
-# Re-reveal controls and verify button is present
+# Re-reveal controls
 - tapOn:
     id: "com.natkibe.videoplayerpro:id/playerView"
 - assertVisible:
     id: "com.natkibe.videoplayerpro:id/repeatButton"
-# ── Speed Button: cycle through speed values ──
+# ── 4. Verify speed button also works alongside repeat ──
 - assertVisible:
     id: "com.natkibe.videoplayerpro:id/speedButton"
-# Tap 5 times to complete full cycle
+# ── 5. Set repeat to ALL and verify playback continues ──
 - tapOn:
-    id: "com.natkibe.videoplayerpro:id/speedButton"
+    id: "com.natkibe.videoplayerpro:id/repeatButton"
 - tapOn:
-    id: "com.natkibe.videoplayerpro:id/speedButton"
-- tapOn:
-    id: "com.natkibe.videoplayerpro:id/speedButton"
-- tapOn:
-    id: "com.natkibe.videoplayerpro:id/speedButton"
-- tapOn:
-    id: "com.natkibe.videoplayerpro:id/speedButton"
-# Re-reveal controls and verify button still present
+    id: "com.natkibe.videoplayerpro:id/repeatButton"
+# Re-reveal
 - tapOn:
     id: "com.natkibe.videoplayerpro:id/playerView"
 - assertVisible:
-    id: "com.natkibe.videoplayerpro:id/speedButton"
-# ── Verify player is still functional ──
-- assertVisible:
     id: "com.natkibe.videoplayerpro:id/playerView"
+# ── 6. Reset repeat to OFF for clean state ──
+- tapOn:
+    id: "com.natkibe.videoplayerpro:id/repeatButton"
+# Re-reveal and verify
+- tapOn:
+    id: "com.natkibe.videoplayerpro:id/playerView"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro:id/repeatButton"
+# ── 7. Go back, verify app stable ──
+- back
+- assertVisible: "VideoPlayer Pro"

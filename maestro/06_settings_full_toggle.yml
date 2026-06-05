@@ -1,0 +1,28 @@
+appId: com.natkibe.videoplayerpro
+---
+# Settings Full Toggle Test
+# Validates toggle buttons are visible and interactive on the Settings tab
+- launchApp
+- assertVisible: "VideoPlayer Pro"
+# ── 1. Navigate to Settings tab ──
+- tapOn: "Settings"
+# ── 2. Verify settings status text is visible ──
+- assertVisible:
+    id: "com.natkibe.videoplayerpro:id/statusText"
+# ── 3. Thumbnails toggle ──
+- tapOn: "Thumbnails: OFF"
+- assertVisible: "Thumbnails: ON"
+# Toggle back
+- tapOn: "Thumbnails: ON"
+- assertVisible: "Thumbnails: OFF"
+# ── 4. Diagnostics button: verify visible and tap to open ──
+- tapOn: "Diagnostics"
+- assertVisible: "Player Diagnostics"
+# ── 5. Return to main screen ──
+- back
+- assertVisible: "VideoPlayer Pro"
+# ── 6. Navigate back to Settings, verify state persisted ──
+- tapOn: "Settings"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro:id/statusText"
+- assertVisible: "Thumbnails: OFF"

@@ -1,0 +1,31 @@
+appId: com.natkibe.videoplayerpro
+---
+# Playlist, Thumbnails & Cache Test
+# Requires mock video at /sdcard/Movies/test_video_720p.mp4
+# Validates: playlist panel toggle, thumbnail toggle, settings persistence
+- launchApp
+- tapOn: "Folders"
+# Navigate to a folder with content
+- tapOn: "Movies"
+- tapOn: "test_video_720p.mp4"
+# Wait for player
+- assertVisible:
+    id: "com.natkibe.videoplayerpro:id/playerView"
+# ── 1. Tap player to reveal controls, then toggle playlist ──
+- tapOn:
+    id: "com.natkibe.videoplayerpro:id/playerView"
+- tapOn:
+    id: "com.natkibe.videoplayerpro:id/playlistButton"
+# Verify no crash - player still visible
+- assertVisible:
+    id: "com.natkibe.videoplayerpro:id/playerView"
+# ── 2. Thumbnails toggle in Settings ──
+- back
+- tapOn: "Settings"
+- tapOn: "Thumbnails: OFF"
+- assertVisible: "Thumbnails: ON"
+- tapOn: "Thumbnails: ON"
+- assertVisible: "Thumbnails: OFF"
+# ── 3. Go back to folder view, verify stability ──
+- tapOn: "Folders"
+- assertVisible: "Movies"

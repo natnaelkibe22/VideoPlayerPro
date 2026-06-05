@@ -16,6 +16,38 @@ android {
         versionName = "0.8.0-video-only-micro-modular"
     }
 
+    signingConfigs {
+        create("release") {
+            storeFile = file(System.getProperty("user.home") + "/.android/debug.keystore")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+        }
+    }
+
+    flavorDimensions += "target"
+    productFlavors {
+        create("autosky") {
+            dimension = "target"
+            applicationId = "com.natkibe.videoplayerpro.autosky"
+            versionNameSuffix = "-autosky-headunit"
+            manifestPlaceholders["appLabel"] = "PlayerPro AutoSky"
+        }
+        create("s26ultra") {
+            dimension = "target"
+            applicationId = "com.natkibe.videoplayerpro.s26ultra"
+            versionNameSuffix = "-s26ultra"
+            manifestPlaceholders["appLabel"] = "PlayerPro S26U"
+        }
+    }
+
+    buildTypes {
+        release {
+            isMinifyEnabled = false
+            signingConfig = signingConfigs.getByName("release")
+        }
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17

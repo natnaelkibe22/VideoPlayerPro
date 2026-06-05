@@ -20,6 +20,9 @@ class VideoAdapter(
         notifyDataSetChanged()
     }
 
+    /** Returns the item at the given position, used by PlayerActivity for playlist navigation. */
+    fun getItemAt(position: Int): VideoItemEntity? = items.getOrNull(position)
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VideoViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.row_video, parent, false)
         return VideoViewHolder(view as ViewGroup)

@@ -20,11 +20,26 @@
             android:textSize="26sp"
             android:textStyle="bold" />
 
-        <Button android:id="@+id/videoTab" android:layout_width="110dp" android:layout_height="50dp" android:text="Folders" />
-        <Button android:id="@+id/recentTab" android:layout_width="110dp" android:layout_height="50dp" android:text="Recent" />
-        <Button android:id="@+id/storageTab" android:layout_width="110dp" android:layout_height="50dp" android:text="Storage" />
-        <Button android:id="@+id/settingsTab" android:layout_width="120dp" android:layout_height="50dp" android:text="Settings" />
-        <Button android:id="@+id/refreshButton" android:layout_width="120dp" android:layout_height="50dp" android:text="Refresh" />
+        <ImageButton android:id="@+id/videoTab" android:layout_width="50dp" android:layout_height="50dp"
+            android:src="@drawable/ic_playlist" android:contentDescription="Folders"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:scaleType="centerInside" />
+        <ImageButton android:id="@+id/recentTab" android:layout_width="50dp" android:layout_height="50dp"
+            android:src="@drawable/ic_replay_5" android:contentDescription="Recent"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:scaleType="centerInside" />
+        <ImageButton android:id="@+id/storageTab" android:layout_width="50dp" android:layout_height="50dp"
+            android:src="@drawable/ic_fullscreen" android:contentDescription="Storage"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:scaleType="centerInside" />
+        <ImageButton android:id="@+id/settingsTab" android:layout_width="50dp" android:layout_height="50dp"
+            android:src="@drawable/ic_speed" android:contentDescription="Settings"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:scaleType="centerInside" />
+        <ImageButton android:id="@+id/refreshButton" android:layout_width="50dp" android:layout_height="50dp"
+            android:src="@drawable/ic_replay_5" android:contentDescription="Refresh"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:scaleType="centerInside" />
     </LinearLayout>
 
     <TextView
@@ -36,9 +51,226 @@
         android:textColor="#B8BDC7"
         android:textSize="16sp" />
 
+    <!-- Settings panel (hidden by default, shown when Settings tab is active) -->
+    <ScrollView
+        android:id="@+id/settingsPanel"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:visibility="gone"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:id="@+id/settingsContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="4dp">
+
+            <!-- All 13 settings toggles -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingVertical="6dp">
+                <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
+                    android:text="Show Thumbnails" android:textColor="#FFFFFF" android:textSize="14sp" />
+                <androidx.appcompat.widget.SwitchCompat
+                    android:id="@+id/switchThumbnails"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingVertical="6dp">
+                <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
+                    android:text="Floating Player" android:textColor="#FFFFFF" android:textSize="14sp" />
+                <androidx.appcompat.widget.SwitchCompat
+                    android:id="@+id/switchFloating"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingVertical="6dp">
+                <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
+                    android:text="Floating Controls Only" android:textColor="#FFFFFF" android:textSize="14sp" />
+                <androidx.appcompat.widget.SwitchCompat
+                    android:id="@+id/switchFloatingControls"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingVertical="6dp">
+                <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
+                    android:text="Show Playlist While Watching" android:textColor="#FFFFFF" android:textSize="14sp" />
+                <androidx.appcompat.widget.SwitchCompat
+                    android:id="@+id/switchPlaylist"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingVertical="6dp">
+                <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
+                    android:text="Dark Theme" android:textColor="#FFFFFF" android:textSize="14sp" />
+                <androidx.appcompat.widget.SwitchCompat
+                    android:id="@+id/switchDarkTheme"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingVertical="6dp">
+                <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
+                    android:text="Resume Playback" android:textColor="#FFFFFF" android:textSize="14sp" />
+                <androidx.appcompat.widget.SwitchCompat
+                    android:id="@+id/switchResume"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingVertical="6dp">
+                <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
+                    android:text="Auto-Play Next" android:textColor="#FFFFFF" android:textSize="14sp" />
+                <androidx.appcompat.widget.SwitchCompat
+                    android:id="@+id/switchAutoplayNext"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingVertical="6dp">
+                <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
+                    android:text="Headunit Safe Mode" android:textColor="#FFFFFF" android:textSize="14sp" />
+                <androidx.appcompat.widget.SwitchCompat
+                    android:id="@+id/switchSafeMode"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingVertical="6dp">
+                <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
+                    android:text="Auto-Hide Controls" android:textColor="#FFFFFF" android:textSize="14sp" />
+                <androidx.appcompat.widget.SwitchCompat
+                    android:id="@+id/switchAutoHideControls"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingVertical="6dp">
+                <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
+                    android:text="Use Fancy Blur" android:textColor="#FFFFFF" android:textSize="14sp" />
+                <androidx.appcompat.widget.SwitchCompat
+                    android:id="@+id/switchFancyBlur"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content" />
+            </LinearLayout>
+
+            <!-- Accent color (button cycle) -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingVertical="6dp">
+                <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
+                    android:text="Accent Color" android:textColor="#FFFFFF" android:textSize="14sp" />
+                <Button
+                    android:id="@+id/btnAccentColor"
+                    android:layout_width="wrap_content" android:layout_height="38dp"
+                    android:text="Blue" android:textSize="12sp"
+                    android:minWidth="80dp" android:paddingHorizontal="12dp" />
+            </LinearLayout>
+
+            <!-- Default speed (button cycle) -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingVertical="6dp">
+                <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
+                    android:text="Default Speed" android:textColor="#FFFFFF" android:textSize="14sp" />
+                <Button
+                    android:id="@+id/btnDefaultSpeed"
+                    android:layout_width="wrap_content" android:layout_height="38dp"
+                    android:text="1.0x" android:textSize="12sp"
+                    android:minWidth="80dp" android:paddingHorizontal="12dp" />
+            </LinearLayout>
+
+            <!-- Default repeat mode (button cycle) -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingVertical="6dp">
+                <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
+                    android:text="Default Repeat Mode" android:textColor="#FFFFFF" android:textSize="14sp" />
+                <Button
+                    android:id="@+id/btnRepeatMode"
+                    android:layout_width="wrap_content" android:layout_height="38dp"
+                    android:text="Off" android:textSize="12sp"
+                    android:minWidth="80dp" android:paddingHorizontal="12dp" />
+            </LinearLayout>
+
+            <!-- Open Diagnostics button -->
+            <Button
+                android:id="@+id/openDiagnostics"
+                android:layout_width="match_parent"
+                android:layout_height="44dp"
+                android:layout_marginTop="12dp"
+                android:text="Diagnostics"
+                android:textSize="14sp" />
+        </LinearLayout>
+    </ScrollView>
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1" />
+
+    <TextView
+        android:id="@+id/settingsTextInfo"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:padding="12dp"
+        android:text="Settings for VideoPlayer Pro"
+        android:textColor="#B8BDC7"
+        android:textSize="14sp"
+        android:visibility="gone" />
 </LinearLayout>

@@ -38,4 +38,7 @@ object PlayerHolder {
         player?.release()
         player = null
     }
+
+    /** Returns true if the shared player instance has been created. */
+    fun isInitialized(): Boolean = player != null
 }

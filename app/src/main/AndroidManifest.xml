@@ -10,7 +10,7 @@
     <application
         android:allowBackup="true"
         android:theme="@style/Theme.VideoPlayerPro"
-        android:label="VideoPlayer Pro"
+        android:label="${appLabel}"
         android:resizeableActivity="true"
         android:supportsRtl="true">
 
@@ -30,6 +30,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name=".player.DiagnosticsActivity"
+            android:screenOrientation="landscape"
+            android:exported="false" />
 
         <service
             android:name=".player.AudioOnlyService"

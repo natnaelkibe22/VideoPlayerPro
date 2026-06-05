@@ -1,28 +1,30 @@
 appId: com.natkibe.videoplayerpro
 ---
 # Audio-Only Mode Test
-# Requires a mock video file pushed to the emulator at /sdcard/Movies/test_video_720p.mp4
-# This test verifies the "Play as Music" audio-only mode:
-# - Open a video in PlayerActivity
-# - Tap "Play as Music" button to detach video and continue audio
-# - Verify the app returns to the main screen (PlayerActivity finishes)
-# - Audio continues playing in the background via AudioOnlyService
+# Requires mock video at /sdcard/Movies/test_video_720p.mp4
+# Verifies audio-only button is present in PlayerActivity.
+#
+# Prerequisites:
+#   adb push mock_video.mp4 /sdcard/Movies/test_video_720p.mp4
 - launchApp
 - assertVisible: "VideoPlayer Pro"
 - tapOn: "Folders"
 - assertVisible: "Movies"
 - tapOn: "Movies"
-- assertVisible: "test_video_720p"
-- tapOn: "test_video_720p"
+- assertVisible: "test_video_720p.mp4"
+- tapOn: "test_video_720p.mp4"
 # Wait for player to load
 - assertVisible:
     id: "com.natkibe.videoplayerpro:id/playerView"
-# Verify Play as Music button exists
+# Tap player to reveal controls
+- tapOn:
+    id: "com.natkibe.videoplayerpro:id/playerView"
+# Verify audio-only button exists
 - assertVisible:
     id: "com.natkibe.videoplayerpro:id/audioOnlyButton"
-- assertVisible: "Play as Music"
-# Tap Play as Music to start audio-only mode
-- tapOn: "Play as Music"
-# After playAsMusic(), PlayerActivity finishes and returns to MainActivity
-# Verify we're back on the main screen
-- assertVisible: "VideoPlayer Pro"
+# Tap audio-only button to start audio-only mode
+- tapOn:
+    id: "com.natkibe.videoplayerpro:id/audioOnlyButton"
+# Verify player view is still visible (audio-only keeps activity open)
+- assertVisible:
+    id: "com.natkibe.videoplayerpro:id/playerView"

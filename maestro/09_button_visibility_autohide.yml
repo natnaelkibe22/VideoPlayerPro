@@ -1,0 +1,63 @@
+appId: com.natkibe.videoplayerpro
+---
+# Button Visibility & Auto-Hide Test
+# Requires mock video at /sdcard/Movies/test_video_720p.mp4
+# Validates: player action buttons visible inside PlayerActivity
+#            but HIDDEN in main library view (MainActivity)
+#            Controls auto-hide after ~3 seconds of playback
+#
+# Prerequisites:
+#   adb push mock_video.mp4 /sdcard/Movies/test_video_720p.mp4
+- launchApp
+- assertVisible: "VideoPlayer Pro"
+# ── 1. Verify player-specific buttons are NOT visible in main library ──
+- assertNotVisible:
+    id: "com.natkibe.videoplayerpro:id/repeatButton"
+- assertNotVisible:
+    id: "com.natkibe.videoplayerpro:id/floatingButton"
+- assertNotVisible:
+    id: "com.natkibe.videoplayerpro:id/audioOnlyButton"
+# ── 2. Navigate to video player ──
+- tapOn: "Folders"
+- assertVisible: "Movies"
+- tapOn: "Movies"
+- assertVisible: "test_video_720p.mp4"
+- tapOn: "test_video_720p.mp4"
+# ── 3. Verify player loads ──
+- assertVisible:
+    id: "com.natkibe.videoplayerpro:id/playerView"
+# ── 4. Tap player to reveal controls ──
+- tapOn:
+    id: "com.natkibe.videoplayerpro:id/playerView"
+# ── 5. Verify all player action buttons ARE visible in player ──
+- assertVisible:
+    id: "com.natkibe.videoplayerpro:id/repeatButton"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro:id/speedButton"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro:id/audioOnlyButton"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro:id/floatingButton"
+# ── 6. Wait for auto-hide (controls disappear after ~3s of playing) ──
+- swipe:
+    start: "50%,40%"
+    end: "50%,41%"
+    duration: 4000
+# ── 7. Tap player surface to show controls again ──
+- tapOn:
+    id: "com.natkibe.videoplayerpro:id/playerView"
+# ── 8. Verify bottom bar action buttons visible after re-show ──
+- assertVisible:
+    id: "com.natkibe.videoplayerpro:id/repeatButton"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro:id/floatingButton"
+# ── 9. Go back to main library screen ──
+- back
+- assertVisible: "VideoPlayer Pro"
+# ── 10. Verify player buttons are again NOT visible in library ──
+- assertNotVisible:
+    id: "com.natkibe.videoplayerpro:id/repeatButton"
+- assertNotVisible:
+    id: "com.natkibe.videoplayerpro:id/floatingButton"
+- assertNotVisible:
+    id: "com.natkibe.videoplayerpro:id/audioOnlyButton"
