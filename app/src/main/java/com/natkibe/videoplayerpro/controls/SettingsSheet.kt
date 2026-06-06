@@ -31,7 +31,8 @@ class SettingsSheet(
     private val autoHideEnabled: Boolean,
     private val headunitSafeMode: Boolean,
     private val onAutoHideChanged: (Boolean) -> Unit,
-    private val onHeadunitChanged: (Boolean) -> Unit
+    private val onHeadunitChanged: (Boolean) -> Unit,
+    private val onDiagnosticsClicked: () -> Unit = {}
 ) {
     private var dialog: AlertDialog? = null
 
@@ -44,6 +45,7 @@ class SettingsSheet(
         val density = context.resources.displayMetrics.density
         val container = LinearLayout(context).apply {
             orientation = LinearLayout.VERTICAL
+            contentDescription = "Settings screen"
             setPadding(0, (8 * density).toInt(), 0, (8 * density).toInt())
         }
 
@@ -61,10 +63,21 @@ class SettingsSheet(
         // Headunit safe mode row
         val headunitSwitch = buildSwitchRow(
             label = "Headunit safe mode",
-            subtitle = "Show/hide controls instantly (no animation)",
+            subtitle = "Disable thumbnails, animations & background refresh",
             checked = headunitSafeMode
         ) { checked -> onHeadunitChanged(checked) }
         container.addView(headunitSwitch)
+
+        // Divider
+        container.addView(buildDivider())
+
+        // Diagnostics link
+        val diagnosticsRow = buildSimpleRow(
+            label = "Developer Diagnostics",
+            subtitle = "View library stats, cache info, decoder details",
+            onClick = onDiagnosticsClicked
+        )
+        container.addView(diagnosticsRow)
 
         dialog = MaterialAlertDialogBuilder(context)
             .setTitle("Settings")
@@ -130,6 +143,7 @@ class SettingsSheet(
         row.addView(textColumn)
 
         val switch = SwitchCompat(context).apply {
+            contentDescription = if (label.equals("Headunit safe mode", ignoreCase = true)) "Safe Mode toggle" else "$label toggle"
             isChecked = checked
             setOnCheckedChangeListener { _: CompoundButton, isChecked: Boolean ->
                 onChanged(isChecked)
@@ -148,5 +162,63 @@ class SettingsSheet(
             )
             setBackgroundColor(Color.parseColor("#33FFFFFF"))
         }
+    }
+
+    private fun buildSimpleRow(
+        label: String,
+        subtitle: String,
+        onClick: () -> Unit
+    ): LinearLayout {
+        val density = context.resources.displayMetrics.density
+
+        val row = LinearLayout(context).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            setPadding(
+                (16 * density).toInt(),
+                (8 * density).toInt(),
+                (16 * density).toInt(),
+                (8 * density).toInt()
+            )
+            minimumHeight = (64 * density).toInt()
+            isClickable = true
+            isFocusable = true
+            setOnClickListener { onClick() }
+        }
+
+        val textColumn = LinearLayout(context).apply {
+            orientation = LinearLayout.VERTICAL
+            layoutParams = LinearLayout.LayoutParams(
+                0,
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                1f
+            )
+        }
+
+        val labelView = android.widget.TextView(context).apply {
+            text = label
+            setTextColor(Color.WHITE)
+            textSize = 16f
+        }
+        textColumn.addView(labelView)
+
+        val subtitleView = android.widget.TextView(context).apply {
+            text = subtitle
+            setTextColor(Color.parseColor("#FFBBBBBB"))
+            textSize = 12f
+        }
+        textColumn.addView(subtitleView)
+
+        row.addView(textColumn)
+
+        // Arrow indicator
+        val arrowView = android.widget.TextView(context).apply {
+            text = "→"
+            setTextColor(Color.parseColor("#FFBBBBBB"))
+            textSize = 18f
+        }
+        row.addView(arrowView)
+
+        return row
     }
 }

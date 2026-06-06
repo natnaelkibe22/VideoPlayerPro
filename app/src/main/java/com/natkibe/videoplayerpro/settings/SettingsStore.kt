@@ -25,7 +25,8 @@ data class VideoPlayerProSettings(
     val defaultSpeed: Float = 1.0f,
     val headunitSafeMode: Boolean = false,
     val autoHideControls: Boolean = true,
-    val useFancyBlur: Boolean = false
+    val useFancyBlur: Boolean = false,
+    val compactPlaylistRows: Boolean = true
 )
 
 class SettingsStore(private val context: Context) {
@@ -43,6 +44,7 @@ class SettingsStore(private val context: Context) {
         val HEADUNIT_SAFE_MODE = booleanPreferencesKey("headunit_safe_mode")
         val AUTO_HIDE_CONTROLS = booleanPreferencesKey("auto_hide_controls")
         val USE_FANCY_BLUR = booleanPreferencesKey("use_fancy_blur")
+        val COMPACT_PLAYLIST = booleanPreferencesKey("compact_playlist")
     }
 
     val settings: Flow<VideoPlayerProSettings> = context.videoPlayerProDataStore.data.map { p ->
@@ -59,7 +61,8 @@ class SettingsStore(private val context: Context) {
             defaultSpeed = p[Keys.DEFAULT_SPEED] ?: 1.0f,
             headunitSafeMode = p[Keys.HEADUNIT_SAFE_MODE] ?: true,
             autoHideControls = p[Keys.AUTO_HIDE_CONTROLS] ?: true,
-            useFancyBlur = p[Keys.USE_FANCY_BLUR] ?: false
+            useFancyBlur = p[Keys.USE_FANCY_BLUR] ?: false,
+            compactPlaylistRows = p[Keys.COMPACT_PLAYLIST] ?: true
         )
     }
 
@@ -76,4 +79,5 @@ class SettingsStore(private val context: Context) {
     suspend fun setHeadunitSafeMode(value: Boolean) = context.videoPlayerProDataStore.edit { it[Keys.HEADUNIT_SAFE_MODE] = value }
     suspend fun setAutoHideControls(value: Boolean) = context.videoPlayerProDataStore.edit { it[Keys.AUTO_HIDE_CONTROLS] = value }
     suspend fun setUseFancyBlur(value: Boolean) = context.videoPlayerProDataStore.edit { it[Keys.USE_FANCY_BLUR] = value }
+    suspend fun setCompactPlaylist(value: Boolean) = context.videoPlayerProDataStore.edit { it[Keys.COMPACT_PLAYLIST] = value }
 }

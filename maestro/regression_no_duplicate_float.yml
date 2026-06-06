@@ -1,0 +1,74 @@
+appId: com.natkibe.videoplayerpro
+---
+# Milestone 07 regression: Float ON/OFF/ON should not create duplicate floating controls and fullscreen restores.
+- launchApp
+- runFlow:
+    when:
+      visible: "Allow"
+    commands:
+      - tapOn: "Allow"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro:id/mainFolderScreen"
+- tapOn:
+    id: "com.natkibe.videoplayerpro:id/videoTab"
+- runFlow:
+    when:
+      visible: "Folder row"
+    commands:
+      - tapOn:
+          text: "Folder row"
+          index: 0
+      - runFlow:
+          when:
+            visible: "Video row"
+          commands:
+            - tapOn:
+                text: "Video row"
+                index: 0
+            - assertVisible:
+                id: "com.natkibe.videoplayerpro:id/playerScreen"
+            - tapOn:
+                id: "com.natkibe.videoplayerpro:id/playerView"
+            - tapOn:
+                id: "com.natkibe.videoplayerpro:id/menuButton"
+            - tapOn: "Float toggle"
+            - runFlow:
+                when:
+                  visible: "Overlay permission required to float video"
+                commands:
+                  - back
+            - runFlow:
+                when:
+                  visible:
+                    id: "com.natkibe.videoplayerpro:id/floatingPlayerControl"
+                commands:
+                  - assertVisible:
+                      id: "com.natkibe.videoplayerpro:id/floatingPlayerControl"
+                  - assertNotVisible:
+                      id: "com.natkibe.videoplayerpro:id/floatingPlayerControl"
+                      index: 1
+                  - tapOn:
+                      id: "com.natkibe.videoplayerpro:id/floatCloseButton"
+                  - assertVisible:
+                      id: "com.natkibe.videoplayerpro:id/playerScreen"
+                  - tapOn:
+                      id: "com.natkibe.videoplayerpro:id/playerView"
+                  - tapOn:
+                      id: "com.natkibe.videoplayerpro:id/menuButton"
+                  - tapOn: "Float toggle"
+                  - assertVisible:
+                      id: "com.natkibe.videoplayerpro:id/floatingPlayerControl"
+                  - assertNotVisible:
+                      id: "com.natkibe.videoplayerpro:id/floatingPlayerControl"
+                      index: 1
+                  - tapOn:
+                      id: "com.natkibe.videoplayerpro:id/floatCloseButton"
+            - assertVisible:
+                id: "com.natkibe.videoplayerpro:id/playerScreen"
+            - assertVisible:
+                id: "com.natkibe.videoplayerpro:id/playerView"
+- runFlow:
+    when:
+      visible: "No video folders found"
+    commands:
+      - assertVisible: "No video folders found"

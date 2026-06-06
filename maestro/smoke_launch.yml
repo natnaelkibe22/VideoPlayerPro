@@ -1,0 +1,19 @@
+appId: com.natkibe.videoplayerpro
+---
+# Milestone 07 smoke: launch, grant media permission when prompted, verify main screen.
+- launchApp
+- runFlow:
+    when:
+      visible: "Allow"
+    commands:
+      - tapOn: "Allow"
+- runFlow:
+    when:
+      visible: "While using the app"
+    commands:
+      - tapOn: "While using the app"
+- assertVisible: "VideoPlayer Pro"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro:id/mainFolderScreen"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro:id/recycler"

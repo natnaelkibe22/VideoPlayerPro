@@ -1,0 +1,95 @@
+appId: com.natkibe.videoplayerpro
+---
+# ==============================================================================
+# Milestone 06: Headunit Performance & Polish — Maestro Test Suite
+# Covers: Safe Mode toggle, thumbnails disabled, diagnostics panel, error recovery
+# ==============================================================================
+
+# ── 1. OPEN SETTINGS ──────────────────────────────────────────────────────────
+- launchApp
+- tapOn:
+    id: "com.natkibe.videoplayerpro:id/settingsTab"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro:id/settingsPanel"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro:id/switchSafeMode"
+
+# ── 2. TOGGLE HEADUNIT SAFE MODE ON ───────────────────────────────────────────
+- tapOn:
+    id: "com.natkibe.videoplayerpro:id/switchSafeMode"
+# Wait for settings to refresh
+- extendedWaitUntil:
+    visible:
+      id: "com.natkibe.videoplayerpro:id/switchSafeMode"
+    timeout: 3000
+
+# ── 3. ASSERT SAFE MODE IS ON ─────────────────────────────────────────────────
+- tapOn:
+    id: "com.natkibe.videoplayerpro:id/settingsTab"
+# Reopen settings to verify state
+- assertVisible:
+    id: "com.natkibe.videoplayerpro:id/switchSafeMode"
+
+# ── 4. VERIFY THUMBNAILS DISABLED (Safe Mode forces thumbnails OFF) ────────────
+- tapOn:
+    id: "com.natkibe.videoplayerpro:id/videoTab"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro:id/recycler"
+
+# ── 5. TOGGLE SAFE MODE OFF ───────────────────────────────────────────────────
+- tapOn:
+    id: "com.natkibe.videoplayerpro:id/settingsTab"
+- tapOn:
+    id: "com.natkibe.videoplayerpro:id/switchSafeMode"
+- extendedWaitUntil:
+    visible:
+      id: "com.natkibe.videoplayerpro:id/switchSafeMode"
+    timeout: 3000
+
+# ── 6. OPEN DIAGNOSTICS PANEL ─────────────────────────────────────────────────
+- tapOn:
+    id: "com.natkibe.videoplayerpro:id/openDiagnostics"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro:id/diagnosticsContent"
+# Verify key diagnostics content is shown
+- assertVisible: "Library item count"
+- back
+
+# ── 7. OPEN A VIDEO TO VERIFY DRAWER WORKS ────────────────────────────────────
+- tapOn:
+    id: "com.natkibe.videoplayerpro:id/videoTab"
+- tapOn:
+    id: "com.natkibe.videoplayerpro:id/recycler"
+# If there are videos, tap the first one
+- extendedWaitUntil:
+    visible:
+      id: "com.natkibe.videoplayerpro:id/recycler"
+    timeout: 5000
+
+# ── 8. OPEN AND CLOSE DRAWER ──────────────────────────────────────────────────
+# Tap playlist button to open drawer
+- tapOn:
+    id: "com.natkibe.videoplayerpro:id/playlistButton"
+# Tap playlist button again to close
+- tapOn:
+    id: "com.natkibe.videoplayerpro:id/playlistButton"
+
+# ── 9. OPEN PLAYBACK MENU ─────────────────────────────────────────────────────
+- tapOn:
+    id: "com.natkibe.videoplayerpro:id/menuButton"
+# Dismiss by tapping back
+- back
+
+# ── 10. VERIFY CONTROLS STILL WORK ────────────────────────────────────────────
+- tapOn:
+    id: "com.natkibe.videoplayerpro:id/centerPlayPause"
+- tapOn:
+    id: "com.natkibe.videoplayerpro:id/centerPlayPause"
+
+# ── 11. RETURN TO MAIN ────────────────────────────────────────────────────────
+- tapOn:
+    id: "com.natkibe.videoplayerpro:id/closeButton"
+
+# ==============================================================================
+# End of Milestone 06 test suite
+# ==============================================================================

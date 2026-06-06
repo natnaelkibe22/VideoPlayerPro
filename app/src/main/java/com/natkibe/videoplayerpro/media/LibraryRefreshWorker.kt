@@ -14,7 +14,7 @@ class LibraryRefreshWorker(
     params: WorkerParameters
 ) : CoroutineWorker(appContext, params) {
     override suspend fun doWork(): Result = try {
-        VideoLibraryRepository(applicationContext).refreshNow()
+        com.natkibe.videoplayerpro.library.VideoLibraryRepository(applicationContext).refreshNow()
         Result.success()
     } catch (t: Throwable) {
         // Keep the UI stable. A failed USB/media refresh should never crash the app.

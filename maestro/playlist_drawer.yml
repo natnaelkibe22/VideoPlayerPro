@@ -1,0 +1,70 @@
+appId: com.natkibe.videoplayerpro
+---
+# Milestone 07 playlist drawer: open from right, select row, close by swipe and outside tap.
+- launchApp
+- runFlow:
+    when:
+      visible: "Allow"
+    commands:
+      - tapOn: "Allow"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro:id/mainFolderScreen"
+- tapOn:
+    id: "com.natkibe.videoplayerpro:id/videoTab"
+- runFlow:
+    when:
+      visible: "Folder row"
+    commands:
+      - tapOn:
+          text: "Folder row"
+          index: 0
+      - runFlow:
+          when:
+            visible: "Video row"
+          commands:
+            - tapOn:
+                text: "Video row"
+                index: 0
+            - assertVisible:
+                id: "com.natkibe.videoplayerpro:id/playerView"
+            - tapOn:
+                id: "com.natkibe.videoplayerpro:id/playerView"
+            - swipe:
+                start: "98%,50%"
+                end: "68%,50%"
+                duration: 400
+            - assertVisible:
+                id: "com.natkibe.videoplayerpro:id/sidePlaylist"
+            - runFlow:
+                when:
+                  visible:
+                    id: "com.natkibe.videoplayerpro:id/itemTitle"
+                commands:
+                  - tapOn:
+                      id: "com.natkibe.videoplayerpro:id/itemTitle"
+                      index: 0
+                  - assertVisible:
+                      id: "com.natkibe.videoplayerpro:id/playerView"
+            - tapOn:
+                id: "com.natkibe.videoplayerpro:id/playlistButton"
+            - assertVisible:
+                id: "com.natkibe.videoplayerpro:id/sidePlaylist"
+            - swipe:
+                start: "80%,50%"
+                end: "98%,50%"
+                duration: 300
+            - assertVisible:
+                id: "com.natkibe.videoplayerpro:id/playerView"
+            - tapOn:
+                id: "com.natkibe.videoplayerpro:id/playlistButton"
+            - assertVisible:
+                id: "com.natkibe.videoplayerpro:id/sidePlaylist"
+            - tapOn:
+                id: "com.natkibe.videoplayerpro:id/playlistDimOverlay"
+            - assertVisible:
+                id: "com.natkibe.videoplayerpro:id/playerView"
+- runFlow:
+    when:
+      visible: "No video folders found"
+    commands:
+      - assertVisible: "No video folders found"

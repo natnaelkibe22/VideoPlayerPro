@@ -58,6 +58,7 @@ class PlaybackMenuController(
         val density = context.resources.displayMetrics.density
         val container = LinearLayout(context).apply {
             orientation = LinearLayout.VERTICAL
+            contentDescription = "Playback menu"
             setPadding(0, (4 * density).toInt(), 0, (4 * density).toInt())
             background = ColorDrawable(Color.parseColor("#FF2A2A2A"))
         }
@@ -67,6 +68,7 @@ class PlaybackMenuController(
                 label = "Playback Speed",
                 detail = currentSpeed,
                 checked = false,
+                contentDescription = "Speed button",
                 onClick = { callbacks.onSpeedClicked() }
             )
         )
@@ -76,6 +78,7 @@ class PlaybackMenuController(
                 label = "Repeat Mode",
                 detail = currentRepeat,
                 checked = false,
+                contentDescription = "Repeat toggle",
                 onClick = { callbacks.onRepeatClicked() }
             )
         )
@@ -85,6 +88,7 @@ class PlaybackMenuController(
                 label = "Audio Only Mode",
                 detail = "",
                 checked = isAudioOnly,
+                contentDescription = "Play as Music toggle",
                 onClick = { callbacks.onAudioOnlyClicked() }
             )
         )
@@ -94,6 +98,7 @@ class PlaybackMenuController(
                 label = "Floating Window",
                 detail = "",
                 checked = isFloating,
+                contentDescription = "Float toggle",
                 onClick = { callbacks.onFloatingClicked() }
             )
         )
@@ -144,6 +149,7 @@ class PlaybackMenuController(
         label: String,
         detail: String,
         checked: Boolean,
+        contentDescription: String = label,
         onClick: () -> Unit
     ): View {
         val density = context.resources.displayMetrics.density
@@ -158,6 +164,7 @@ class PlaybackMenuController(
             )
             minimumHeight = (56 * density).toInt()
             setBackgroundColor(Color.TRANSPARENT)
+            this.contentDescription = contentDescription
             isClickable = true
             isFocusable = true
             setOnClickListener {

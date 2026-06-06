@@ -1,0 +1,52 @@
+appId: com.natkibe.videoplayerpro
+---
+# Milestone 07 player controls: play/pause, seek, previous/next when a video is available.
+- launchApp
+- runFlow:
+    when:
+      visible: "Allow"
+    commands:
+      - tapOn: "Allow"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro:id/mainFolderScreen"
+- tapOn:
+    id: "com.natkibe.videoplayerpro:id/videoTab"
+- runFlow:
+    when:
+      visible: "Folder row"
+    commands:
+      - tapOn:
+          text: "Folder row"
+          index: 0
+      - runFlow:
+          when:
+            visible: "Video row"
+          commands:
+            - tapOn:
+                text: "Video row"
+                index: 0
+            - assertVisible:
+                id: "com.natkibe.videoplayerpro:id/playerScreen"
+            - tapOn:
+                id: "com.natkibe.videoplayerpro:id/playerView"
+            - assertVisible:
+                id: "com.natkibe.videoplayerpro:id/centerPlayPause"
+            - tapOn:
+                id: "com.natkibe.videoplayerpro:id/centerPlayPause"
+            - tapOn:
+                id: "com.natkibe.videoplayerpro:id/centerPlayPause"
+            - tapOn:
+                id: "com.natkibe.videoplayerpro:id/seekForward15"
+            - tapOn:
+                id: "com.natkibe.videoplayerpro:id/seekBack5"
+            - tapOn:
+                id: "com.natkibe.videoplayerpro:id/nextButton"
+            - tapOn:
+                id: "com.natkibe.videoplayerpro:id/prevButton"
+            - assertVisible:
+                id: "com.natkibe.videoplayerpro:id/playerView"
+- runFlow:
+    when:
+      visible: "No video folders found"
+    commands:
+      - assertVisible: "No video folders found"

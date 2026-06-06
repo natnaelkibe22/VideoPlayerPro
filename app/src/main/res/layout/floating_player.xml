@@ -1,8 +1,10 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/floatingPlayerControl"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#E6000000">
+    android:background="#E6000000"
+    android:contentDescription="Floating player control">
 
     <androidx.media3.ui.PlayerView
         android:id="@+id/floatingPlayerView"

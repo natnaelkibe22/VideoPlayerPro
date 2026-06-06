@@ -66,6 +66,8 @@ import kotlinx.coroutines.withContext
 class PlayerActivity : AppCompatActivity() {
     private val appContainer by lazy { VideoPlayerProAppContainer(this) }
     private val progress get() = appContainer.progressService
+    private val resumeRepo get() = appContainer.resumeRepository
+    private val thumbnailLoader get() = appContainer.thumbnailLoader
 
     private lateinit var playerView: PlayerView
     private val playerEngine: PlayerEngine get() = PlayerEngine.get()
@@ -89,6 +91,7 @@ class PlayerActivity : AppCompatActivity() {
     private lateinit var errorActionBar: LinearLayout
     private lateinit var errorRetryButton: Button
     private lateinit var errorSkipButton: Button
+    private lateinit var errorPlayAsMusicButton: Button
 
     // Bottom action ImageButtons
     private lateinit var playlistButton: ImageButton
@@ -203,6 +206,12 @@ class PlayerActivity : AppCompatActivity() {
         // Set title
         videoTitleView.text = videoTitle.ifBlank { "Now Playing" }
 
+        // Long-press on title opens diagnostics
+        videoTitleView.setOnLongClickListener {
+            startActivity(Intent(this@PlayerActivity, DiagnosticsActivity::class.java))
+            true
+        }
+
         // Create error action bar programmatically (retry/skip buttons)
         initErrorActionBar()
 
@@ -314,6 +323,13 @@ class PlayerActivity : AppCompatActivity() {
                                     autoHideEnabled = controlsController.state.autoHideEnabled,
                                     headunitSafeMode = enabled
                                 )
+                                // Also apply to playlist drawer
+                                if (::playlistDrawerController.isInitialized) {
+                                    playlistDrawerController.headunitSafeMode = enabled
+                                }
+                            },
+                            onDiagnosticsClicked = {
+                                startActivity(Intent(this@PlayerActivity, DiagnosticsActivity::class.java))
                             }
                         )
                         settingsSheet.show()
@@ -371,6 +387,10 @@ class PlayerActivity : AppCompatActivity() {
                 autoHideEnabled = settings.autoHideControls,
                 headunitSafeMode = settings.headunitSafeMode
             )
+            // Also configure playlist drawer for safe mode
+            if (::playlistDrawerController.isInitialized) {
+                playlistDrawerController.headunitSafeMode = settings.headunitSafeMode
+            }
         }
     }
 
@@ -493,10 +513,10 @@ class PlayerActivity : AppCompatActivity() {
     // ── Error UI ──────────────────────────────────────────────────────────
 
     private fun initErrorActionBar() {
-        // Programmatically create error action bar with Retry and Skip buttons,
+        // Programmatically create error action bar with Retry, Skip, and Play as Music buttons,
         // because the existing layout does not include them.
         errorActionBar = LinearLayout(this).apply {
-            orientation = LinearLayout.HORIZONTAL
+            orientation = LinearLayout.VERTICAL
             gravity = android.view.Gravity.CENTER
             // LayoutParams will be set via FrameLayout below
             visibility = View.GONE
@@ -504,10 +524,17 @@ class PlayerActivity : AppCompatActivity() {
             setBackgroundColor(0xCC8B0000.toInt())
         }
 
+        // Row 1: Retry + Skip
+        val buttonRow = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = android.view.Gravity.CENTER
+        }
+
         errorRetryButton = Button(this).apply {
             text = "Retry"
             setTextColor(0xFFFFFFFF.toInt())
             setBackgroundColor(0xFF2F80ED.toInt())
+            minHeight = (64 * resources.displayMetrics.density).toInt()
             setOnClickListener {
                 try {
                     PlayerEngine.get().dispatch(PlaybackCommand.Retry)
@@ -519,12 +546,14 @@ class PlayerActivity : AppCompatActivity() {
         }
 
         errorSkipButton = Button(this).apply {
-            text = "Skip"
+            text = "Skip to Next"
             setTextColor(0xFFFFFFFF.toInt())
             setBackgroundColor(0xFF555555.toInt())
+            minHeight = (64 * resources.displayMetrics.density).toInt()
             setOnClickListener {
                 try {
-                    PlayerEngine.get().dispatch(PlaybackCommand.SkipNext)
+                    // Try to skip to next in playlist
+                    skipNext()
                     hideErrorUI()
                 } catch (e: Exception) {
                     // Dispatch failed, keep UI visible
@@ -537,13 +566,40 @@ class PlayerActivity : AppCompatActivity() {
             LinearLayout.LayoutParams.WRAP_CONTENT,
             1.0f
         ).apply {
-            setMargins(8, 0, 8, 0)
+            setMargins(8, 4, 8, 4)
         }
         errorRetryButton.layoutParams = buttonParams
         errorSkipButton.layoutParams = buttonParams
 
-        errorActionBar.addView(errorRetryButton)
-        errorActionBar.addView(errorSkipButton)
+        buttonRow.addView(errorRetryButton)
+        buttonRow.addView(errorSkipButton)
+        errorActionBar.addView(buttonRow)
+
+        // Row 2: Play as Music
+        errorPlayAsMusicButton = Button(this).apply {
+            text = "Play as Music (Audio Only)"
+            setTextColor(0xFFFFFFFF.toInt())
+            setBackgroundColor(0xFF2F80ED.toInt())
+            minHeight = (64 * resources.displayMetrics.density).toInt()
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            ).apply {
+                setMargins(8, 4, 8, 8)
+            }
+            setOnClickListener {
+                try {
+                    // Clear error first, then switch to audio-only mode
+                    PlayerEngine.get().dispatch(PlaybackCommand.Retry)
+                    // Then enter audio-only mode immediately
+                    toggleAudioOnly()
+                    hideErrorUI()
+                } catch (e: Exception) {
+                    // Dispatch failed, keep UI visible
+                }
+            }
+        }
+        errorActionBar.addView(errorPlayAsMusicButton)
 
         // Add to the root FrameLayout, positioned below the error text (top-area)
         val rootLayout = (playerView.parent as? android.widget.FrameLayout)
@@ -885,6 +941,8 @@ class PlayerActivity : AppCompatActivity() {
         if (folderName.isNotBlank()) {
             collectJob = lifecycleScope.launch {
                 appContainer.database.videoDao().observeVideosInFolder(folderName).collect { list ->
+                    val showThumbs = appContainer.settingsStore.settings.first()
+                        .let { it.showThumbnails && !it.headunitSafeMode }
                     val uiModels = list.map { entity ->
                         PlaylistItemUiModel(
                             id = entity.uri,
@@ -896,7 +954,7 @@ class PlayerActivity : AppCompatActivity() {
                         )
                     }
                     playlistItems = uiModels
-                    playlistDrawerController.updateItems(uiModels, false)
+                    playlistDrawerController.updateItems(uiModels, showThumbs)
                 }
             }
         }

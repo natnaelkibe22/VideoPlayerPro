@@ -63,6 +63,7 @@ class RepeatModeSheet(
 
         val container = LinearLayout(context).apply {
             orientation = LinearLayout.VERTICAL
+            contentDescription = "Repeat mode sheet"
             setPadding(0, (8 * density).toInt(), 0, (8 * density).toInt())
         }
 
@@ -104,6 +105,11 @@ class RepeatModeSheet(
         val density = context.resources.displayMetrics.density
         return RadioButton(context).apply {
             text = label
+            contentDescription = when (label) {
+                "Repeat One" -> "Repeat Video toggle"
+                "Repeat Folder" -> "Repeat folder toggle"
+                else -> label
+            }
             setTextColor(Color.WHITE)
             textSize = 16f
             isChecked = checked

@@ -78,14 +78,31 @@ Open the project in Android Studio, let Gradle sync, then build/run `app`. This 
 
 ## Maestro
 
-Feature tests live in `maestro/`. Milestone-specific tests live inside each `milestones/v*/maestro/` folder.
+Feature tests live in `maestro/`. Milestone-specific tests live inside each `milestones/v*/maestro/` folder. Build/install an Autosky debug APK, then run any flow against a connected emulator/headunit:
 
 ```bash
-maestro test maestro/video_folder_tab.yml
-maestro test maestro/settings_tab.yml
-maestro test maestro/player_controls.yml
-maestro test maestro/audio_only.yml
+./gradlew :app:assembleAutoskyDebug
+adb install -r app/build/outputs/apk/autosky/debug/app-autosky-debug.apk
+maestro test maestro/smoke_launch.yml
 ```
+
+Milestone 07 regression coverage is split by workflow:
+
+```bash
+maestro test maestro/smoke_launch.yml
+maestro test maestro/folder_browser.yml
+maestro test maestro/player_basic_controls.yml
+maestro test maestro/playlist_drawer.yml
+maestro test maestro/playback_menu_toggles.yml
+maestro test maestro/floating_player.yml
+maestro test maestro/play_as_music.yml
+maestro test maestro/settings_safe_mode.yml
+maestro test maestro/thumbnails_toggle.yml
+maestro test maestro/resume_playback.yml
+maestro test maestro/regression_no_duplicate_float.yml
+```
+
+The flows prefer stable resource IDs/content descriptions and avoid exact video names. Empty media libraries are handled with conditional branches; player-specific steps execute when at least one folder/video row is available. Floating overlay assertions require Android overlay permission to be granted before running those flows; without permission the flows verify fullscreen recovery instead.
 
 ## Milestones
 

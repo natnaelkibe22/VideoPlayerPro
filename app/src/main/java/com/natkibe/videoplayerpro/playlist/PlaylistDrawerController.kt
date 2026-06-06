@@ -217,6 +217,9 @@ class PlaylistDrawerController(
     // Animations
     // ──────────────────────────────────────────────────────────────────────
 
+    /** Whether headunit safe mode is active — when true, animations are instant. */
+    var headunitSafeMode: Boolean = false
+
     private fun performOpenAnimation() {
         isAnimating = true
         drawerState = drawerState.copy(isOpen = true)
@@ -224,6 +227,15 @@ class PlaylistDrawerController(
         // Show overlay and drawer before animating
         dimOverlay.isVisible = true
         drawerView.isVisible = true
+
+        if (headunitSafeMode) {
+            // Instant — no animation
+            drawerView.translationX = 0f
+            dimOverlay.alpha = DIM_ALPHA_MAX
+            isAnimating = false
+            listener.onDrawerOpen()
+            return
+        }
 
         // Animate drawer sliding in from the right (translationX: width → 0)
         drawerView.animate()
@@ -249,6 +261,18 @@ class PlaylistDrawerController(
 
     private fun performCloseAnimation() {
         isAnimating = true
+
+        if (headunitSafeMode) {
+            // Instant — no animation
+            drawerView.translationX = drawerWidthPx.toFloat()
+            drawerView.isVisible = false
+            drawerState = drawerState.copy(isOpen = false)
+            dimOverlay.alpha = 0f
+            dimOverlay.isVisible = false
+            isAnimating = false
+            listener.onDrawerClose()
+            return
+        }
 
         // Animate drawer sliding out to the right (translationX: 0 → width)
         drawerView.animate()

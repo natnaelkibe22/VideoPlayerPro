@@ -27,6 +27,7 @@ class FolderAdapter(
         holder.thumb.text = "📁"
         holder.title.text = item.folderName
         holder.subtitle.text = "${item.videoCount} videos • ${item.storageRoot}"
+        holder.itemView.contentDescription = "Folder row"
         holder.itemView.setOnClickListener { onClick(item) }
     }
 

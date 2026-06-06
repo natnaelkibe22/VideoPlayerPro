@@ -1,0 +1,86 @@
+appId: com.natkibe.videoplayerpro
+---
+# Milestone 07 playback menu toggles: Repeat Video, Repeat Folder, Play as Music, Float.
+- launchApp
+- runFlow:
+    when:
+      visible: "Allow"
+    commands:
+      - tapOn: "Allow"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro:id/mainFolderScreen"
+- tapOn:
+    id: "com.natkibe.videoplayerpro:id/videoTab"
+- runFlow:
+    when:
+      visible: "Folder row"
+    commands:
+      - tapOn:
+          text: "Folder row"
+          index: 0
+      - runFlow:
+          when:
+            visible: "Video row"
+          commands:
+            - tapOn:
+                text: "Video row"
+                index: 0
+            - assertVisible:
+                id: "com.natkibe.videoplayerpro:id/playerView"
+            - tapOn:
+                id: "com.natkibe.videoplayerpro:id/playerView"
+            - tapOn:
+                id: "com.natkibe.videoplayerpro:id/menuButton"
+            - assertVisible: "Playback menu"
+            - tapOn: "Repeat toggle"
+            - assertVisible: "Repeat Mode"
+            - tapOn: "Repeat Video toggle"
+            - tapOn:
+                id: "com.natkibe.videoplayerpro:id/menuButton"
+            - tapOn: "Repeat toggle"
+            - tapOn: "Repeat Off"
+            - tapOn:
+                id: "com.natkibe.videoplayerpro:id/menuButton"
+            - tapOn: "Repeat toggle"
+            - tapOn: "Repeat folder toggle"
+            - tapOn:
+                id: "com.natkibe.videoplayerpro:id/menuButton"
+            - tapOn: "Repeat toggle"
+            - tapOn: "Repeat Off"
+            - tapOn:
+                id: "com.natkibe.videoplayerpro:id/menuButton"
+            - tapOn: "Play as Music toggle"
+            - assertVisible:
+                id: "com.natkibe.videoplayerpro:id/playerView"
+            - tapOn:
+                id: "com.natkibe.videoplayerpro:id/menuButton"
+            - tapOn: "Play as Music toggle"
+            - assertVisible:
+                id: "com.natkibe.videoplayerpro:id/playerView"
+            - tapOn:
+                id: "com.natkibe.videoplayerpro:id/menuButton"
+            - tapOn: "Float toggle"
+            - runFlow:
+                when:
+                  visible: "Overlay permission required to float video"
+                commands:
+                  - back
+            - assertVisible:
+                id: "com.natkibe.videoplayerpro:id/playerView"
+            - tapOn:
+                id: "com.natkibe.videoplayerpro:id/playerView"
+            - tapOn:
+                id: "com.natkibe.videoplayerpro:id/menuButton"
+            - tapOn: "Float toggle"
+            - runFlow:
+                when:
+                  visible:
+                    id: "com.natkibe.videoplayerpro:id/playerView"
+                commands:
+                  - assertVisible:
+                      id: "com.natkibe.videoplayerpro:id/playerView"
+- runFlow:
+    when:
+      visible: "No video folders found"
+    commands:
+      - assertVisible: "No video folders found"

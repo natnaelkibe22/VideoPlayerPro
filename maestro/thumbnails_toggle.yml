@@ -1,0 +1,24 @@
+appId: com.natkibe.videoplayerpro
+---
+# Milestone 07 thumbnails setting: toggle thumbnails on/off and return to folders.
+- launchApp
+- runFlow:
+    when:
+      visible: "Allow"
+    commands:
+      - tapOn: "Allow"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro:id/mainFolderScreen"
+- tapOn:
+    id: "com.natkibe.videoplayerpro:id/settingsTab"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro:id/settingsContainer"
+- assertVisible: "Thumbnail toggle"
+- tapOn: "Thumbnail toggle"
+- tapOn: "Thumbnail toggle"
+- tapOn:
+    id: "com.natkibe.videoplayerpro:id/videoTab"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro:id/mainFolderScreen"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro:id/recycler"

@@ -1,0 +1,40 @@
+appId: com.natkibe.videoplayerpro
+---
+# Milestone 07 folder browser: robust to empty libraries, opens first folder/video when present.
+- launchApp
+- runFlow:
+    when:
+      visible: "Allow"
+    commands:
+      - tapOn: "Allow"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro:id/mainFolderScreen"
+- tapOn:
+    id: "com.natkibe.videoplayerpro:id/videoTab"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro:id/recycler"
+- runFlow:
+    when:
+      visible: "Folder row"
+    commands:
+      - tapOn:
+          text: "Folder row"
+          index: 0
+      - assertVisible:
+          id: "com.natkibe.videoplayerpro:id/recycler"
+      - runFlow:
+          when:
+            visible: "Video row"
+          commands:
+            - tapOn:
+                text: "Video row"
+                index: 0
+            - assertVisible:
+                id: "com.natkibe.videoplayerpro:id/playerScreen"
+            - assertVisible:
+                id: "com.natkibe.videoplayerpro:id/playerView"
+- runFlow:
+    when:
+      visible: "No video folders found"
+    commands:
+      - assertVisible: "No video folders found"

@@ -1,8 +1,10 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/playerScreen"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#000000"
+    android:contentDescription="Player screen"
     android:keepScreenOn="true">
 
     <!-- Fullscreen Video Surface -->
@@ -10,6 +12,7 @@
         android:id="@+id/playerView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:contentDescription="Player video surface"
         app:show_buffering="when_playing"
         app:use_controller="false"
         app:resize_mode="fit" />
@@ -77,6 +80,7 @@
             android:id="@+id/speedLabel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:contentDescription="Speed button"
             android:layout_centerVertical="true"
             android:layout_toStartOf="@+id/menuButton"
             android:layout_marginEnd="4dp"
@@ -263,6 +267,7 @@
         android:id="@+id/playlistDimOverlay"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:contentDescription="Playlist drawer dim overlay"
         android:background="#000000"
         android:visibility="gone" />
 
@@ -271,6 +276,7 @@
         android:id="@+id/sidePlaylist"
         android:layout_width="300dp"
         android:layout_height="match_parent"
+        android:contentDescription="Playlist drawer"
         android:layout_gravity="end"
         android:background="#DD101114"
         android:orientation="vertical"

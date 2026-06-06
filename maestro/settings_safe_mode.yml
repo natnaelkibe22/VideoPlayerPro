@@ -1,0 +1,29 @@
+appId: com.natkibe.videoplayerpro
+---
+# Milestone 07 settings: Headunit Safe Mode, playlist drawer, floating permission setting where possible.
+- launchApp
+- runFlow:
+    when:
+      visible: "Allow"
+    commands:
+      - tapOn: "Allow"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro:id/mainFolderScreen"
+- tapOn:
+    id: "com.natkibe.videoplayerpro:id/settingsTab"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro:id/settingsContainer"
+- assertVisible: "Settings screen"
+- assertVisible: "Safe Mode toggle"
+- tapOn: "Safe Mode toggle"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro:id/settingsContainer"
+- tapOn: "Safe Mode toggle"
+- assertVisible: "Playlist drawer setting toggle"
+- tapOn: "Playlist drawer setting toggle"
+- tapOn: "Playlist drawer setting toggle"
+- assertVisible: "Floating player setting toggle"
+- tapOn: "Floating player setting toggle"
+- tapOn: "Floating player setting toggle"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro:id/settingsContainer"

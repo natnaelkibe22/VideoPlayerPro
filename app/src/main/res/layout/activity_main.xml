@@ -1,8 +1,10 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/mainFolderScreen"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="#101114"
+    android:contentDescription="Main folder screen"
     android:padding="12dp">
 
     <LinearLayout
@@ -64,6 +66,7 @@
             android:id="@+id/settingsContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:contentDescription="Settings screen"
             android:orientation="vertical"
             android:padding="4dp">
 
@@ -78,6 +81,7 @@
                     android:text="Show Thumbnails" android:textColor="#FFFFFF" android:textSize="14sp" />
                 <androidx.appcompat.widget.SwitchCompat
                     android:id="@+id/switchThumbnails"
+                    android:contentDescription="Thumbnail toggle"
                     android:layout_width="wrap_content" android:layout_height="wrap_content" />
             </LinearLayout>
 
@@ -91,6 +95,7 @@
                     android:text="Floating Player" android:textColor="#FFFFFF" android:textSize="14sp" />
                 <androidx.appcompat.widget.SwitchCompat
                     android:id="@+id/switchFloating"
+                    android:contentDescription="Floating player setting toggle"
                     android:layout_width="wrap_content" android:layout_height="wrap_content" />
             </LinearLayout>
 
@@ -117,6 +122,7 @@
                     android:text="Show Playlist While Watching" android:textColor="#FFFFFF" android:textSize="14sp" />
                 <androidx.appcompat.widget.SwitchCompat
                     android:id="@+id/switchPlaylist"
+                    android:contentDescription="Playlist drawer setting toggle"
                     android:layout_width="wrap_content" android:layout_height="wrap_content" />
             </LinearLayout>
 
@@ -143,6 +149,7 @@
                     android:text="Resume Playback" android:textColor="#FFFFFF" android:textSize="14sp" />
                 <androidx.appcompat.widget.SwitchCompat
                     android:id="@+id/switchResume"
+                    android:contentDescription="Resume playback toggle"
                     android:layout_width="wrap_content" android:layout_height="wrap_content" />
             </LinearLayout>
 
@@ -169,6 +176,7 @@
                     android:text="Headunit Safe Mode" android:textColor="#FFFFFF" android:textSize="14sp" />
                 <androidx.appcompat.widget.SwitchCompat
                     android:id="@+id/switchSafeMode"
+                    android:contentDescription="Safe Mode toggle"
                     android:layout_width="wrap_content" android:layout_height="wrap_content" />
             </LinearLayout>
 
@@ -195,6 +203,20 @@
                     android:text="Use Fancy Blur" android:textColor="#FFFFFF" android:textSize="14sp" />
                 <androidx.appcompat.widget.SwitchCompat
                     android:id="@+id/switchFancyBlur"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content" />
+            </LinearLayout>
+
+            <!-- Compact Playlist Rows -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingVertical="6dp">
+                <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
+                    android:text="Compact Playlist Rows" android:textColor="#FFFFFF" android:textSize="14sp" />
+                <androidx.appcompat.widget.SwitchCompat
+                    android:id="@+id/switchCompactPlaylist"
                     android:layout_width="wrap_content" android:layout_height="wrap_content" />
             </LinearLayout>
 

@@ -45,4 +45,29 @@ interface VideoDao {
 
     @Query("SELECT v.* FROM video_items v INNER JOIN video_progress p ON v.uri = p.videoUri ORDER BY p.updatedAt DESC LIMIT :limit")
     fun observeRecentlyWatched(limit: Int = 20): Flow<List<VideoItemEntity>>
+
+    // ── Favorites ──────────────────────────────────────────────────────────
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun addFavorite(favorite: FavoriteEntity)
+
+    @Query("DELETE FROM favorite_videos WHERE videoUri = :uri")
+    suspend fun removeFavorite(uri: String)
+
+    @Query("SELECT COUNT(*) FROM favorite_videos WHERE videoUri = :uri")
+    suspend fun isFavorite(uri: String): Int
+
+    @Query("SELECT v.* FROM video_items v INNER JOIN favorite_videos f ON v.uri = f.videoUri ORDER BY f.addedAt DESC")
+    fun observeFavorites(): Flow<List<VideoItemEntity>>
+
+    // ── Pinned folders ────────────────────────────────────────────────────
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun addPinnedFolder(folder: PinnedFolderEntity)
+
+    @Query("DELETE FROM pinned_folders WHERE folderName = :folderName")
+    suspend fun removePinnedFolder(folderName: String)
+
+    @Query("SELECT * FROM pinned_folders ORDER BY pinnedAt ASC")
+    fun observePinnedFolders(): Flow<List<PinnedFolderEntity>>
 }

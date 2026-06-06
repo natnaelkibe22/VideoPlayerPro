@@ -5,6 +5,7 @@ import android.net.Uri
 data class PlayerEngineState(
     val currentVideoUri: Uri? = null,
     val currentTitle: String = "",
+    val currentMimeType: String? = null,
     val positionMs: Long = 0L,
     val durationMs: Long = 0L,
     val isPlaying: Boolean = false,

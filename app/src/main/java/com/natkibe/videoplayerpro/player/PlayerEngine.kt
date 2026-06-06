@@ -168,13 +168,21 @@ class PlayerEngine private constructor(
         }
         exoPlayer.playWhenReady = true
 
+        // Extract MIME type from MediaItem for diagnostics
+        val mimeType = try {
+            context.contentResolver.getType(uri)
+        } catch (_: Exception) {
+            null
+        }
+
         _state.update {
             it.copy(
                 currentVideoUri = uri,
                 currentTitle = title,
                 positionMs = startPositionMs,
                 error = null,
-                isPlaying = true
+                isPlaying = true,
+                currentMimeType = mimeType
             )
         }
     }

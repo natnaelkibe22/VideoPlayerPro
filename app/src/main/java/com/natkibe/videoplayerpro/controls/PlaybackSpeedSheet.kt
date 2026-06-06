@@ -51,6 +51,7 @@ class PlaybackSpeedSheet(
 
         val container = LinearLayout(context).apply {
             orientation = LinearLayout.VERTICAL
+            contentDescription = "Playback speed sheet"
             setPadding(0, (8 * density).toInt(), 0, (8 * density).toInt())
         }
 
@@ -107,6 +108,7 @@ class PlaybackSpeedSheet(
         val density = context.resources.displayMetrics.density
         return RadioButton(context).apply {
             text = label
+            contentDescription = "Speed option $label"
             setTextColor(Color.WHITE)
             textSize = 16f
             isChecked = checked

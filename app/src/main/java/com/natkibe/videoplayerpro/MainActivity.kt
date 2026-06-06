@@ -31,6 +31,8 @@ class MainActivity : AppCompatActivity() {
     private val libraryFeature get() = appContainer.libraryFeature
     private val settingsFeature get() = appContainer.settingsFeature
     private val settingsStore get() = appContainer.settingsStore
+    private val favoriteRepository get() = appContainer.favoriteRepository
+    private val resumeRepository get() = appContainer.resumeRepository
 
     private lateinit var recycler: RecyclerView
     private lateinit var status: TextView
@@ -60,14 +62,27 @@ class MainActivity : AppCompatActivity() {
         findViewById<ImageButton>(R.id.recentTab).setOnClickListener { showRecent() }
         findViewById<ImageButton>(R.id.storageTab).setOnClickListener { showStorage() }
         findViewById<ImageButton>(R.id.settingsTab).setOnClickListener { showSettings() }
-        findViewById<ImageButton>(R.id.refreshButton).setOnClickListener { libraryFeature.refreshInBackground(); status.text = "Refreshing videos in background..." }
+        findViewById<ImageButton>(R.id.refreshButton).setOnClickListener {
+            lifecycleScope.launch {
+                if (settingsStore.settings.first().headunitSafeMode) {
+                    status.text = "Refresh disabled in Headunit Safe Mode"
+                    return@launch
+                }
+                libraryFeature.refreshInBackground()
+                status.text = "Refreshing videos in background..."
+            }
+        }
 
         // Settings: 13 interactive toggles
         setupSettingsToggles()
 
         if (PermissionService.hasVideoPermission(this)) {
             showFolders()
-            libraryFeature.refreshInBackground()
+            lifecycleScope.launch {
+                if (!settingsStore.settings.first().headunitSafeMode) {
+                    libraryFeature.refreshInBackground()
+                }
+            }
         } else {
             permissionLauncher.launch(PermissionService.videoPermission())
         }
@@ -91,21 +106,42 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun showVideos(folderName: String) {
+    private fun showVideos(folderName: String, isFavorites: Boolean = false) {
         collectJob?.cancel()
         settingsPanel.visibility = View.GONE
         settingsTextInfo.visibility = View.GONE
         recycler.visibility = View.VISIBLE
-        status.text = "Folder: $folderName"
+        status.text = if (isFavorites) "Favorite videos" else "Folder: $folderName"
         collectJob = lifecycleScope.launch {
             val prefs = settingsFeature.observe().first()
             val showThumbs = prefs.showThumbnails && !prefs.headunitSafeMode
-            val adapter = VideoAdapter(emptyList(), showThumbs) { openVideo(it) }
+            val adapter = VideoAdapter(
+                items = emptyList(),
+                showThumbnails = showThumbs,
+                onClick = { openVideo(it) },
+                onLongPress = { toggleFavorite(it) },
+                thumbnailBitmapProvider = if (showThumbs) { uri ->
+                    // Non-blocking check of memory cache only; full async load in background
+                    val key = appContainer.thumbnailDiskCache.keyFor(uri)
+                    @Suppress("UNUSED_EXPRESSION")
+                    appContainer.thumbnailMemoryPolicy.get(key)
+                    null // Return null for now; real load happens async via ThumbnailLoader
+                } else null
+            )
             recycler.adapter = adapter
-            libraryFeature.videosInFolder(folderName).collect { videos ->
+            val flow = if (isFavorites) {
+                favoriteRepository.observeFavorites()
+            } else {
+                libraryFeature.videosInFolder(folderName)
+            }
+            flow.collect { videos ->
                 adapter.submit(videos, showThumbs)
                 if (videos.isEmpty()) {
-                    status.text = "Folder \"$folderName\" is empty. Tap Refresh to scan for new videos."
+                    status.text = if (isFavorites) {
+                        "No favorite videos. Long-press a video to add it to favorites."
+                    } else {
+                        "Folder \"$folderName\" is empty. Tap Refresh to scan for new videos."
+                    }
                 }
             }
         }
@@ -120,7 +156,16 @@ class MainActivity : AppCompatActivity() {
         collectJob = lifecycleScope.launch {
             val prefs = settingsFeature.observe().first()
             val showThumbs = prefs.showThumbnails && !prefs.headunitSafeMode
-            val adapter = VideoAdapter(emptyList(), showThumbs) { openVideo(it) }
+            val adapter = VideoAdapter(
+                items = emptyList(),
+                showThumbnails = showThumbs,
+                onClick = { openVideo(it) },
+                onLongPress = { toggleFavorite(it) },
+                thumbnailBitmapProvider = if (showThumbs) { uri ->
+                    val key = appContainer.thumbnailDiskCache.keyFor(uri)
+                    appContainer.thumbnailMemoryPolicy.get(key)
+                } else null
+            )
             recycler.adapter = adapter
             libraryFeature.recentVideos().collect { videos ->
                 adapter.submit(videos, showThumbs)
@@ -128,6 +173,13 @@ class MainActivity : AppCompatActivity() {
                     status.text = "No recently watched videos. Play a video to see it here."
                 }
             }
+        }
+    }
+
+    private fun toggleFavorite(video: VideoItemEntity) {
+        lifecycleScope.launch {
+            val isNowFav = favoriteRepository.toggle(video.uri)
+            status.text = if (isNowFav) "★ Added to favorites" else "☆ Removed from favorites"
         }
     }
 
@@ -174,6 +226,7 @@ class MainActivity : AppCompatActivity() {
             findViewById<SwitchCompat>(R.id.switchSafeMode).isChecked = s.headunitSafeMode
             findViewById<SwitchCompat>(R.id.switchAutoHideControls).isChecked = s.autoHideControls
             findViewById<SwitchCompat>(R.id.switchFancyBlur).isChecked = s.useFancyBlur
+            findViewById<SwitchCompat>(R.id.switchCompactPlaylist).isChecked = s.compactPlaylistRows
             findViewById<Button>(R.id.btnAccentColor).text = s.accentColorName
             findViewById<Button>(R.id.btnDefaultSpeed).text = "${s.defaultSpeed}x"
             findViewById<Button>(R.id.btnRepeatMode).text = repeatModeLabel(s.defaultRepeatMode)
@@ -216,6 +269,8 @@ class MainActivity : AppCompatActivity() {
                 if (checked) {
                     settingsStore.setShowThumbnails(false)
                     settingsStore.setFloating(false)
+                    settingsStore.setUseFancyBlur(false)
+                    settingsStore.setAutoHideControls(false)
                 }
                 showSettings()
             }
@@ -225,6 +280,9 @@ class MainActivity : AppCompatActivity() {
         }
         findViewById<SwitchCompat>(R.id.switchFancyBlur).setOnCheckedChangeListener { _, checked ->
             lifecycleScope.launch { settingsStore.setUseFancyBlur(checked) }
+        }
+        findViewById<SwitchCompat>(R.id.switchCompactPlaylist).setOnCheckedChangeListener { _, checked ->
+            lifecycleScope.launch { settingsStore.setCompactPlaylist(checked) }
         }
 
         // Accent color cycle

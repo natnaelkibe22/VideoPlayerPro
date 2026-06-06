@@ -21,7 +21,8 @@ import com.natkibe.videoplayerpro.core.TimeFormat
 class PlaylistItemAdapter(
     private var items: List<PlaylistItemUiModel> = emptyList(),
     private var showThumbnails: Boolean = true,
-    private val listener: PlaylistInteractionListener
+    private val listener: PlaylistInteractionListener,
+    private val thumbnailProvider: ((String) -> android.graphics.Bitmap?)? = null
 ) : RecyclerView.Adapter<PlaylistItemAdapter.ViewHolder>() {
 
     /** Updates the item list and optionally thumbnail visibility, then rebinds visible rows. */
