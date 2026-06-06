@@ -10,12 +10,17 @@ import androidx.appcompat.app.AlertDialog
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
 /**
- * Repeat mode constants mirroring [androidx.media3.common.Player] repeat modes.
+ * Repeat mode constants.
+ *
+ * OFF, ONE, and ALL mirror [androidx.media3.common.Player] repeat modes.
+ * FOLDER is a custom mode (value 3) managed at the PlayerEngine/PlayerActivity
+ * level; ExoPlayer is set to REPEAT_MODE_OFF when FOLDER is active.
  */
 object RepeatMode {
     const val OFF = androidx.media3.common.Player.REPEAT_MODE_OFF   // 0
     const val ONE = androidx.media3.common.Player.REPEAT_MODE_ONE   // 1
     const val ALL = androidx.media3.common.Player.REPEAT_MODE_ALL   // 2
+    const val FOLDER = 3                                             // custom
 }
 
 /**
@@ -25,6 +30,7 @@ object RepeatMode {
  * - "Repeat Off"    (REPEAT_MODE_OFF)
  * - "Repeat One"    (REPEAT_MODE_ONE)
  * - "Repeat All"    (REPEAT_MODE_ALL)
+ * - "Repeat Folder" (custom FOLDER)
  *
  * Each row is ≥56dp tall for accessible touch targets.
  * The currently-active mode is highlighted with a checked radio button.
@@ -37,8 +43,8 @@ class RepeatModeSheet(
     private val context: Context,
     private val onRepeatSelected: (Int) -> Unit
 ) {
-    private val modes: IntArray = intArrayOf(RepeatMode.OFF, RepeatMode.ONE, RepeatMode.ALL)
-    private val labels: Array<String> = arrayOf("Repeat Off", "Repeat One", "Repeat All")
+    private val modes: IntArray = intArrayOf(RepeatMode.OFF, RepeatMode.ONE, RepeatMode.ALL, RepeatMode.FOLDER)
+    private val labels: Array<String> = arrayOf("Repeat Off", "Repeat One", "Repeat All", "Repeat Folder")
 
     private var dialog: AlertDialog? = null
 
@@ -47,7 +53,7 @@ class RepeatModeSheet(
     /**
      * Show the repeat-mode selector with [currentMode] pre-selected.
      *
-     * @param currentMode One of [RepeatMode.OFF], [RepeatMode.ONE], [RepeatMode.ALL].
+     * @param currentMode One of [RepeatMode.OFF], [RepeatMode.ONE], [RepeatMode.ALL], [RepeatMode.FOLDER].
      */
     fun show(currentMode: Int) {
         dismiss()

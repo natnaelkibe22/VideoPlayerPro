@@ -45,5 +45,16 @@
             android:name=".player.FloatingPlayerService"
             android:foregroundServiceType="mediaPlayback"
             android:exported="false" />
+
+        <!-- Milestone 4: new floating & audio-only service locations -->
+        <service
+            android:name=".floating.FloatingWindowService"
+            android:foregroundServiceType="mediaPlayback"
+            android:exported="false" />
+
+        <service
+            android:name=".audioonly.AudioOnlyNotificationController"
+            android:foregroundServiceType="mediaPlayback"
+            android:exported="false" />
     </application>
 </manifest>

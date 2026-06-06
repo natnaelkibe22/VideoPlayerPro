@@ -27,10 +27,15 @@ import com.natkibe.videoplayerpro.R
 import com.natkibe.videoplayerpro.core.TimeFormat
 import com.natkibe.videoplayerpro.core.contracts.VideoPlayerProAppContainer
 import com.natkibe.videoplayerpro.data.VideoItemEntity
+import com.natkibe.videoplayerpro.audioonly.AudioOnlyController
 import com.natkibe.videoplayerpro.controls.PlayerControlsController
 import com.natkibe.videoplayerpro.controls.PlaybackMenuController
 import com.natkibe.videoplayerpro.controls.PlaybackSpeedSheet
+import com.natkibe.videoplayerpro.controls.RepeatMode
 import com.natkibe.videoplayerpro.controls.RepeatModeSheet
+import com.natkibe.videoplayerpro.controls.SettingsSheet
+import com.natkibe.videoplayerpro.floating.FloatingWindowController
+import com.natkibe.videoplayerpro.floating.OverlayPermissionHelper
 import com.natkibe.videoplayerpro.playlist.PlaylistDrawerController
 import com.natkibe.videoplayerpro.playlist.PlaylistInteractionListener
 import com.natkibe.videoplayerpro.playlist.PlaylistItemAdapter
@@ -101,6 +106,12 @@ class PlayerActivity : AppCompatActivity() {
     private lateinit var speedSheet: PlaybackSpeedSheet
     private lateinit var repeatSheet: RepeatModeSheet
 
+    // Audio-only and floating controllers (Milestone 4 rewrite)
+    private val audioOnlyController by lazy { AudioOnlyController(this) }
+    private val floatingController by lazy { FloatingWindowController(this) }
+    private val overlayPermissionHelper by lazy { OverlayPermissionHelper(this) }
+    private lateinit var settingsSheet: SettingsSheet
+
     // New view refs for top bar
     private lateinit var speedLabel: TextView
     private lateinit var musicStatusLabel: TextView
@@ -113,22 +124,20 @@ class PlayerActivity : AppCompatActivity() {
     private var lastProgressSaveMs = 0L
     private val progressSaveThrottleMs = 5_000L
 
-    // Broadcast receiver for floating service closed
+    // Broadcast receiver for floating service closed (Milestone 4: uses FloatingWindowService)
     private val floatingClosedReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
-            if (intent?.action == FloatingPlayerService.ACTION_FLOATING_CLOSED) {
+            if (intent?.action == com.natkibe.videoplayerpro.floating.FloatingWindowService.ACTION_FLOATING_CLOSED) {
                 onFloatingServiceStopped()
             }
         }
     }
 
-    // Overlay permission launcher
+    // Overlay permission launcher (Milestone 4: uses FloatingWindowController)
     private val overlayPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { _ ->
-        // After returning from settings, check if permission was granted
-        val floating = appContainer.createFloatingPlayerFeature()
-        if (floating.canDrawOverApps()) {
+        if (overlayPermissionHelper.canDrawOverApps()) {
             enterFloatingMode()
         } else {
             Toast.makeText(this, "Overlay permission is required for floating player", Toast.LENGTH_LONG).show()
@@ -234,7 +243,7 @@ class PlayerActivity : AppCompatActivity() {
         startProgressUpdates()
 
         // Register broadcast receiver for floating service closed
-        registerReceiver(floatingClosedReceiver, IntentFilter(FloatingPlayerService.ACTION_FLOATING_CLOSED),
+        registerReceiver(floatingClosedReceiver, IntentFilter(com.natkibe.videoplayerpro.floating.FloatingWindowService.ACTION_FLOATING_CLOSED),
             if (Build.VERSION.SDK_INT >= 33) RECEIVER_NOT_EXPORTED else 0
         )
     }
@@ -247,6 +256,7 @@ class PlayerActivity : AppCompatActivity() {
         playbackMenu.dismiss()
         speedSheet.dismiss()
         repeatSheet.dismiss()
+        settingsSheet.dismiss()
         // Detach view and destroy player through engine
         playerEngine.detachFullscreenPlayerView()
         playerEngine.destroyPlayer()
@@ -280,10 +290,52 @@ class PlayerActivity : AppCompatActivity() {
                 override fun onAudioOnlyClicked() { toggleAudioOnly() }
                 override fun onFloatingClicked() { toggleFloating() }
                 override fun onSettingsClicked() {
-                    Toast.makeText(this@PlayerActivity, "Settings", Toast.LENGTH_SHORT).show()
+                    val settings = appContainer.settingsStore.settings
+                    lifecycleScope.launch {
+                        val current = settings.first()
+                        settingsSheet = SettingsSheet(
+                            context = this@PlayerActivity,
+                            autoHideEnabled = current.autoHideControls,
+                            headunitSafeMode = current.headunitSafeMode,
+                            onAutoHideChanged = { enabled ->
+                                lifecycleScope.launch {
+                                    appContainer.settingsStore.setAutoHideControls(enabled)
+                                }
+                                controlsController.updateSettings(
+                                    autoHideEnabled = enabled,
+                                    headunitSafeMode = controlsController.state.headunitSafeMode
+                                )
+                            },
+                            onHeadunitChanged = { enabled ->
+                                lifecycleScope.launch {
+                                    appContainer.settingsStore.setHeadunitSafeMode(enabled)
+                                }
+                                controlsController.updateSettings(
+                                    autoHideEnabled = controlsController.state.autoHideEnabled,
+                                    headunitSafeMode = enabled
+                                )
+                            }
+                        )
+                        settingsSheet.show()
+                    }
                 }
                 override fun onRefreshClicked() {
-                    Toast.makeText(this@PlayerActivity, "Library refreshed", Toast.LENGTH_SHORT).show()
+                    lifecycleScope.launch {
+                        try {
+                            val count = appContainer.videoLibraryRepository.refreshNow()
+                            Toast.makeText(
+                                this@PlayerActivity,
+                                "Library refreshed ($count videos)",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        } catch (e: Exception) {
+                            Toast.makeText(
+                                this@PlayerActivity,
+                                "Refresh failed: ${e.message}",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    }
                 }
             }
         )
@@ -295,12 +347,7 @@ class PlayerActivity : AppCompatActivity() {
         }
 
         repeatSheet = RepeatModeSheet(this@PlayerActivity) { mode ->
-            val engineState = playerEngine.state.value
-            var current = engineState.repeatMode
-            while (current != mode) {
-                playerEngine.dispatch(PlaybackCommand.CycleRepeatMode)
-                current = (current + 1) % 3
-            }
+            playerEngine.setRepeatMode(mode)
         }
 
         // Touch listeners on control layers to reset auto-hide timer
@@ -386,9 +433,13 @@ class PlayerActivity : AppCompatActivity() {
                 playerEngine.dispatch(PlaybackCommand.SetSpeed(settings.defaultSpeed))
             }
             if (settings.defaultRepeatMode != Player.REPEAT_MODE_OFF) {
-                // Cycle to reach the desired mode (engine starts at REPEAT_MODE_OFF)
-                while (playerEngine.state.value.repeatMode != settings.defaultRepeatMode) {
-                    playerEngine.dispatch(PlaybackCommand.CycleRepeatMode)
+                playerEngine.setRepeatMode(settings.defaultRepeatMode)
+            }
+
+            // Wire folder-aware next-video callback
+            playerEngine.setOnFolderNextRequested {
+                lifecycleScope.launch {
+                    skipNext()
                 }
             }
 
@@ -637,6 +688,16 @@ class PlayerActivity : AppCompatActivity() {
                 }
                 if (entity != null) playVideoItem(entity) else playByUri(nextUri)
             }
+        } else if (playerEngine.state.value.repeatMode == RepeatMode.FOLDER &&
+                   playlistAdapter.itemCount > 0) {
+            // Repeat Folder: wrap to the first item in the folder
+            val firstUri = playlistAdapter.getItemAt(0)?.uri ?: return
+            lifecycleScope.launch {
+                val entity = withContext(Dispatchers.IO) {
+                    appContainer.database.videoDao().videoByUri(firstUri)
+                }
+                if (entity != null) playVideoItem(entity) else playByUri(firstUri)
+            }
         } else {
             // No next item, restart current
             playerEngine.dispatch(PlaybackCommand.SeekTo(0L))
@@ -689,15 +750,12 @@ class PlayerActivity : AppCompatActivity() {
         if (playerEngine.state.value.isFloating) {
             exitFloatingMode()
         } else {
-            val floating = appContainer.createFloatingPlayerFeature()
-            if (!floating.canDrawOverApps()) {
+            if (!overlayPermissionHelper.canDrawOverApps()) {
                 // Request overlay permission
                 Toast.makeText(this, "Overlay permission required to float video", Toast.LENGTH_LONG).show()
-                if (Build.VERSION.SDK_INT >= 23) {
-                    val intent = floating.overlayPermissionIntent()
-                    if (intent != null) {
-                        overlayPermissionLauncher.launch(intent)
-                    }
+                val intent = overlayPermissionHelper.permissionIntent()
+                if (intent != null) {
+                    overlayPermissionLauncher.launch(intent)
                 }
                 return
             }
@@ -707,53 +765,43 @@ class PlayerActivity : AppCompatActivity() {
 
     private fun enterFloatingMode() {
         currentMode = PlayerMode.FLOATING_VIDEO
-        // If coming from audio-only, reset its status and stop its service
+        // If coming from audio-only, exit audio-only first
         if (playerEngine.state.value.isAudioOnly) {
+            audioOnlyController.exit()
             musicStatusLabel.visibility = View.GONE
-            stopService(Intent(this, AudioOnlyService::class.java))
         }
         saveProgress()
-        playerEngine.dispatch(PlaybackCommand.ToggleFloating)
-        appContainer.createFloatingPlayerFeature().startIfAllowed()
+        floatingController.enter()
     }
 
     private fun exitFloatingMode() {
         currentMode = PlayerMode.FULLSCREEN
-        // Stop the floating service
+        // Stop both old and new floating services
         stopService(Intent(this, FloatingPlayerService::class.java))
-        // Re-attach player to this view via engine
-        playerEngine.returnToFullscreen()
+        floatingController.exit()
     }
 
-    /** Called when FloatingPlayerService stops on its own (user tapped close button). */
+    /** Called when FloatingWindowService stops on its own (user tapped close button). */
     private fun onFloatingServiceStopped() {
         if (playerEngine.state.value.isFloating) {
             currentMode = PlayerMode.FULLSCREEN
-            // Re-attach player to this view via engine
+            floatingController.onServiceStopped()
             playerEngine.returnToFullscreen()
         }
     }
 
     private fun toggleAudioOnly() {
         if (playerEngine.state.value.isAudioOnly) {
-            // Exit audio-only mode - restore video surface
             currentMode = PlayerMode.FULLSCREEN
-            playerEngine.dispatch(PlaybackCommand.ToggleAudioOnly)
-            // Stop AudioOnlyService if running
-            stopService(Intent(this, AudioOnlyService::class.java))
-            // Re-attach video surface
-            playerEngine.surfaceRouter.attachToFullscreen()
+            audioOnlyController.exit()
         } else {
-            // If coming from floating mode, stop its service
+            // If coming from floating mode, exit floating first
             if (playerEngine.state.value.isFloating) {
-                stopService(Intent(this, FloatingPlayerService::class.java))
+                floatingController.exit()
             }
             currentMode = PlayerMode.AUDIO_ONLY
             saveProgress()
-            playerEngine.dispatch(PlaybackCommand.ToggleAudioOnly)
-            // Start AudioOnlyService (surface already detached by ToggleAudioOnly)
-            val intent = Intent(this, AudioOnlyService::class.java)
-            if (Build.VERSION.SDK_INT >= 26) startForegroundService(intent) else startService(intent)
+            audioOnlyController.enter()
         }
     }
 
@@ -763,6 +811,7 @@ class PlayerActivity : AppCompatActivity() {
         val currentRepeat = when (engineState.repeatMode) {
             Player.REPEAT_MODE_ONE -> "Repeat One"
             Player.REPEAT_MODE_ALL -> "Repeat All"
+            RepeatMode.FOLDER -> "Repeat Folder"
             else -> "Repeat Off"
         }
         playbackMenu.show(
@@ -904,14 +953,15 @@ class PlayerActivity : AppCompatActivity() {
         // If we were in floating mode and came back, re-attach and stop service
         if (engineState.isFloating) {
             currentMode = PlayerMode.FULLSCREEN
+            // Stop both old and new floating services
             stopService(Intent(this, FloatingPlayerService::class.java))
+            stopService(Intent(this, com.natkibe.videoplayerpro.floating.FloatingWindowService::class.java))
             playerEngine.returnToFullscreen()
         }
         // If we were in audio-only mode and came back, re-attach and stop service
         if (engineState.isAudioOnly) {
             currentMode = PlayerMode.FULLSCREEN
-            stopService(Intent(this, AudioOnlyService::class.java))
-            playerEngine.returnToFullscreen()
+            audioOnlyController.exit()
         }
     }
 
