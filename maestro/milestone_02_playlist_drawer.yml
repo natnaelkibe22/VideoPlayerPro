@@ -24,11 +24,9 @@ appId: com.natkibe.videoplayerpro
 # Flow 1: Open Playlist Drawer from right edge swipe
 # ============================================================
 - swipe:
-    from:
-      x: 95%          # start near right edge
-    to:
-      x: 70%           # swipe inward
-    durationMs: 400
+    start: "95%,50%"  # start near right edge
+    end: "70%,50%"    # swipe inward
+    duration: 400
 - waitForAnimationToEnd
 - assertVisible:
     id: "com.natkibe.videoplayerpro:id/sidePlaylist"
@@ -60,13 +58,9 @@ appId: com.natkibe.videoplayerpro
     id: "com.natkibe.videoplayerpro:id/sidePlaylist"
 # Swipe right on the drawer (from drawer center to far right)
 - swipe:
-    from:
-      x: 80%
-      y: 50%
-    to:
-      x: 95%
-      y: 50%
-    durationMs: 300
+    start: "80%,50%"
+    end: "95%,50%"
+    duration: 300
 - waitForAnimationToEnd
 # Verify drawer closed — playlistRecycler should no longer be interactable
 - assertVisible:

@@ -57,7 +57,7 @@ class PlayerControlsController(
 
     /** Toggle visibility: show if hidden, hide if visible. */
     fun toggleControls() {
-        if (_state.controlsVisible) hideControls() else showControls()
+        if (_state.controlsVisible) hideControls() else onUserInteraction()
     }
 
     /**

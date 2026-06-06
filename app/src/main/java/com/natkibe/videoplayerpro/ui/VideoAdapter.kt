@@ -15,7 +15,8 @@ class VideoAdapter(
     private var showThumbnails: Boolean,
     private val onClick: (VideoItemEntity) -> Unit,
     private val onLongPress: ((VideoItemEntity) -> Unit)? = null,
-    private val thumbnailBitmapProvider: ((String) -> Bitmap?)? = null
+    private val thumbnailBitmapProvider: ((String) -> Bitmap?)? = null,
+    private val onThumbnailMissing: ((String) -> Unit)? = null
 ) : RecyclerView.Adapter<VideoAdapter.VideoViewHolder>() {
 
     fun submit(newItems: List<VideoItemEntity>, showThumbnails: Boolean) {
@@ -26,6 +27,11 @@ class VideoAdapter(
 
     /** Returns the item at the given position, used by PlayerActivity for playlist navigation. */
     fun getItemAt(position: Int): VideoItemEntity? = items.getOrNull(position)
+
+    fun notifyUriChanged(uri: String) {
+        val index = items.indexOfFirst { it.uri == uri }
+        if (index >= 0) notifyItemChanged(index)
+    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VideoViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.row_video, parent, false)
@@ -46,8 +52,10 @@ class VideoAdapter(
                 holder.thumbImage.visibility = android.view.View.VISIBLE
                 holder.thumb.visibility = android.view.View.GONE
             } else {
+                holder.thumbImage.setImageDrawable(null)
                 holder.thumbImage.visibility = android.view.View.GONE
                 holder.thumb.visibility = android.view.View.VISIBLE
+                onThumbnailMissing?.invoke(item.uri)
             }
         } else {
             holder.thumbImage.visibility = android.view.View.GONE

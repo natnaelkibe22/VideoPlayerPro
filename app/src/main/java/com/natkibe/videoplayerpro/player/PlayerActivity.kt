@@ -126,6 +126,7 @@ class PlayerActivity : AppCompatActivity() {
     private var progressUpdateJob: Job? = null
     private var lastProgressSaveMs = 0L
     private val progressSaveThrottleMs = 5_000L
+    private var ignoreNextPlayerClick = false
 
     // Broadcast receiver for floating service closed (Milestone 4: uses FloatingWindowService)
     private val floatingClosedReceiver = object : BroadcastReceiver() {
@@ -230,20 +231,17 @@ class PlayerActivity : AppCompatActivity() {
 
         initControlsController()
 
-        // Tap video to toggle controls, swipe from right edge to open drawer.
-        // Use setOnTouchListener so we can forward events to the drawer's edge
-        // gesture detector — PlayerView's SurfaceView would consume clicks otherwise.
+        // Tap video to toggle controls. Right-edge drawer swipes are routed from
+        // dispatchTouchEvent so they still arrive when PlayerView children consume touch.
         playerView.setOnTouchListener { _, event ->
-            // Let drawer controller check for edge swipe first
-            if (::playlistDrawerController.isInitialized && playlistDrawerController.onTouchEvent(event)) {
-                return@setOnTouchListener true
-            }
-            // Tap detection: toggle controls on ACTION_UP
             if (event.action == MotionEvent.ACTION_UP) {
-                controlsController.toggleControls()
-                if (controlsController.state.controlsVisible) showControls() else hideControls()
+                if (ignoreNextPlayerClick) {
+                    ignoreNextPlayerClick = false
+                } else {
+                    controlsController.toggleControls()
+                }
             }
-            false // don't consume, let PlayerView handle internally
+            false // don't consume, let PlayerView handle normal interactions internally
         }
 
         setupControls()
@@ -255,6 +253,13 @@ class PlayerActivity : AppCompatActivity() {
         registerReceiver(floatingClosedReceiver, IntentFilter(com.natkibe.videoplayerpro.floating.FloatingWindowService.ACTION_FLOATING_CLOSED),
             if (Build.VERSION.SDK_INT >= 33) RECEIVER_NOT_EXPORTED else 0
         )
+    }
+
+    override fun dispatchTouchEvent(event: MotionEvent): Boolean {
+        if (::playlistDrawerController.isInitialized && playlistDrawerController.onTouchEvent(event)) {
+            ignoreNextPlayerClick = true
+        }
+        return super.dispatchTouchEvent(event)
     }
 
     override fun onDestroy() {

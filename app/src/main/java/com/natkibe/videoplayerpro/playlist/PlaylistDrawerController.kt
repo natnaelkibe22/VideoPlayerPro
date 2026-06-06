@@ -37,7 +37,7 @@ class PlaylistDrawerController(
     /** Flag to prevent overlapping animations. */
     private var isAnimating = false
 
-    /** Gesture detector for edge-swipe-to-open (on the root container). */
+    /** Gesture detector for edge-swipe-to-open (fed by host dispatchTouchEvent). */
     private val edgeGestureDetector: GestureDetector
 
     /** Gesture detector for swipe-right-to-close (on the drawer itself). */
@@ -49,17 +49,12 @@ class PlaylistDrawerController(
     /** Calculated drawer width in pixels. */
     private var drawerWidthPx: Int = 0
 
-    /** The root container (parent of drawerView) used for edge-swipe detection. */
-    private val rootContainer: View
+    private var edgeSwipeStartedInMargin = false
 
     init {
         val context = drawerView.context
         val density = context.resources.displayMetrics.density
         edgeMarginPx = (50 * density).toInt()
-
-        // Root container is the parent FrameLayout that contains both the content and the drawer
-        rootContainer = drawerView.parent as? View
-            ?: error("drawerView must have a parent ViewGroup")
 
         // Gesture detector for edge swipe (left-fling from right edge)
         edgeGestureDetector = GestureDetector(context, EdgeSwipeGestureListener())
@@ -89,16 +84,31 @@ class PlaylistDrawerController(
 
     /**
      * Forward touch events to the edge-swipe gesture detector.
-     * Call this from the PlayerView touch listener so that swipes
-     * over the video surface are detected alongside rootContainer touches.
+     * Call this from the host Activity's dispatchTouchEvent so swipes over the
+     * video surface are observed even when PlayerView children consume touches.
      *
-     * @return true if the gesture detector consumed the event.
+     * @return true if the drawer opened and the event stream should be consumed.
      */
     fun onTouchEvent(event: MotionEvent): Boolean {
-        if (!drawerState.isOpen && !isAnimating) {
-            return edgeGestureDetector.onTouchEvent(event)
+        if (drawerState.isOpen || isAnimating) return false
+
+        when (event.actionMasked) {
+            MotionEvent.ACTION_DOWN -> {
+                val screenWidth = drawerView.resources.displayMetrics.widthPixels
+                edgeSwipeStartedInMargin = event.rawX >= screenWidth - edgeMarginPx
+            }
+            MotionEvent.ACTION_CANCEL, MotionEvent.ACTION_UP -> {
+                val consumed = edgeGestureDetector.onTouchEvent(event)
+                edgeSwipeStartedInMargin = false
+                return consumed
+            }
         }
-        return false
+
+        return if (edgeSwipeStartedInMargin) {
+            edgeGestureDetector.onTouchEvent(event)
+        } else {
+            false
+        }
     }
 
     /** Animate the drawer open. */
@@ -186,26 +196,26 @@ class PlaylistDrawerController(
             false
         }
 
-        // Edge-swipe detection on the root container (swipe from right edge to open).
-        // We always return false so touch events pass through to player controls.
-        // The gesture detector observes all events but only acts on left-flings when closed.
-        rootContainer.setOnTouchListener { _, event ->
-            if (!drawerState.isOpen && !isAnimating) {
-                edgeGestureDetector.onTouchEvent(event)
-            }
-            false // Never consume — player controls must still work when drawer is closed
-        }
-
         // RecyclerView scroll should work normally when drawer is open
         recyclerView.setNestedScrollingEnabled(true)
         recyclerView.isFocusable = true
         recyclerView.isFocusableInTouchMode = true
     }
 
-    /** Gesture listener that detects a left-fling (velocityX < -300) to open the drawer. */
+    /** Gesture listener that detects a horizontal left-fling from the right edge. */
     private inner class EdgeSwipeGestureListener : GestureDetector.SimpleOnGestureListener() {
+        override fun onDown(e: MotionEvent): Boolean = edgeSwipeStartedInMargin
+
         override fun onFling(e1: MotionEvent?, e2: MotionEvent, velocityX: Float, velocityY: Float): Boolean {
-            if (!drawerState.isOpen && velocityX < -300) {
+            val start = e1 ?: return false
+            val deltaX = e2.rawX - start.rawX
+            val deltaY = e2.rawY - start.rawY
+            val isHorizontalLeftSwipe = deltaX < -MIN_SWIPE_DISTANCE_PX &&
+                kotlin.math.abs(deltaX) > kotlin.math.abs(deltaY) * HORIZONTAL_SWIPE_RATIO &&
+                velocityX < -MIN_FLING_VELOCITY &&
+                kotlin.math.abs(velocityX) > kotlin.math.abs(velocityY)
+
+            if (!drawerState.isOpen && edgeSwipeStartedInMargin && isHorizontalLeftSwipe) {
                 openDrawer()
                 return true
             }
@@ -321,5 +331,9 @@ class PlaylistDrawerController(
 
         /** Maximum alpha value for the dim overlay behind the drawer. */
         private const val DIM_ALPHA_MAX = 0.5f
+
+        private const val MIN_FLING_VELOCITY = 300f
+        private const val MIN_SWIPE_DISTANCE_PX = 48f
+        private const val HORIZONTAL_SWIPE_RATIO = 1.5f
     }
 }

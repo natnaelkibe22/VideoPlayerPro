@@ -24,6 +24,7 @@ import com.natkibe.videoplayerpro.ui.VideoAdapter
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import java.util.Collections
 
 class MainActivity : AppCompatActivity() {
     private val appContainer by lazy { VideoPlayerProAppContainer(this) }
@@ -39,6 +40,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var settingsPanel: ScrollView
     private lateinit var settingsTextInfo: TextView
     private var collectJob: Job? = null
+    private var thumbnailGeneration = 0
+    private val inFlightThumbnails = Collections.synchronizedSet(mutableSetOf<String>())
 
     private val permissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
         if (granted) {
@@ -64,12 +67,8 @@ class MainActivity : AppCompatActivity() {
         findViewById<ImageButton>(R.id.settingsTab).setOnClickListener { showSettings() }
         findViewById<ImageButton>(R.id.refreshButton).setOnClickListener {
             lifecycleScope.launch {
-                if (settingsStore.settings.first().headunitSafeMode) {
-                    status.text = "Refresh disabled in Headunit Safe Mode"
-                    return@launch
-                }
                 libraryFeature.refreshInBackground()
-                status.text = "Refreshing videos in background..."
+                status.text = "Manual refresh started in background..."
             }
         }
 
@@ -108,6 +107,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun showVideos(folderName: String, isFavorites: Boolean = false) {
         collectJob?.cancel()
+        val generation = nextThumbnailGeneration()
         settingsPanel.visibility = View.GONE
         settingsTextInfo.visibility = View.GONE
         recycler.visibility = View.VISIBLE
@@ -115,17 +115,17 @@ class MainActivity : AppCompatActivity() {
         collectJob = lifecycleScope.launch {
             val prefs = settingsFeature.observe().first()
             val showThumbs = prefs.showThumbnails && !prefs.headunitSafeMode
-            val adapter = VideoAdapter(
+            lateinit var adapter: VideoAdapter
+            adapter = VideoAdapter(
                 items = emptyList(),
                 showThumbnails = showThumbs,
                 onClick = { openVideo(it) },
                 onLongPress = { toggleFavorite(it) },
                 thumbnailBitmapProvider = if (showThumbs) { uri ->
-                    // Non-blocking check of memory cache only; full async load in background
-                    val key = appContainer.thumbnailDiskCache.keyFor(uri)
-                    @Suppress("UNUSED_EXPRESSION")
-                    appContainer.thumbnailMemoryPolicy.get(key)
-                    null // Return null for now; real load happens async via ThumbnailLoader
+                    appContainer.thumbnailMemoryPolicy.get(appContainer.thumbnailDiskCache.keyFor(uri))
+                } else null,
+                onThumbnailMissing = if (showThumbs) { uri ->
+                    loadThumbnailForVisibleRow(uri, adapter, generation)
                 } else null
             )
             recycler.adapter = adapter
@@ -149,6 +149,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun showRecent() {
         collectJob?.cancel()
+        val generation = nextThumbnailGeneration()
         settingsPanel.visibility = View.GONE
         settingsTextInfo.visibility = View.GONE
         recycler.visibility = View.VISIBLE
@@ -156,7 +157,8 @@ class MainActivity : AppCompatActivity() {
         collectJob = lifecycleScope.launch {
             val prefs = settingsFeature.observe().first()
             val showThumbs = prefs.showThumbnails && !prefs.headunitSafeMode
-            val adapter = VideoAdapter(
+            lateinit var adapter: VideoAdapter
+            adapter = VideoAdapter(
                 items = emptyList(),
                 showThumbnails = showThumbs,
                 onClick = { openVideo(it) },
@@ -164,6 +166,9 @@ class MainActivity : AppCompatActivity() {
                 thumbnailBitmapProvider = if (showThumbs) { uri ->
                     val key = appContainer.thumbnailDiskCache.keyFor(uri)
                     appContainer.thumbnailMemoryPolicy.get(key)
+                } else null,
+                onThumbnailMissing = if (showThumbs) { uri ->
+                    loadThumbnailForVisibleRow(uri, adapter, generation)
                 } else null
             )
             recycler.adapter = adapter
@@ -180,6 +185,26 @@ class MainActivity : AppCompatActivity() {
         lifecycleScope.launch {
             val isNowFav = favoriteRepository.toggle(video.uri)
             status.text = if (isNowFav) "★ Added to favorites" else "☆ Removed from favorites"
+        }
+    }
+
+    private fun nextThumbnailGeneration(): Int {
+        inFlightThumbnails.clear()
+        thumbnailGeneration += 1
+        return thumbnailGeneration
+    }
+
+    private fun loadThumbnailForVisibleRow(uri: String, adapter: VideoAdapter, generation: Int) {
+        if (generation != thumbnailGeneration || !inFlightThumbnails.add(uri)) return
+        lifecycleScope.launch {
+            try {
+                val bitmap = appContainer.thumbnailLoader.loadThumbnail(uri)
+                if (bitmap != null && generation == thumbnailGeneration && recycler.adapter === adapter) {
+                    adapter.notifyUriChanged(uri)
+                }
+            } finally {
+                inFlightThumbnails.remove(uri)
+            }
         }
     }
 
