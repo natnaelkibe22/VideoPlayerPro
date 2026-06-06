@@ -8,6 +8,7 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
+import com.natkibe.videoplayerpro.controls.RepeatMode
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -19,6 +20,19 @@ class PlayerEngine private constructor(
 ) {
     private var player: ExoPlayer? = null
     private var videoSurfaceAttached = false
+
+    /**
+     * Custom repeat mode that cannot be represented by ExoPlayer's native modes.
+     * When set to [RepeatMode.FOLDER], ExoPlayer is kept at REPEAT_MODE_OFF and
+     * folder-aware next-video logic is triggered on playback end.
+     */
+    private var customRepeatMode: Int? = null
+
+    /**
+     * Callback invoked when playback ends while [customRepeatMode] is FOLDER.
+     * The callback should select and play the next video from the same folder.
+     */
+    private var onFolderNextRequested: (() -> Unit)? = null
 
     private val _state = MutableStateFlow(PlayerEngineState())
     val state: StateFlow<PlayerEngineState> = _state.asStateFlow()
@@ -79,6 +93,10 @@ class PlayerEngine private constructor(
                 updateStateFromPlayer()
                 if (playbackState == Player.STATE_ENDED) {
                     saveProgress()
+                    // If custom repeat mode is FOLDER, request the next video from same folder
+                    if (customRepeatMode == RepeatMode.FOLDER) {
+                        onFolderNextRequested?.invoke()
+                    }
                 }
             }
 
@@ -105,6 +123,7 @@ class PlayerEngine private constructor(
 
     private fun updateStateFromPlayer() {
         val p = player ?: return
+        val effectiveRepeat = customRepeatMode ?: p.repeatMode
         _state.update { current ->
             current.copy(
                 positionMs = p.currentPosition.coerceAtLeast(0L),
@@ -112,7 +131,7 @@ class PlayerEngine private constructor(
                 isPlaying = p.isPlaying,
                 isBuffering = p.playbackState == Player.STATE_BUFFERING,
                 speed = p.playbackParameters.speed,
-                repeatMode = p.repeatMode
+                repeatMode = effectiveRepeat
             )
         }
     }
@@ -197,14 +216,45 @@ class PlayerEngine private constructor(
 
     fun cycleRepeatMode() {
         val p = player ?: return
-        val newMode = when (p.repeatMode) {
+        val current = customRepeatMode ?: p.repeatMode
+        val newMode = when (current) {
             Player.REPEAT_MODE_OFF -> Player.REPEAT_MODE_ONE
             Player.REPEAT_MODE_ONE -> Player.REPEAT_MODE_ALL
-            Player.REPEAT_MODE_ALL -> Player.REPEAT_MODE_OFF
+            Player.REPEAT_MODE_ALL -> RepeatMode.FOLDER
+            RepeatMode.FOLDER -> Player.REPEAT_MODE_OFF
             else -> Player.REPEAT_MODE_OFF
         }
-        p.repeatMode = newMode
-        _state.update { it.copy(repeatMode = newMode) }
+        applyRepeatMode(newMode)
+    }
+
+    /**
+     * Set the repeat mode directly (used by the sheet UI).
+     */
+    fun setRepeatMode(mode: Int) {
+        applyRepeatMode(mode)
+    }
+
+    /**
+     * Register a callback for folder-aware "next video" selection.
+     * Called when the current video ends and [RepeatMode.FOLDER] is active.
+     */
+    fun setOnFolderNextRequested(callback: (() -> Unit)?) {
+        onFolderNextRequested = callback
+    }
+
+    private fun applyRepeatMode(mode: Int) {
+        val p = player ?: return
+        when (mode) {
+            RepeatMode.FOLDER -> {
+                customRepeatMode = mode
+                p.repeatMode = Player.REPEAT_MODE_OFF
+            }
+            else -> {
+                customRepeatMode = null
+                p.repeatMode = mode
+            }
+        }
+        _state.update { it.copy(repeatMode = mode) }
     }
 
     // ---- Toggle behavior ----
@@ -287,6 +337,8 @@ class PlayerEngine private constructor(
         player?.stop()
         player?.release()
         player = null
+        customRepeatMode = null
+        onFolderNextRequested = null
         _state.update { PlayerEngineState() }
     }
 

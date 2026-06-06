@@ -183,6 +183,7 @@ class MainActivity : AppCompatActivity() {
     private fun repeatModeLabel(mode: Int): String = when (mode) {
         1 -> "One"
         2 -> "All"
+        3 -> "Folder"
         else -> "Off"
     }
 
@@ -249,7 +250,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         // Default repeat mode cycle
-        val repeatModes = listOf(0, 1, 2) // off, one, all
+        val repeatModes = listOf(0, 1, 2, 3) // off, one, all, folder
         findViewById<Button>(R.id.btnRepeatMode).setOnClickListener {
             lifecycleScope.launch {
                 val current = settingsStore.settings.first().defaultRepeatMode
