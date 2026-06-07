@@ -1,0 +1,70 @@
+appId: com.natkibe.videoplayerpro.autosky
+---
+# Verify M06: Safe Mode toggle → Refresh → Diagnostics panel.
+# Robust to empty/non-empty library.
+- launchApp
+- runFlow:
+    when:
+      visible: "Allow"
+    commands:
+      - tapOn: "Allow"
+- runFlow:
+    when:
+      visible: "While using the app"
+    commands:
+      - tapOn: "While using the app"
+- assertVisible: "Main folder screen"
+
+# ── 1. Open Settings → enable Safe Mode ─────────────────────────────────────
+- tapOn:
+    id: "com.natkibe.videoplayerpro.autosky:id/settingsTab"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.autosky:id/settingsContainer"
+- scrollUntilVisible:
+    element: "Safe Mode toggle"
+    direction: DOWN
+- assertVisible: "Safe Mode toggle"
+- tapOn: "Safe Mode toggle"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.autosky:id/settingsContainer"
+
+# ── 2. Go back to main screen, verify Refresh button works ──────────────────
+- tapOn:
+    id: "com.natkibe.videoplayerpro.autosky:id/videoTab"
+- assertVisible: "Main folder screen"
+- assertVisible: "Refresh"
+- tapOn: "Refresh"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.autosky:id/recycler"
+
+# ── 3. Open Settings → disable Safe Mode ────────────────────────────────────
+- tapOn:
+    id: "com.natkibe.videoplayerpro.autosky:id/settingsTab"
+- scrollUntilVisible:
+    element: "Safe Mode toggle"
+    direction: DOWN
+- assertVisible: "Safe Mode toggle"
+- tapOn: "Safe Mode toggle"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.autosky:id/settingsContainer"
+
+# ── 4. Open Diagnostics panel → verify content visible ──────────────────────
+- scrollUntilVisible:
+    element: "Diagnostics"
+    direction: DOWN
+- assertVisible: "Diagnostics"
+- tapOn: "Diagnostics"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.autosky:id/diagnosticsContent"
+- assertVisible: "Close"
+- back
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.autosky:id/settingsContainer"
+
+# ── 5. Return to library, verify shell intact ───────────────────────────────
+- tapOn:
+    id: "com.natkibe.videoplayerpro.autosky:id/videoTab"
+- assertVisible: "Main folder screen"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.autosky:id/recycler"
+- assertVisible: "Refresh"

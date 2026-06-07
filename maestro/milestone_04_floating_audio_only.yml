@@ -1,4 +1,4 @@
-appId: com.natkibe.videoplayerpro
+appId: com.natkibe.videoplayerpro.autosky
 ---
 # Milestone 4 — Floating + Play as Music Rewrite
 # Tests toggle behavior, overlay presence, and cleanup
@@ -7,19 +7,19 @@ appId: com.natkibe.videoplayerpro
 
 # Step 1: Navigate to a video
 - tapOn:
-    id: "com.natkibe.videoplayerpro:id/videoThumbnail"
+    id: "com.natkibe.videoplayerpro.autosky:id/videoThumbnail"
     index: 0
 
 - assertVisible:
-    id: "com.natkibe.videoplayerpro:id/playerView"
+    id: "com.natkibe.videoplayerpro.autosky:id/playerView"
 
 # Step 2: Tap video to show controls, then open playback menu
 - tapOn:
-    id: "com.natkibe.videoplayerpro:id/playerView"
+    id: "com.natkibe.videoplayerpro.autosky:id/playerView"
 - assertVisible:
-    id: "com.natkibe.videoplayerpro:id/menuButton"
+    id: "com.natkibe.videoplayerpro.autosky:id/menuButton"
 - tapOn:
-    id: "com.natkibe.videoplayerpro:id/menuButton"
+    id: "com.natkibe.videoplayerpro.autosky:id/menuButton"
 
 # Step 3: Toggle Float ON
 - tapOn: "Floating Window"
@@ -28,23 +28,23 @@ appId: com.natkibe.videoplayerpro
 
 # Step 4: Toggle Float OFF
 - tapOn:
-    id: "com.natkibe.videoplayerpro:id/menuButton"
+    id: "com.natkibe.videoplayerpro.autosky:id/menuButton"
 - tapOn: "Floating Window"
 - assertVisible:
-    id: "com.natkibe.videoplayerpro:id/playerView"
+    id: "com.natkibe.videoplayerpro.autosky:id/playerView"
 
 # Step 5: Toggle Play as Music ON
 - tapOn:
-    id: "com.natkibe.videoplayerpro:id/menuButton"
+    id: "com.natkibe.videoplayerpro.autosky:id/menuButton"
 - tapOn: "Audio Only Mode"
 # Verify the music status label is visible
 - assertVisible:
-    id: "com.natkibe.videoplayerpro:id/musicStatusLabel"
+    id: "com.natkibe.videoplayerpro.autosky:id/musicStatusLabel"
 
 # Step 6: Toggle Play as Music OFF
 - tapOn:
-    id: "com.natkibe.videoplayerpro:id/menuButton"
+    id: "com.natkibe.videoplayerpro.autosky:id/menuButton"
 - tapOn: "Audio Only Mode"
 # Verify video is visible again
 - assertVisible:
-    id: "com.natkibe.videoplayerpro:id/playerView"
+    id: "com.natkibe.videoplayerpro.autosky:id/playerView"

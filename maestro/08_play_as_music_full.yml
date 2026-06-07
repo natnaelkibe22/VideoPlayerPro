@@ -1,4 +1,4 @@
-appId: com.natkibe.videoplayerpro
+appId: com.natkibe.videoplayerpro.autosky
 ---
 # Audio-Only ("Play as Music") Full Test
 # Requires mock video at /sdcard/Movies/test_video_720p.mp4
@@ -12,15 +12,15 @@ appId: com.natkibe.videoplayerpro
 - assertVisible: "test_video_720p.mp4"
 - tapOn: "test_video_720p.mp4"
 - assertVisible:
-    id: "com.natkibe.videoplayerpro:id/playerView"
+    id: "com.natkibe.videoplayerpro.autosky:id/playerView"
 # ── 2. Tap player to reveal controls ──
 - tapOn:
-    id: "com.natkibe.videoplayerpro:id/playerView"
+    id: "com.natkibe.videoplayerpro.autosky:id/playerView"
 - assertVisible:
-    id: "com.natkibe.videoplayerpro:id/audioOnlyButton"
+    id: "com.natkibe.videoplayerpro.autosky:id/audioOnlyButton"
 # ── 3. Tap Play as Music ──
 - tapOn:
-    id: "com.natkibe.videoplayerpro:id/audioOnlyButton"
+    id: "com.natkibe.videoplayerpro.autosky:id/audioOnlyButton"
 # ── 4. Verify player still visible (activity stays) ──
 - assertVisible:
-    id: "com.natkibe.videoplayerpro:id/playerView"
+    id: "com.natkibe.videoplayerpro.autosky:id/playerView"

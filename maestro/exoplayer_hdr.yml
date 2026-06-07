@@ -1,4 +1,4 @@
-appId: com.natkibe.videoplayerpro
+appId: com.natkibe.videoplayerpro.autosky
 ---
 # ExoPlayer Edge Case: HDR Video Playback
 # Validates the player handles HDR (HDR10/HLG/Dolby Vision) content

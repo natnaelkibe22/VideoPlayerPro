@@ -1,4 +1,4 @@
-appId: com.natkibe.videoplayerpro
+appId: com.natkibe.videoplayerpro.autosky
 ---
 # Player Controls Smoke Test
 # Requires mock video at /sdcard/Movies/test_video_720p.mp4
@@ -15,19 +15,19 @@ appId: com.natkibe.videoplayerpro
 - tapOn: "test_video_720p.mp4"
 # Now in PlayerActivity — wait for player to initialize
 - assertVisible:
-    id: "com.natkibe.videoplayerpro:id/playerView"
+    id: "com.natkibe.videoplayerpro.autosky:id/playerView"
 # Tap player to reveal controls, then immediately check all controls
 - tapOn:
-    id: "com.natkibe.videoplayerpro:id/playerView"
+    id: "com.natkibe.videoplayerpro.autosky:id/playerView"
 # Verify all bottom-bar action buttons are visible (check fastest first)
 - assertVisible:
-    id: "com.natkibe.videoplayerpro:id/repeatButton"
+    id: "com.natkibe.videoplayerpro.autosky:id/repeatButton"
 - assertVisible:
-    id: "com.natkibe.videoplayerpro:id/speedButton"
+    id: "com.natkibe.videoplayerpro.autosky:id/speedButton"
 - assertVisible:
-    id: "com.natkibe.videoplayerpro:id/audioOnlyButton"
+    id: "com.natkibe.videoplayerpro.autosky:id/audioOnlyButton"
 - assertVisible:
-    id: "com.natkibe.videoplayerpro:id/floatingButton"
+    id: "com.natkibe.videoplayerpro.autosky:id/floatingButton"
 # Verify player view is still visible after interactions
 - assertVisible:
-    id: "com.natkibe.videoplayerpro:id/playerView"
+    id: "com.natkibe.videoplayerpro.autosky:id/playerView"

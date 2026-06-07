@@ -1,11 +1,11 @@
-appId: com.natkibe.videoplayerpro
+appId: com.natkibe.videoplayerpro.autosky
 ---
 # Micro-Module: Settings
 # Validates SettingsStore (DataStore-backed preferences)
 - launchApp
 - tapOn: "Settings"
 - assertVisible:
-    id: "com.natkibe.videoplayerpro:id/statusText"
+    id: "com.natkibe.videoplayerpro.autosky:id/statusText"
 # SettingsStore provides:
 # - Thumbnails toggle
 # - Floating Player toggle
@@ -18,4 +18,4 @@ appId: com.natkibe.videoplayerpro
 - tapOn: "Folders"
 - tapOn: "Settings"
 - assertVisible:
-    id: "com.natkibe.videoplayerpro:id/statusText"
+    id: "com.natkibe.videoplayerpro.autosky:id/statusText"

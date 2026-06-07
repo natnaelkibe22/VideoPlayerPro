@@ -1,6 +1,6 @@
-appId: com.natkibe.videoplayerpro
+appId: com.natkibe.videoplayerpro.autosky
 ---
 - launchApp
 - tapOn: "Settings"
 - assertVisible:
-    id: "com.natkibe.videoplayerpro:id/statusText"
+    id: "com.natkibe.videoplayerpro.autosky:id/statusText"

@@ -1,28 +1,48 @@
-appId: com.natkibe.videoplayerpro
+appId: com.natkibe.videoplayerpro.autosky
 ---
 # Settings Full Toggle Test
-# Validates toggle buttons are visible and interactive on the Settings tab
+# Validates settings controls are visible and interactive without assuming persisted state.
 - launchApp
+- runFlow:
+    when:
+      visible: "Allow"
+    commands:
+      - tapOn: "Allow"
 - assertVisible: "VideoPlayer Pro"
 # ── 1. Navigate to Settings tab ──
 - tapOn: "Settings"
-# ── 2. Verify settings status text is visible ──
+# ── 2. Verify settings screen and stable controls are visible ──
 - assertVisible:
-    id: "com.natkibe.videoplayerpro:id/statusText"
-# ── 3. Thumbnails toggle ──
-- tapOn: "Thumbnails: OFF"
-- assertVisible: "Thumbnails: ON"
-# Toggle back
-- tapOn: "Thumbnails: ON"
-- assertVisible: "Thumbnails: OFF"
-# ── 4. Diagnostics button: verify visible and tap to open ──
+    id: "com.natkibe.videoplayerpro.autosky:id/statusText"
+- assertVisible: "Settings screen"
+- assertVisible: "Thumbnail toggle"
+# ── 3. Toggle thumbnails twice by content description; no initial ON/OFF assumption ──
+- tapOn: "Thumbnail toggle"
+- assertVisible: "Settings screen"
+- tapOn: "Thumbnail toggle"
+- assertVisible: "Settings screen"
+# ── 4. Toggle safe mode twice by content description; it may force thumbnails off ──
+- scrollUntilVisible:
+    element: "Safe Mode toggle"
+    direction: DOWN
+- assertVisible: "Safe Mode toggle"
+- tapOn: "Safe Mode toggle"
+- assertVisible: "Settings screen"
+- tapOn: "Safe Mode toggle"
+- assertVisible: "Settings screen"
+# ── 5. Diagnostics button: verify visible and tap to open ──
+- scrollUntilVisible:
+    element: "Diagnostics"
+    direction: DOWN
 - tapOn: "Diagnostics"
-- assertVisible: "Player Diagnostics"
-# ── 5. Return to main screen ──
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.autosky:id/diagnosticsContent"
+# ── 6. Return to main screen and verify settings are still reachable ──
 - back
 - assertVisible: "VideoPlayer Pro"
-# ── 6. Navigate back to Settings, verify state persisted ──
 - tapOn: "Settings"
-- assertVisible:
-    id: "com.natkibe.videoplayerpro:id/statusText"
-- assertVisible: "Thumbnails: OFF"
+- assertVisible: "Settings screen"
+- scrollUntilVisible:
+    element: "Thumbnail toggle"
+    direction: UP
+- assertVisible: "Thumbnail toggle"

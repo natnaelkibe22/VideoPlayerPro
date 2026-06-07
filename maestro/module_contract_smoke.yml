@@ -1,9 +1,27 @@
-appId: com.natkibe.videoplayerpro
+appId: com.natkibe.videoplayerpro.autosky
 ---
 - launchApp
+- runFlow:
+    when:
+      visible: "Allow"
+    commands:
+      - tapOn: "Allow"
 - assertVisible: "VideoPlayer Pro"
 - tapOn: "Folders"
-- assertVisible: "No video folders found. Tap Refresh to scan USB/SD cards."
-- tapOn: "Settings"
+- assertVisible: "Main folder screen"
 - assertVisible:
-    id: "com.natkibe.videoplayerpro:id/statusText"
+    id: "com.natkibe.videoplayerpro.autosky:id/recycler"
+- runFlow:
+    when:
+      visible: "No video folders found"
+    commands:
+      - assertVisible: "No video folders found"
+- runFlow:
+    when:
+      visible: "Folder row"
+    commands:
+      - assertVisible: "Folder row"
+- tapOn: "Settings"
+- assertVisible: "Settings screen"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.autosky:id/statusText"

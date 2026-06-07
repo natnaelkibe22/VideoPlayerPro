@@ -1,4 +1,4 @@
-appId: com.natkibe.videoplayerpro
+appId: com.natkibe.videoplayerpro.autosky
 ---
 # Advanced Floating Player Test
 # Requires mock video at /sdcard/Movies/test_video_720p.mp4
@@ -11,19 +11,19 @@ appId: com.natkibe.videoplayerpro
 - tapOn: "test_video_720p.mp4"
 # Verify player loads
 - assertVisible:
-    id: "com.natkibe.videoplayerpro:id/playerView"
+    id: "com.natkibe.videoplayerpro.autosky:id/playerView"
 # Tap player to reveal controls, open floating player
 - tapOn:
-    id: "com.natkibe.videoplayerpro:id/playerView"
+    id: "com.natkibe.videoplayerpro.autosky:id/playerView"
 - assertVisible:
-    id: "com.natkibe.videoplayerpro:id/floatingButton"
+    id: "com.natkibe.videoplayerpro.autosky:id/floatingButton"
 - tapOn:
-    id: "com.natkibe.videoplayerpro:id/floatingButton"
+    id: "com.natkibe.videoplayerpro.autosky:id/floatingButton"
 # Verify floating overlay exists
 - assertVisible:
-    id: "com.natkibe.videoplayerpro:id/floatingPlayerView"
+    id: "com.natkibe.videoplayerpro.autosky:id/floatingPlayerView"
 # Close via back
 - pressKey: Back
 # Verify player view is back
 - assertVisible:
-    id: "com.natkibe.videoplayerpro:id/playerView"
+    id: "com.natkibe.videoplayerpro.autosky:id/playerView"

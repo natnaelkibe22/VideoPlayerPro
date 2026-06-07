@@ -1,4 +1,4 @@
-appId: com.natkibe.videoplayerpro
+appId: com.natkibe.videoplayerpro.autosky
 ---
 # Milestone 07 floating player: toggle float and verify fullscreen remains recoverable.
 - launchApp
@@ -7,10 +7,9 @@ appId: com.natkibe.videoplayerpro
       visible: "Allow"
     commands:
       - tapOn: "Allow"
-- assertVisible:
-    id: "com.natkibe.videoplayerpro:id/mainFolderScreen"
+- assertVisible: "Main folder screen"
 - tapOn:
-    id: "com.natkibe.videoplayerpro:id/videoTab"
+    id: "com.natkibe.videoplayerpro.autosky:id/videoTab"
 - runFlow:
     when:
       visible: "Folder row"
@@ -26,11 +25,11 @@ appId: com.natkibe.videoplayerpro
                 text: "Video row"
                 index: 0
             - assertVisible:
-                id: "com.natkibe.videoplayerpro:id/playerView"
+                id: "com.natkibe.videoplayerpro.autosky:id/playerView"
             - tapOn:
-                id: "com.natkibe.videoplayerpro:id/playerView"
+                id: "com.natkibe.videoplayerpro.autosky:id/playerView"
             - tapOn:
-                id: "com.natkibe.videoplayerpro:id/menuButton"
+                id: "com.natkibe.videoplayerpro.autosky:id/menuButton"
             - tapOn: "Float toggle"
             - runFlow:
                 when:
@@ -40,14 +39,14 @@ appId: com.natkibe.videoplayerpro
             - runFlow:
                 when:
                   visible:
-                    id: "com.natkibe.videoplayerpro:id/floatingPlayerControl"
+                    id: "com.natkibe.videoplayerpro.autosky:id/floatingPlayerControl"
                 commands:
                   - assertVisible:
-                      id: "com.natkibe.videoplayerpro:id/floatingPlayerControl"
+                      id: "com.natkibe.videoplayerpro.autosky:id/floatingPlayerControl"
                   - tapOn:
-                      id: "com.natkibe.videoplayerpro:id/floatCloseButton"
+                      id: "com.natkibe.videoplayerpro.autosky:id/floatCloseButton"
             - assertVisible:
-                id: "com.natkibe.videoplayerpro:id/playerView"
+                id: "com.natkibe.videoplayerpro.autosky:id/playerView"
 - runFlow:
     when:
       visible: "No video folders found"

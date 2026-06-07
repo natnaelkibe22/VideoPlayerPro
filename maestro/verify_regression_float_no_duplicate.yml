@@ -1,15 +1,24 @@
 appId: com.natkibe.videoplayerpro.autosky
 ---
-# Milestone 07 regression: Float ON/OFF/ON should not create duplicate floating controls and fullscreen restores.
+# Verify no duplicate floating player controls when toggling Float ON/OFF/ON.
+# Handles overlay permission prompt gracefully.
 - launchApp
 - runFlow:
     when:
       visible: "Allow"
     commands:
       - tapOn: "Allow"
+- runFlow:
+    when:
+      visible: "While using the app"
+    commands:
+      - tapOn: "While using the app"
 - assertVisible: "Main folder screen"
 - tapOn:
     id: "com.natkibe.videoplayerpro.autosky:id/videoTab"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.autosky:id/recycler"
+
 - runFlow:
     when:
       visible: "Folder row"
@@ -26,16 +35,26 @@ appId: com.natkibe.videoplayerpro.autosky
                 index: 0
             - assertVisible:
                 id: "com.natkibe.videoplayerpro.autosky:id/playerScreen"
-            - tapOn:
+            - assertVisible:
                 id: "com.natkibe.videoplayerpro.autosky:id/playerView"
             - tapOn:
+                id: "com.natkibe.videoplayerpro.autosky:id/playerView"
+            - assertVisible:
                 id: "com.natkibe.videoplayerpro.autosky:id/menuButton"
+            - tapOn:
+                id: "com.natkibe.videoplayerpro.autosky:id/menuButton"
+            - assertVisible: "Playback menu"
             - tapOn: "Float toggle"
+
+            # Handle overlay permission prompt
             - runFlow:
                 when:
                   visible: "Overlay permission required to float video"
                 commands:
+                  - assertVisible: "Overlay permission required to float video"
                   - back
+
+            # If permission granted, verify single floating control
             - runFlow:
                 when:
                   visible:
@@ -46,10 +65,16 @@ appId: com.natkibe.videoplayerpro.autosky
                   - assertNotVisible:
                       id: "com.natkibe.videoplayerpro.autosky:id/floatingPlayerControl"
                       index: 1
+
+                  # Toggle OFF → restore fullscreen player
                   - tapOn:
                       id: "com.natkibe.videoplayerpro.autosky:id/floatCloseButton"
                   - assertVisible:
                       id: "com.natkibe.videoplayerpro.autosky:id/playerScreen"
+                  - assertVisible:
+                      id: "com.natkibe.videoplayerpro.autosky:id/playerView"
+
+                  # Toggle ON again → verify single floating control again
                   - tapOn:
                       id: "com.natkibe.videoplayerpro.autosky:id/playerView"
                   - tapOn:
@@ -60,14 +85,21 @@ appId: com.natkibe.videoplayerpro.autosky
                   - assertNotVisible:
                       id: "com.natkibe.videoplayerpro.autosky:id/floatingPlayerControl"
                       index: 1
+
+                  # Toggle OFF to finish cleanly
                   - tapOn:
                       id: "com.natkibe.videoplayerpro.autosky:id/floatCloseButton"
-            - assertVisible:
-                id: "com.natkibe.videoplayerpro.autosky:id/playerScreen"
-            - assertVisible:
-                id: "com.natkibe.videoplayerpro.autosky:id/playerView"
+                  - assertVisible:
+                      id: "com.natkibe.videoplayerpro.autosky:id/playerScreen"
+                  - assertVisible:
+                      id: "com.natkibe.videoplayerpro.autosky:id/playerView"
+
+# Empty library fallback
 - runFlow:
     when:
       visible: "No video folders found"
     commands:
       - assertVisible: "No video folders found"
+      - assertVisible:
+          id: "com.natkibe.videoplayerpro.autosky:id/recycler"
+      - assertVisible: "Refresh"

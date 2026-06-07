@@ -1,4 +1,4 @@
-appId: com.natkibe.videoplayerpro
+appId: com.natkibe.videoplayerpro.autosky
 ---
 # Micro-Module: Maestro (Integration Orchestrator)
 # Validates end-to-end integration across all micromodules
@@ -16,7 +16,7 @@ appId: com.natkibe.videoplayerpro
 # 5. Settings: DataStore-backed preferences
 - tapOn: "Settings"
 - assertVisible:
-    id: "com.natkibe.videoplayerpro:id/statusText"
+    id: "com.natkibe.videoplayerpro.autosky:id/statusText"
 # 6. Player: Ready for playback
 # 7. AudioOnly: Background audio service
 # 8. FloatingPlayer: Overlay window

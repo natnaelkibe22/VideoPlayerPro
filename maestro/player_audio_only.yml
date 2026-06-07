@@ -1,4 +1,4 @@
-appId: com.natkibe.videoplayerpro
+appId: com.natkibe.videoplayerpro.autosky
 ---
 # Audio-Only Mode Test
 # Requires mock video at /sdcard/Movies/test_video_720p.mp4
@@ -15,16 +15,16 @@ appId: com.natkibe.videoplayerpro
 - tapOn: "test_video_720p.mp4"
 # Wait for player to load
 - assertVisible:
-    id: "com.natkibe.videoplayerpro:id/playerView"
+    id: "com.natkibe.videoplayerpro.autosky:id/playerView"
 # Tap player to reveal controls
 - tapOn:
-    id: "com.natkibe.videoplayerpro:id/playerView"
+    id: "com.natkibe.videoplayerpro.autosky:id/playerView"
 # Verify audio-only button exists
 - assertVisible:
-    id: "com.natkibe.videoplayerpro:id/audioOnlyButton"
+    id: "com.natkibe.videoplayerpro.autosky:id/audioOnlyButton"
 # Tap audio-only button to start audio-only mode
 - tapOn:
-    id: "com.natkibe.videoplayerpro:id/audioOnlyButton"
+    id: "com.natkibe.videoplayerpro.autosky:id/audioOnlyButton"
 # Verify player view is still visible (audio-only keeps activity open)
 - assertVisible:
-    id: "com.natkibe.videoplayerpro:id/playerView"
+    id: "com.natkibe.videoplayerpro.autosky:id/playerView"

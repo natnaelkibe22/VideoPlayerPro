@@ -78,7 +78,7 @@ Open the project in Android Studio, let Gradle sync, then build/run `app`. This 
 
 ## Maestro
 
-Feature tests live in `maestro/`. Milestone-specific tests live inside each `milestones/v*/maestro/` folder. Build/install an Autosky debug APK, then run any flow against a connected emulator/headunit:
+Feature tests live in `maestro/`. Milestone-specific tests live inside each `milestones/v*/maestro/` folder. The root `maestro/*.yml` flows target the Autosky debug package (`com.natkibe.videoplayerpro.autosky`) because that is the APK built and installed for emulator/headunit validation:
 
 ```bash
 ./gradlew :app:assembleAutoskyDebug

@@ -1,4 +1,4 @@
-appId: com.natkibe.videoplayerpro
+appId: com.natkibe.videoplayerpro.autosky
 ---
 # ExoPlayer Edge Case: 4K H265/HEVC Playback
 # Validates the player can handle high-resolution H265 content

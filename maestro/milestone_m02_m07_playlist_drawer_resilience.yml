@@ -1,0 +1,104 @@
+appId: com.natkibe.videoplayerpro.autosky
+---
+# Milestones 02/07 resilience: playlist drawer opens via right-edge swipe and
+# button, exposes a stable drawer/recycler, then closes by overlay and swipe.
+- launchApp
+- runFlow:
+    when:
+      visible: "Allow"
+    commands:
+      - tapOn: "Allow"
+- runFlow:
+    when:
+      visible: "While using the app"
+    commands:
+      - tapOn: "While using the app"
+- assertVisible: "Main folder screen"
+- tapOn:
+    id: "com.natkibe.videoplayerpro.autosky:id/videoTab"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.autosky:id/recycler"
+
+- runFlow:
+    when:
+      visible: "Folder row"
+    commands:
+      - tapOn:
+          text: "Folder row"
+          index: 0
+      - runFlow:
+          when:
+            visible: "Video row"
+          commands:
+            - tapOn:
+                text: "Video row"
+                index: 0
+            - assertVisible:
+                id: "com.natkibe.videoplayerpro.autosky:id/playerScreen"
+            - assertVisible:
+                id: "com.natkibe.videoplayerpro.autosky:id/playerView"
+            - tapOn:
+                id: "com.natkibe.videoplayerpro.autosky:id/playerView"
+            - assertVisible:
+                id: "com.natkibe.videoplayerpro.autosky:id/playlistButton"
+
+            # Open from stable playlist button and close by dim overlay.
+            - tapOn:
+                id: "com.natkibe.videoplayerpro.autosky:id/playlistButton"
+            - assertVisible:
+                id: "com.natkibe.videoplayerpro.autosky:id/sidePlaylist"
+            - assertVisible:
+                id: "com.natkibe.videoplayerpro.autosky:id/playlistDimOverlay"
+            - assertVisible:
+                id: "com.natkibe.videoplayerpro.autosky:id/playlistRecycler"
+            - tapOn:
+                id: "com.natkibe.videoplayerpro.autosky:id/playlistDimOverlay"
+            - assertVisible:
+                id: "com.natkibe.videoplayerpro.autosky:id/playerView"
+            - assertNotVisible:
+                id: "com.natkibe.videoplayerpro.autosky:id/sidePlaylist"
+
+            # Open from button and close by drawer swipe.
+            - tapOn:
+                id: "com.natkibe.videoplayerpro.autosky:id/playlistButton"
+            - assertVisible:
+                id: "com.natkibe.videoplayerpro.autosky:id/sidePlaylist"
+            - assertVisible: "Playlist drawer"
+            - runFlow:
+                when:
+                  visible:
+                    id: "com.natkibe.videoplayerpro.autosky:id/itemTitle"
+                commands:
+                  - assertVisible:
+                      id: "com.natkibe.videoplayerpro.autosky:id/itemTitle"
+                      index: 0
+            - swipe:
+                start: "80%,50%"
+                end: "98%,50%"
+                duration: 300
+            - assertVisible:
+                id: "com.natkibe.videoplayerpro.autosky:id/playerView"
+            - runFlow:
+                when:
+                  visible:
+                    id: "com.natkibe.videoplayerpro.autosky:id/sidePlaylist"
+                commands:
+                  - tapOn:
+                      id: "com.natkibe.videoplayerpro.autosky:id/playlistDimOverlay"
+            - assertVisible:
+                id: "com.natkibe.videoplayerpro.autosky:id/playerView"
+            - assertNotVisible:
+                id: "com.natkibe.videoplayerpro.autosky:id/sidePlaylist"
+            - tapOn:
+                id: "com.natkibe.videoplayerpro.autosky:id/playerView"
+            - assertVisible:
+                id: "com.natkibe.videoplayerpro.autosky:id/playlistButton"
+
+- runFlow:
+    when:
+      visible: "No video folders found"
+    commands:
+      - assertVisible: "No video folders found"
+      - assertVisible:
+          id: "com.natkibe.videoplayerpro.autosky:id/recycler"
+      - assertVisible: "Refresh"

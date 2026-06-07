@@ -1,9 +1,9 @@
-appId: com.natkibe.videoplayerpro
+appId: com.natkibe.videoplayerpro.autosky
 ---
 # Debug: Overlay Permissions
 # Validates SYSTEM_ALERT_WINDOW permission handling for floating player
 - launchApp
 - tapOn: "Settings"
 - assertVisible:
-    id: "com.natkibe.videoplayerpro:id/statusText"
+    id: "com.natkibe.videoplayerpro.autosky:id/statusText"
 # Verify the app can display settings without crash

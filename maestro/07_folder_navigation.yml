@@ -1,4 +1,4 @@
-appId: com.natkibe.videoplayerpro
+appId: com.natkibe.videoplayerpro.autosky
 ---
 # Folder Navigation Test
 # Requires mock video at /sdcard/Movies/test_video_720p.mp4
@@ -24,7 +24,7 @@ appId: com.natkibe.videoplayerpro
 - tapOn: "Movies"
 - tapOn: "test_video_720p.mp4"
 - assertVisible:
-    id: "com.natkibe.videoplayerpro:id/playerView"
+    id: "com.natkibe.videoplayerpro.autosky:id/playerView"
 # ── 7. Go back, verify no crash ──
 - back
 - assertVisible: "VideoPlayer Pro"

@@ -1,0 +1,68 @@
+appId: com.natkibe.videoplayerpro.autosky
+---
+# Milestones 05/06 resilience: settings/safe-mode interactions remain reachable,
+# toggles are state-agnostic, manual Refresh stays available, and diagnostics opens.
+- launchApp
+- runFlow:
+    when:
+      visible: "Allow"
+    commands:
+      - tapOn: "Allow"
+- runFlow:
+    when:
+      visible: "While using the app"
+    commands:
+      - tapOn: "While using the app"
+- assertVisible: "VideoPlayer Pro"
+- assertVisible: "Main folder screen"
+
+# Manual refresh remains available from the library regardless of empty/non-empty media.
+- tapOn:
+    id: "com.natkibe.videoplayerpro.autosky:id/videoTab"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.autosky:id/recycler"
+- tapOn: "Refresh"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.autosky:id/statusText"
+
+# Thumbnail toggle is reachable and can be toggled twice without assuming persisted state.
+- tapOn:
+    id: "com.natkibe.videoplayerpro.autosky:id/settingsTab"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.autosky:id/settingsContainer"
+- assertVisible: "Settings screen"
+- assertVisible: "Thumbnail toggle"
+- tapOn: "Thumbnail toggle"
+- assertVisible: "Settings screen"
+- tapOn: "Thumbnail toggle"
+- assertVisible: "Settings screen"
+
+# Safe Mode toggle remains stable; toggling twice restores prior state for later tests.
+- scrollUntilVisible:
+    element: "Safe Mode toggle"
+    direction: DOWN
+- assertVisible: "Safe Mode toggle"
+- tapOn: "Safe Mode toggle"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.autosky:id/settingsContainer"
+- tapOn: "Safe Mode toggle"
+- assertVisible: "Settings screen"
+
+# Diagnostics is reachable from settings after toggles.
+- scrollUntilVisible:
+    element: "Diagnostics"
+    direction: DOWN
+- assertVisible: "Diagnostics"
+- tapOn: "Diagnostics"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.autosky:id/diagnosticsContent"
+- back
+- assertVisible: "VideoPlayer Pro"
+
+# Library shell and Refresh remain reachable after returning from diagnostics.
+- tapOn:
+    id: "com.natkibe.videoplayerpro.autosky:id/videoTab"
+- assertVisible: "Main folder screen"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.autosky:id/recycler"
+- assertVisible: "Refresh"

@@ -1,6 +1,6 @@
 # Milestone 02 - Playlist Drawer Interactions
 # Tests: Open by swipe, close by overlay tap, close by swipe, select video, toggle button, verify player controls after close
-appId: com.natkibe.videoplayerpro
+appId: com.natkibe.videoplayerpro.autosky
 ---
 # Setup: Launch app and navigate to a video
 - launchApp
@@ -13,12 +13,12 @@ appId: com.natkibe.videoplayerpro
 
 # Wait for player to load and reveal controls
 - assertVisible:
-    id: "com.natkibe.videoplayerpro:id/playerView"
+    id: "com.natkibe.videoplayerpro.autosky:id/playerView"
 - tapOn:
-    id: "com.natkibe.videoplayerpro:id/playerView"
+    id: "com.natkibe.videoplayerpro.autosky:id/playerView"
 - waitForAnimationToEnd
 - assertVisible:
-    id: "com.natkibe.videoplayerpro:id/playlistButton"
+    id: "com.natkibe.videoplayerpro.autosky:id/playlistButton"
 
 # ============================================================
 # Flow 1: Open Playlist Drawer from right edge swipe
@@ -29,33 +29,33 @@ appId: com.natkibe.videoplayerpro
     duration: 400
 - waitForAnimationToEnd
 - assertVisible:
-    id: "com.natkibe.videoplayerpro:id/sidePlaylist"
+    id: "com.natkibe.videoplayerpro.autosky:id/sidePlaylist"
 - assertVisible:
-    id: "com.natkibe.videoplayerpro:id/playlistDimOverlay"
+    id: "com.natkibe.videoplayerpro.autosky:id/playlistDimOverlay"
 - assertVisible:
-    id: "com.natkibe.videoplayerpro:id/playlistRecycler"
+    id: "com.natkibe.videoplayerpro.autosky:id/playlistRecycler"
 
 # ============================================================
 # Flow 2: Close drawer by tapping outside (dim overlay)
 # ============================================================
 - tapOn:
-    id: "com.natkibe.videoplayerpro:id/playlistDimOverlay"
+    id: "com.natkibe.videoplayerpro.autosky:id/playlistDimOverlay"
 - waitForAnimationToEnd
 # After close, player controls should be visible again
 - assertVisible:
-    id: "com.natkibe.videoplayerpro:id/playerView"
+    id: "com.natkibe.videoplayerpro.autosky:id/playerView"
 - assertVisible:
-    id: "com.natkibe.videoplayerpro:id/playlistButton"
+    id: "com.natkibe.videoplayerpro.autosky:id/playlistButton"
 
 # ============================================================
 # Flow 3: Close drawer by swiping right on drawer
 # ============================================================
 # First open drawer by tapping the playlist button
 - tapOn:
-    id: "com.natkibe.videoplayerpro:id/playlistButton"
+    id: "com.natkibe.videoplayerpro.autosky:id/playlistButton"
 - waitForAnimationToEnd
 - assertVisible:
-    id: "com.natkibe.videoplayerpro:id/sidePlaylist"
+    id: "com.natkibe.videoplayerpro.autosky:id/sidePlaylist"
 # Swipe right on the drawer (from drawer center to far right)
 - swipe:
     start: "80%,50%"
@@ -64,66 +64,66 @@ appId: com.natkibe.videoplayerpro
 - waitForAnimationToEnd
 # Verify drawer closed — playlistRecycler should no longer be interactable
 - assertVisible:
-    id: "com.natkibe.videoplayerpro:id/playerView"
+    id: "com.natkibe.videoplayerpro.autosky:id/playerView"
 
 # ============================================================
 # Flow 4: Select a video from playlist
 # ============================================================
 - tapOn:
-    id: "com.natkibe.videoplayerpro:id/playlistButton"
+    id: "com.natkibe.videoplayerpro.autosky:id/playlistButton"
 - waitForAnimationToEnd
 - assertVisible:
-    id: "com.natkibe.videoplayerpro:id/sidePlaylist"
+    id: "com.natkibe.videoplayerpro.autosky:id/sidePlaylist"
 # Tap on a playlist item title (first visible item in the RecyclerView)
 - tapOn:
-    id: "com.natkibe.videoplayerpro:id/itemTitle"
+    id: "com.natkibe.videoplayerpro.autosky:id/itemTitle"
 - waitForAnimationToEnd
 # Player should still be visible and responsive
 - assertVisible:
-    id: "com.natkibe.videoplayerpro:id/playerView"
+    id: "com.natkibe.videoplayerpro.autosky:id/playerView"
 - tapOn:
-    id: "com.natkibe.videoplayerpro:id/playerView"
+    id: "com.natkibe.videoplayerpro.autosky:id/playerView"
 - assertVisible:
-    id: "com.natkibe.videoplayerpro:id/centerPlayPause"
+    id: "com.natkibe.videoplayerpro.autosky:id/centerPlayPause"
 
 # ============================================================
 # Flow 5: Toggle drawer with playlist button
 # ============================================================
 # Open drawer via playlist button
 - tapOn:
-    id: "com.natkibe.videoplayerpro:id/playlistButton"
+    id: "com.natkibe.videoplayerpro.autosky:id/playlistButton"
 - waitForAnimationToEnd
 - assertVisible:
-    id: "com.natkibe.videoplayerpro:id/sidePlaylist"
+    id: "com.natkibe.videoplayerpro.autosky:id/sidePlaylist"
 # Close drawer by tapping playlist button again
 - tapOn:
-    id: "com.natkibe.videoplayerpro:id/playlistButton"
+    id: "com.natkibe.videoplayerpro.autosky:id/playlistButton"
 - waitForAnimationToEnd
 # Assert drawer is closed (player controls are visible)
 - assertVisible:
-    id: "com.natkibe.videoplayerpro:id/playerView"
+    id: "com.natkibe.videoplayerpro.autosky:id/playerView"
 
 # ============================================================
 # Flow 6: Verify player controls work after closing drawer
 # ============================================================
 # Open then close drawer
 - tapOn:
-    id: "com.natkibe.videoplayerpro:id/playlistButton"
+    id: "com.natkibe.videoplayerpro.autosky:id/playlistButton"
 - waitForAnimationToEnd
 - tapOn:
-    id: "com.natkibe.videoplayerpro:id/playlistButton"
+    id: "com.natkibe.videoplayerpro.autosky:id/playlistButton"
 - waitForAnimationToEnd
 # Tap player to reveal controls
 - tapOn:
-    id: "com.natkibe.videoplayerpro:id/playerView"
+    id: "com.natkibe.videoplayerpro.autosky:id/playerView"
 - assertVisible:
-    id: "com.natkibe.videoplayerpro:id/centerPlayPause"
+    id: "com.natkibe.videoplayerpro.autosky:id/centerPlayPause"
 # Tap play/pause button
 - tapOn:
-    id: "com.natkibe.videoplayerpro:id/centerPlayPause"
+    id: "com.natkibe.videoplayerpro.autosky:id/centerPlayPause"
 - waitForAnimationToEnd
 # Verify player view still visible after play/pause interaction
 - assertVisible:
-    id: "com.natkibe.videoplayerpro:id/playerView"
+    id: "com.natkibe.videoplayerpro.autosky:id/playerView"
 - assertVisible:
-    id: "com.natkibe.videoplayerpro:id/playlistButton"
+    id: "com.natkibe.videoplayerpro.autosky:id/playlistButton"

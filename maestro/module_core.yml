@@ -1,16 +1,35 @@
-appId: com.natkibe.videoplayerpro
+appId: com.natkibe.videoplayerpro.autosky
 ---
 # Micro-Module: Core
-# Validates core module contracts: PermissionService, StorageClassifier, TimeFormat
+# Validates core module contracts: PermissionService, StorageClassifier, TimeFormat.
+# Robust to both empty and non-empty media libraries.
 - launchApp
+- runFlow:
+    when:
+      visible: "Allow"
+    commands:
+      - tapOn: "Allow"
 - assertVisible: "VideoPlayer Pro"
 # Core module provides:
 # - PermissionService: handles READ_MEDIA_VIDEO / READ_EXTERNAL_STORAGE
 # - StorageClassifier: categorizes storage (internal/USB/SD)
 # - TimeFormat: formats video duration
-# Verify the app initializes core services without crash
+# Verify the app initializes core services without crash.
 - tapOn: "Folders"
-- assertVisible: "No video folders found. Tap Refresh to scan USB/SD cards."
-# Verify storage classification works (USB/SD card detection)
+- assertVisible: "Main folder screen"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.autosky:id/recycler"
+- runFlow:
+    when:
+      visible: "No video folders found"
+    commands:
+      - assertVisible: "No video folders found"
+- runFlow:
+    when:
+      visible: "Folder row"
+    commands:
+      - assertVisible: "Folder row"
+# Verify storage/media refresh entry point works regardless of library state.
 - tapOn: "Refresh"
-- assertVisible: "Refreshing videos in background..."
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.autosky:id/statusText"

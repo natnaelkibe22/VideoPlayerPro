@@ -1,4 +1,4 @@
-appId: com.natkibe.videoplayerpro
+appId: com.natkibe.videoplayerpro.autosky
 ---
 # Milestone 07 playback menu toggles: Repeat Video, Repeat Folder, Play as Music, Float.
 - launchApp
@@ -7,10 +7,9 @@ appId: com.natkibe.videoplayerpro
       visible: "Allow"
     commands:
       - tapOn: "Allow"
-- assertVisible:
-    id: "com.natkibe.videoplayerpro:id/mainFolderScreen"
+- assertVisible: "Main folder screen"
 - tapOn:
-    id: "com.natkibe.videoplayerpro:id/videoTab"
+    id: "com.natkibe.videoplayerpro.autosky:id/videoTab"
 - runFlow:
     when:
       visible: "Folder row"
@@ -26,39 +25,39 @@ appId: com.natkibe.videoplayerpro
                 text: "Video row"
                 index: 0
             - assertVisible:
-                id: "com.natkibe.videoplayerpro:id/playerView"
+                id: "com.natkibe.videoplayerpro.autosky:id/playerView"
             - tapOn:
-                id: "com.natkibe.videoplayerpro:id/playerView"
+                id: "com.natkibe.videoplayerpro.autosky:id/playerView"
             - tapOn:
-                id: "com.natkibe.videoplayerpro:id/menuButton"
+                id: "com.natkibe.videoplayerpro.autosky:id/menuButton"
             - assertVisible: "Playback menu"
             - tapOn: "Repeat toggle"
             - assertVisible: "Repeat Mode"
             - tapOn: "Repeat Video toggle"
             - tapOn:
-                id: "com.natkibe.videoplayerpro:id/menuButton"
+                id: "com.natkibe.videoplayerpro.autosky:id/menuButton"
             - tapOn: "Repeat toggle"
             - tapOn: "Repeat Off"
             - tapOn:
-                id: "com.natkibe.videoplayerpro:id/menuButton"
+                id: "com.natkibe.videoplayerpro.autosky:id/menuButton"
             - tapOn: "Repeat toggle"
             - tapOn: "Repeat folder toggle"
             - tapOn:
-                id: "com.natkibe.videoplayerpro:id/menuButton"
+                id: "com.natkibe.videoplayerpro.autosky:id/menuButton"
             - tapOn: "Repeat toggle"
             - tapOn: "Repeat Off"
             - tapOn:
-                id: "com.natkibe.videoplayerpro:id/menuButton"
+                id: "com.natkibe.videoplayerpro.autosky:id/menuButton"
             - tapOn: "Play as Music toggle"
             - assertVisible:
-                id: "com.natkibe.videoplayerpro:id/playerView"
+                id: "com.natkibe.videoplayerpro.autosky:id/playerView"
             - tapOn:
-                id: "com.natkibe.videoplayerpro:id/menuButton"
+                id: "com.natkibe.videoplayerpro.autosky:id/menuButton"
             - tapOn: "Play as Music toggle"
             - assertVisible:
-                id: "com.natkibe.videoplayerpro:id/playerView"
+                id: "com.natkibe.videoplayerpro.autosky:id/playerView"
             - tapOn:
-                id: "com.natkibe.videoplayerpro:id/menuButton"
+                id: "com.natkibe.videoplayerpro.autosky:id/menuButton"
             - tapOn: "Float toggle"
             - runFlow:
                 when:
@@ -66,19 +65,19 @@ appId: com.natkibe.videoplayerpro
                 commands:
                   - back
             - assertVisible:
-                id: "com.natkibe.videoplayerpro:id/playerView"
+                id: "com.natkibe.videoplayerpro.autosky:id/playerView"
             - tapOn:
-                id: "com.natkibe.videoplayerpro:id/playerView"
+                id: "com.natkibe.videoplayerpro.autosky:id/playerView"
             - tapOn:
-                id: "com.natkibe.videoplayerpro:id/menuButton"
+                id: "com.natkibe.videoplayerpro.autosky:id/menuButton"
             - tapOn: "Float toggle"
             - runFlow:
                 when:
                   visible:
-                    id: "com.natkibe.videoplayerpro:id/playerView"
+                    id: "com.natkibe.videoplayerpro.autosky:id/playerView"
                 commands:
                   - assertVisible:
-                      id: "com.natkibe.videoplayerpro:id/playerView"
+                      id: "com.natkibe.videoplayerpro.autosky:id/playerView"
 - runFlow:
     when:
       visible: "No video folders found"

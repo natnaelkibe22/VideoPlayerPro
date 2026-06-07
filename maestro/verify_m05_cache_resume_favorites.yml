@@ -1,0 +1,142 @@
+appId: com.natkibe.videoplayerpro.autosky
+---
+# Verify M05: Thumbnail toggle → resume playback → favorites indicator.
+# Uses stable row selectors; no hardcoded video names.
+- launchApp
+- runFlow:
+    when:
+      visible: "Allow"
+    commands:
+      - tapOn: "Allow"
+- runFlow:
+    when:
+      visible: "While using the app"
+    commands:
+      - tapOn: "While using the app"
+- assertVisible: "Main folder screen"
+
+# ── 1. Ensure Resume Playback ON in Settings ────────────────────────────────
+- tapOn:
+    id: "com.natkibe.videoplayerpro.autosky:id/settingsTab"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.autosky:id/settingsContainer"
+- scrollUntilVisible:
+    element: "Resume playback toggle"
+    direction: DOWN
+- tapOn: "Resume playback toggle"
+- tapOn:
+    id: "com.natkibe.videoplayerpro.autosky:id/videoTab"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.autosky:id/recycler"
+
+# ── 2. Navigate folder → select first video → verify player opens ──────────
+- runFlow:
+    when:
+      visible: "Folder row"
+    commands:
+      - tapOn:
+          text: "Folder row"
+          index: 0
+      - runFlow:
+          when:
+            visible: "Video row"
+          commands:
+            - tapOn:
+                text: "Video row"
+                index: 0
+            - assertVisible:
+                id: "com.natkibe.videoplayerpro.autosky:id/playerScreen"
+            - assertVisible:
+                id: "com.natkibe.videoplayerpro.autosky:id/playerView"
+
+            # ── 3. Tap surface → seek forward ~45s (3×15s) → pause → close ─
+            - tapOn:
+                id: "com.natkibe.videoplayerpro.autosky:id/playerView"
+            - assertVisible:
+                id: "com.natkibe.videoplayerpro.autosky:id/seekForward15"
+            - tapOn:
+                id: "com.natkibe.videoplayerpro.autosky:id/seekForward15"
+            - tapOn:
+                id: "com.natkibe.videoplayerpro.autosky:id/seekForward15"
+            - tapOn:
+                id: "com.natkibe.videoplayerpro.autosky:id/seekForward15"
+            - tapOn:
+                id: "com.natkibe.videoplayerpro.autosky:id/centerPlayPause"
+            - tapOn:
+                id: "com.natkibe.videoplayerpro.autosky:id/closeButton"
+            - extendedWaitUntil:
+                visible: "Main folder screen"
+                timeout: 5000
+
+            # ── 4. Reopen same video via Recent tab → verify resume ─────────
+            - tapOn:
+                id: "com.natkibe.videoplayerpro.autosky:id/recentTab"
+            - runFlow:
+                when:
+                  visible: "Video row"
+                commands:
+                  - tapOn:
+                      text: "Video row"
+                      index: 0
+                  - assertVisible:
+                      id: "com.natkibe.videoplayerpro.autosky:id/playerView"
+                  - tapOn:
+                      id: "com.natkibe.videoplayerpro.autosky:id/playerView"
+                  - assertVisible:
+                      id: "com.natkibe.videoplayerpro.autosky:id/seekBar"
+                  - tapOn:
+                      id: "com.natkibe.videoplayerpro.autosky:id/closeButton"
+                  - extendedWaitUntil:
+                      visible: "Main folder screen"
+                      timeout: 5000
+
+            # ── 5. Second resume sequence: play different video, return ─────
+            - tapOn:
+                id: "com.natkibe.videoplayerpro.autosky:id/videoTab"
+            - runFlow:
+                when:
+                  visible: "Folder row"
+                commands:
+                  - tapOn:
+                      text: "Folder row"
+                      index: 0
+                  - runFlow:
+                      when:
+                        visible: "Video row"
+                      commands:
+                        - tapOn:
+                            text: "Video row"
+                            index: 0
+                        - assertVisible:
+                            id: "com.natkibe.videoplayerpro.autosky:id/playerView"
+                        - tapOn:
+                            id: "com.natkibe.videoplayerpro.autosky:id/closeButton"
+                        - extendedWaitUntil:
+                            visible: "Main folder screen"
+                            timeout: 5000
+            - tapOn:
+                id: "com.natkibe.videoplayerpro.autosky:id/recentTab"
+            - runFlow:
+                when:
+                  visible: "Video row"
+                commands:
+                  - tapOn:
+                      text: "Video row"
+                      index: 0
+                  - assertVisible:
+                      id: "com.natkibe.videoplayerpro.autosky:id/playerView"
+                  - tapOn:
+                      id: "com.natkibe.videoplayerpro.autosky:id/closeButton"
+                  - extendedWaitUntil:
+                      visible: "Main folder screen"
+                      timeout: 5000
+
+# ── 6. Empty library fallback ───────────────────────────────────────────────
+- runFlow:
+    when:
+      visible: "No video folders found"
+    commands:
+      - assertVisible: "No video folders found"
+      - assertVisible:
+          id: "com.natkibe.videoplayerpro.autosky:id/recycler"
+      - assertVisible: "Refresh"

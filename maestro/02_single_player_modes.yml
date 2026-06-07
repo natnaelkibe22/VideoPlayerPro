@@ -1,4 +1,4 @@
-appId: com.natkibe.videoplayerpro
+appId: com.natkibe.videoplayerpro.autosky
 ---
 # Single Player Modes Test: floating + audio-only
 - launchApp
@@ -9,17 +9,17 @@ appId: com.natkibe.videoplayerpro
 - tapOn: "test_video_720p.mp4"
 # Wait for PlayerActivity to load
 - assertVisible:
-    id: "com.natkibe.videoplayerpro:id/playerView"
+    id: "com.natkibe.videoplayerpro.autosky:id/playerView"
 # ── Floating mode toggle ──
 - tapOn:
-    id: "com.natkibe.videoplayerpro:id/playerView"
+    id: "com.natkibe.videoplayerpro.autosky:id/playerView"
 - assertVisible:
-    id: "com.natkibe.videoplayerpro:id/floatingButton"
+    id: "com.natkibe.videoplayerpro.autosky:id/floatingButton"
 # Open floating player
 - tapOn:
-    id: "com.natkibe.videoplayerpro:id/floatingButton"
+    id: "com.natkibe.videoplayerpro.autosky:id/floatingButton"
 - assertVisible:
-    id: "com.natkibe.videoplayerpro:id/floatingPlayerView"
+    id: "com.natkibe.videoplayerpro.autosky:id/floatingPlayerView"
 # Close floating player - relaunch app fresh for next mode
 - launchApp
 # ── Audio-only mode ──
@@ -27,12 +27,12 @@ appId: com.natkibe.videoplayerpro
 - tapOn: "Movies"
 - tapOn: "test_video_720p.mp4"
 - assertVisible:
-    id: "com.natkibe.videoplayerpro:id/playerView"
+    id: "com.natkibe.videoplayerpro.autosky:id/playerView"
 - tapOn:
-    id: "com.natkibe.videoplayerpro:id/playerView"
+    id: "com.natkibe.videoplayerpro.autosky:id/playerView"
 - assertVisible:
-    id: "com.natkibe.videoplayerpro:id/audioOnlyButton"
+    id: "com.natkibe.videoplayerpro.autosky:id/audioOnlyButton"
 - tapOn:
-    id: "com.natkibe.videoplayerpro:id/audioOnlyButton"
+    id: "com.natkibe.videoplayerpro.autosky:id/audioOnlyButton"
 - assertVisible:
-    id: "com.natkibe.videoplayerpro:id/playerView"
+    id: "com.natkibe.videoplayerpro.autosky:id/playerView"

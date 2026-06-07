@@ -1,4 +1,4 @@
-appId: com.natkibe.videoplayerpro
+appId: com.natkibe.videoplayerpro.autosky
 ---
 # Repeat & Speed Controls Test
 # Requires mock video at /sdcard/Movies/test_video_720p.mp4
@@ -16,44 +16,44 @@ appId: com.natkibe.videoplayerpro
 - tapOn: "test_video_720p.mp4"
 # Wait for player to load
 - assertVisible:
-    id: "com.natkibe.videoplayerpro:id/playerView"
+    id: "com.natkibe.videoplayerpro.autosky:id/playerView"
 # Tap player to reveal controls
 - tapOn:
-    id: "com.natkibe.videoplayerpro:id/playerView"
+    id: "com.natkibe.videoplayerpro.autosky:id/playerView"
 # ── Repeat Button: cycle OFF → REPEAT_ONE → REPEAT_ALL → OFF ──
 - assertVisible:
-    id: "com.natkibe.videoplayerpro:id/repeatButton"
+    id: "com.natkibe.videoplayerpro.autosky:id/repeatButton"
 # Cycle through all 3 states (tap 3 times returns to OFF)
 - tapOn:
-    id: "com.natkibe.videoplayerpro:id/repeatButton"
+    id: "com.natkibe.videoplayerpro.autosky:id/repeatButton"
 - tapOn:
-    id: "com.natkibe.videoplayerpro:id/repeatButton"
+    id: "com.natkibe.videoplayerpro.autosky:id/repeatButton"
 - tapOn:
-    id: "com.natkibe.videoplayerpro:id/repeatButton"
+    id: "com.natkibe.videoplayerpro.autosky:id/repeatButton"
 # Re-reveal controls and verify button is present
 - tapOn:
-    id: "com.natkibe.videoplayerpro:id/playerView"
+    id: "com.natkibe.videoplayerpro.autosky:id/playerView"
 - assertVisible:
-    id: "com.natkibe.videoplayerpro:id/repeatButton"
+    id: "com.natkibe.videoplayerpro.autosky:id/repeatButton"
 # ── Speed Button: cycle through speed values ──
 - assertVisible:
-    id: "com.natkibe.videoplayerpro:id/speedButton"
+    id: "com.natkibe.videoplayerpro.autosky:id/speedButton"
 # Tap 5 times to complete full cycle
 - tapOn:
-    id: "com.natkibe.videoplayerpro:id/speedButton"
+    id: "com.natkibe.videoplayerpro.autosky:id/speedButton"
 - tapOn:
-    id: "com.natkibe.videoplayerpro:id/speedButton"
+    id: "com.natkibe.videoplayerpro.autosky:id/speedButton"
 - tapOn:
-    id: "com.natkibe.videoplayerpro:id/speedButton"
+    id: "com.natkibe.videoplayerpro.autosky:id/speedButton"
 - tapOn:
-    id: "com.natkibe.videoplayerpro:id/speedButton"
+    id: "com.natkibe.videoplayerpro.autosky:id/speedButton"
 - tapOn:
-    id: "com.natkibe.videoplayerpro:id/speedButton"
+    id: "com.natkibe.videoplayerpro.autosky:id/speedButton"
 # Re-reveal controls and verify button still present
 - tapOn:
-    id: "com.natkibe.videoplayerpro:id/playerView"
+    id: "com.natkibe.videoplayerpro.autosky:id/playerView"
 - assertVisible:
-    id: "com.natkibe.videoplayerpro:id/speedButton"
+    id: "com.natkibe.videoplayerpro.autosky:id/speedButton"
 # ── Verify player is still functional ──
 - assertVisible:
-    id: "com.natkibe.videoplayerpro:id/playerView"
+    id: "com.natkibe.videoplayerpro.autosky:id/playerView"
