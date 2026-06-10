@@ -42,10 +42,13 @@ class VideoAdapter(
         val item = items[position]
         holder.title.text = item.displayName
         holder.subtitle.text = "${item.folderName} • ${TimeFormat.duration(item.durationMs)} • ${item.storageRoot}"
+        // Default placeholder: simple box when thumbnails enabled, play icon otherwise
         holder.thumb.text = if (showThumbnails) "▣" else "▶"
 
         // Load actual thumbnail if enabled and provider available
         if (showThumbnails && thumbnailBitmapProvider != null) {
+            // Tag the uri on the thumbImage so we can validate stale loads
+            holder.thumbImage.tag = item.uri
             val bmp = thumbnailBitmapProvider.invoke(item.uri)
             if (bmp != null) {
                 holder.thumbImage.setImageBitmap(bmp)

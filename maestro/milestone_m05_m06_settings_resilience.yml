@@ -1,4 +1,4 @@
-appId: com.natkibe.videoplayerpro.autosky
+appId: com.natkibe.videoplayerpro.s26ultra
 ---
 # Milestones 05/06 resilience: settings/safe-mode interactions remain reachable,
 # toggles are state-agnostic, manual Refresh stays available, and diagnostics opens.
@@ -18,18 +18,18 @@ appId: com.natkibe.videoplayerpro.autosky
 
 # Manual refresh remains available from the library regardless of empty/non-empty media.
 - tapOn:
-    id: "com.natkibe.videoplayerpro.autosky:id/videoTab"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/videoTab"
 - assertVisible:
-    id: "com.natkibe.videoplayerpro.autosky:id/recycler"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/recycler"
 - tapOn: "Refresh"
 - assertVisible:
-    id: "com.natkibe.videoplayerpro.autosky:id/statusText"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/statusText"
 
 # Thumbnail toggle is reachable and can be toggled twice without assuming persisted state.
 - tapOn:
-    id: "com.natkibe.videoplayerpro.autosky:id/settingsTab"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/settingsTab"
 - assertVisible:
-    id: "com.natkibe.videoplayerpro.autosky:id/settingsContainer"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/settingsContainer"
 - assertVisible: "Settings screen"
 - assertVisible: "Thumbnail toggle"
 - tapOn: "Thumbnail toggle"
@@ -44,7 +44,7 @@ appId: com.natkibe.videoplayerpro.autosky
 - assertVisible: "Safe Mode toggle"
 - tapOn: "Safe Mode toggle"
 - assertVisible:
-    id: "com.natkibe.videoplayerpro.autosky:id/settingsContainer"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/settingsContainer"
 - tapOn: "Safe Mode toggle"
 - assertVisible: "Settings screen"
 
@@ -55,14 +55,14 @@ appId: com.natkibe.videoplayerpro.autosky
 - assertVisible: "Diagnostics"
 - tapOn: "Diagnostics"
 - assertVisible:
-    id: "com.natkibe.videoplayerpro.autosky:id/diagnosticsContent"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/diagnosticsContent"
 - back
 - assertVisible: "VideoPlayer Pro"
 
 # Library shell and Refresh remain reachable after returning from diagnostics.
 - tapOn:
-    id: "com.natkibe.videoplayerpro.autosky:id/videoTab"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/videoTab"
 - assertVisible: "Main folder screen"
 - assertVisible:
-    id: "com.natkibe.videoplayerpro.autosky:id/recycler"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/recycler"
 - assertVisible: "Refresh"

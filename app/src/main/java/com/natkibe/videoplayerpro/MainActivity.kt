@@ -3,8 +3,6 @@ package com.natkibe.videoplayerpro
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
-import android.widget.Button
-import android.widget.ImageButton
 import android.widget.ScrollView
 import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
@@ -41,6 +39,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var settingsTextInfo: TextView
     private var collectJob: Job? = null
     private var thumbnailGeneration = 0
+    private var bindingSettings = false
     private val inFlightThumbnails = Collections.synchronizedSet(mutableSetOf<String>())
 
     private val permissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
@@ -61,14 +60,23 @@ class MainActivity : AppCompatActivity() {
         settingsTextInfo = findViewById(R.id.settingsTextInfo)
         recycler.layoutManager = LinearLayoutManager(this)
 
-        findViewById<ImageButton>(R.id.videoTab).setOnClickListener { showFolders() }
-        findViewById<ImageButton>(R.id.recentTab).setOnClickListener { showRecent() }
-        findViewById<ImageButton>(R.id.storageTab).setOnClickListener { showStorage() }
-        findViewById<ImageButton>(R.id.settingsTab).setOnClickListener { showSettings() }
-        findViewById<ImageButton>(R.id.refreshButton).setOnClickListener {
+        findViewById<View>(R.id.videoTab).setOnClickListener { showFolders() }
+        findViewById<View>(R.id.recentTab).setOnClickListener { showRecent() }
+        findViewById<View>(R.id.storageTab).setOnClickListener { showStorage() }
+        findViewById<View>(R.id.settingsTab).setOnClickListener { showSettings() }
+        findViewById<View>(R.id.refreshButton).setOnClickListener {
             lifecycleScope.launch {
-                libraryFeature.refreshInBackground()
-                status.text = "Manual refresh started in background..."
+                status.text = "Refreshing videos in background..."
+                try {
+                    val count = libraryFeature.refreshNow()
+                    status.text = if (count == 0) {
+                        "No video folders found. Tap Refresh to scan USB/SD cards."
+                    } else {
+                        "Found $count videos. Folders updated."
+                    }
+                } catch (e: Exception) {
+                    status.text = "Refresh failed: ${e.message ?: "MediaStore scan error"}"
+                }
             }
         }
 
@@ -89,13 +97,27 @@ class MainActivity : AppCompatActivity() {
 
     private fun showFolders() {
         collectJob?.cancel()
+        val generation = nextThumbnailGeneration()
         settingsPanel.visibility = View.GONE
         settingsTextInfo.visibility = View.GONE
         recycler.visibility = View.VISIBLE
         status.text = "Video folders. Cached Room data appears first; MediaStore refresh runs in background."
-        val adapter = FolderAdapter(emptyList()) { folder -> showVideos(folder.folderName) }
-        recycler.adapter = adapter
         collectJob = lifecycleScope.launch {
+            val prefs = settingsFeature.observe().first()
+            val showThumbs = !prefs.headunitSafeMode
+            lateinit var adapter: FolderAdapter
+            adapter = FolderAdapter(
+                items = emptyList(),
+                onClick = { folder -> showVideos(folder.folderName) },
+                showThumbnails = showThumbs,
+                thumbnailBitmapProvider = if (showThumbs) { uri ->
+                    appContainer.thumbnailLoader.memoryThumbnail(uri)
+                } else null,
+                onThumbnailMissing = if (showThumbs) { uri ->
+                    loadThumbnailForVisibleFolder(uri, adapter, generation)
+                } else null
+            )
+            recycler.adapter = adapter
             libraryFeature.folders().collect { folders ->
                 adapter.submit(folders)
                 if (folders.isEmpty()) {
@@ -122,7 +144,7 @@ class MainActivity : AppCompatActivity() {
                 onClick = { openVideo(it) },
                 onLongPress = { toggleFavorite(it) },
                 thumbnailBitmapProvider = if (showThumbs) { uri ->
-                    appContainer.thumbnailMemoryPolicy.get(appContainer.thumbnailDiskCache.keyFor(uri))
+                    appContainer.thumbnailLoader.memoryThumbnail(uri)
                 } else null,
                 onThumbnailMissing = if (showThumbs) { uri ->
                     loadThumbnailForVisibleRow(uri, adapter, generation)
@@ -164,8 +186,7 @@ class MainActivity : AppCompatActivity() {
                 onClick = { openVideo(it) },
                 onLongPress = { toggleFavorite(it) },
                 thumbnailBitmapProvider = if (showThumbs) { uri ->
-                    val key = appContainer.thumbnailDiskCache.keyFor(uri)
-                    appContainer.thumbnailMemoryPolicy.get(key)
+                    appContainer.thumbnailLoader.memoryThumbnail(uri)
                 } else null,
                 onThumbnailMissing = if (showThumbs) { uri ->
                     loadThumbnailForVisibleRow(uri, adapter, generation)
@@ -208,6 +229,20 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun loadThumbnailForVisibleFolder(uri: String, adapter: FolderAdapter, generation: Int) {
+        if (generation != thumbnailGeneration || !inFlightThumbnails.add(uri)) return
+        lifecycleScope.launch {
+            try {
+                val bitmap = appContainer.thumbnailLoader.loadThumbnail(uri)
+                if (bitmap != null && generation == thumbnailGeneration && recycler.adapter === adapter) {
+                    adapter.notifyDataSetChanged()
+                }
+            } finally {
+                inFlightThumbnails.remove(uri)
+            }
+        }
+    }
+
     private fun showStorage() {
         collectJob?.cancel()
         status.text = "Storage categories — tap a category to browse"
@@ -241,6 +276,13 @@ class MainActivity : AppCompatActivity() {
 
         lifecycleScope.launch {
             val s = settingsStore.settings.first()
+            bindSettingsState(s)
+        }
+    }
+
+    private fun bindSettingsState(s: com.natkibe.videoplayerpro.settings.VideoPlayerProSettings) {
+        bindingSettings = true
+        try {
             findViewById<SwitchCompat>(R.id.switchThumbnails).isChecked = s.showThumbnails
             findViewById<SwitchCompat>(R.id.switchFloating).isChecked = s.enableFloatingPlayer
             findViewById<SwitchCompat>(R.id.switchFloatingControls).isChecked = s.enableFloatingControlsOnly
@@ -252,9 +294,11 @@ class MainActivity : AppCompatActivity() {
             findViewById<SwitchCompat>(R.id.switchAutoHideControls).isChecked = s.autoHideControls
             findViewById<SwitchCompat>(R.id.switchFancyBlur).isChecked = s.useFancyBlur
             findViewById<SwitchCompat>(R.id.switchCompactPlaylist).isChecked = s.compactPlaylistRows
-            findViewById<Button>(R.id.btnAccentColor).text = s.accentColorName
-            findViewById<Button>(R.id.btnDefaultSpeed).text = "${s.defaultSpeed}x"
-            findViewById<Button>(R.id.btnRepeatMode).text = repeatModeLabel(s.defaultRepeatMode)
+            findViewById<TextView>(R.id.btnAccentColor).text = s.accentColorName
+            findViewById<TextView>(R.id.btnDefaultSpeed).text = "${s.defaultSpeed}x"
+            findViewById<TextView>(R.id.btnRepeatMode).text = repeatModeLabel(s.defaultRepeatMode)
+        } finally {
+            bindingSettings = false
         }
     }
 
@@ -268,27 +312,35 @@ class MainActivity : AppCompatActivity() {
     private fun setupSettingsToggles() {
         // Boolean switches (10 total)
         findViewById<SwitchCompat>(R.id.switchThumbnails).setOnCheckedChangeListener { _, checked ->
+            if (bindingSettings) return@setOnCheckedChangeListener
             lifecycleScope.launch { settingsStore.setShowThumbnails(checked) }
         }
         findViewById<SwitchCompat>(R.id.switchFloating).setOnCheckedChangeListener { _, checked ->
+            if (bindingSettings) return@setOnCheckedChangeListener
             lifecycleScope.launch { settingsStore.setFloating(checked) }
         }
         findViewById<SwitchCompat>(R.id.switchFloatingControls).setOnCheckedChangeListener { _, checked ->
+            if (bindingSettings) return@setOnCheckedChangeListener
             lifecycleScope.launch { settingsStore.setFloatingControlsOnly(checked) }
         }
         findViewById<SwitchCompat>(R.id.switchPlaylist).setOnCheckedChangeListener { _, checked ->
+            if (bindingSettings) return@setOnCheckedChangeListener
             lifecycleScope.launch { settingsStore.setPlaylist(checked) }
         }
         findViewById<SwitchCompat>(R.id.switchDarkTheme).setOnCheckedChangeListener { _, checked ->
+            if (bindingSettings) return@setOnCheckedChangeListener
             lifecycleScope.launch { settingsStore.setDarkTheme(checked) }
         }
         findViewById<SwitchCompat>(R.id.switchResume).setOnCheckedChangeListener { _, checked ->
+            if (bindingSettings) return@setOnCheckedChangeListener
             lifecycleScope.launch { settingsStore.setResume(checked) }
         }
         findViewById<SwitchCompat>(R.id.switchAutoplayNext).setOnCheckedChangeListener { _, checked ->
+            if (bindingSettings) return@setOnCheckedChangeListener
             lifecycleScope.launch { settingsStore.setAutoplayNext(checked) }
         }
         findViewById<SwitchCompat>(R.id.switchSafeMode).setOnCheckedChangeListener { _, checked ->
+            if (bindingSettings) return@setOnCheckedChangeListener
             lifecycleScope.launch {
                 settingsStore.setHeadunitSafeMode(checked)
                 if (checked) {
@@ -296,55 +348,59 @@ class MainActivity : AppCompatActivity() {
                     settingsStore.setFloating(false)
                     settingsStore.setUseFancyBlur(false)
                     settingsStore.setAutoHideControls(false)
+                    val updated = settingsStore.settings.first()
+                    bindSettingsState(updated)
                 }
-                showSettings()
             }
         }
         findViewById<SwitchCompat>(R.id.switchAutoHideControls).setOnCheckedChangeListener { _, checked ->
+            if (bindingSettings) return@setOnCheckedChangeListener
             lifecycleScope.launch { settingsStore.setAutoHideControls(checked) }
         }
         findViewById<SwitchCompat>(R.id.switchFancyBlur).setOnCheckedChangeListener { _, checked ->
+            if (bindingSettings) return@setOnCheckedChangeListener
             lifecycleScope.launch { settingsStore.setUseFancyBlur(checked) }
         }
         findViewById<SwitchCompat>(R.id.switchCompactPlaylist).setOnCheckedChangeListener { _, checked ->
+            if (bindingSettings) return@setOnCheckedChangeListener
             lifecycleScope.launch { settingsStore.setCompactPlaylist(checked) }
         }
 
         // Accent color cycle
         val accents = listOf("Blue", "Teal", "Orange", "Purple", "Red", "Green")
-        findViewById<Button>(R.id.btnAccentColor).setOnClickListener {
+        findViewById<TextView>(R.id.btnAccentColor).setOnClickListener {
             lifecycleScope.launch {
                 val current = settingsStore.settings.first().accentColorName
                 val next = accents[(accents.indexOf(current) + 1) % accents.size]
                 settingsStore.setAccent(next)
-                findViewById<Button>(R.id.btnAccentColor).text = next
+                findViewById<TextView>(R.id.btnAccentColor).text = next
             }
         }
 
         // Default speed cycle
         val speeds = listOf(0.75f, 1.0f, 1.25f, 1.5f, 2.0f)
-        findViewById<Button>(R.id.btnDefaultSpeed).setOnClickListener {
+        findViewById<TextView>(R.id.btnDefaultSpeed).setOnClickListener {
             lifecycleScope.launch {
                 val current = settingsStore.settings.first().defaultSpeed
                 val next = speeds[(speeds.indexOf(current) + 1) % speeds.size]
                 settingsStore.setDefaultSpeed(next)
-                findViewById<Button>(R.id.btnDefaultSpeed).text = "${next}x"
+                findViewById<TextView>(R.id.btnDefaultSpeed).text = "${next}x"
             }
         }
 
         // Default repeat mode cycle
-        val repeatModes = listOf(0, 1, 2, 3) // off, one, all, folder
-        findViewById<Button>(R.id.btnRepeatMode).setOnClickListener {
+        val repeatModes = listOf(0, 1, 3) // off, one, folder
+        findViewById<TextView>(R.id.btnRepeatMode).setOnClickListener {
             lifecycleScope.launch {
                 val current = settingsStore.settings.first().defaultRepeatMode
                 val next = repeatModes[(repeatModes.indexOf(current) + 1) % repeatModes.size]
                 settingsStore.setRepeatMode(next)
-                findViewById<Button>(R.id.btnRepeatMode).text = repeatModeLabel(next)
+                findViewById<TextView>(R.id.btnRepeatMode).text = repeatModeLabel(next)
             }
         }
 
         // Diagnostics
-        findViewById<Button>(R.id.openDiagnostics).setOnClickListener {
+        findViewById<TextView>(R.id.openDiagnostics).setOnClickListener {
             startActivity(Intent(this, DiagnosticsActivity::class.java))
         }
     }

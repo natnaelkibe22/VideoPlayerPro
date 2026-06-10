@@ -1,4 +1,4 @@
-appId: com.natkibe.videoplayerpro.autosky
+appId: com.natkibe.videoplayerpro.s26ultra
 ---
 # Verify M02/M03: Edge-swipe drawer open/close + auto-hide controls.
 # Uses stable row selectors; no hardcoded video names.
@@ -15,9 +15,9 @@ appId: com.natkibe.videoplayerpro.autosky
       - tapOn: "While using the app"
 - assertVisible: "Main folder screen"
 - tapOn:
-    id: "com.natkibe.videoplayerpro.autosky:id/videoTab"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/videoTab"
 - assertVisible:
-    id: "com.natkibe.videoplayerpro.autosky:id/recycler"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/recycler"
 
 - runFlow:
     when:
@@ -34,19 +34,19 @@ appId: com.natkibe.videoplayerpro.autosky
                 text: "Video row"
                 index: 0
             - assertVisible:
-                id: "com.natkibe.videoplayerpro.autosky:id/playerScreen"
+                id: "com.natkibe.videoplayerpro.s26ultra:id/playerScreen"
             - assertVisible:
-                id: "com.natkibe.videoplayerpro.autosky:id/playerView"
+                id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
 
             # ── 1. Tap surface → verify controls show ──────────────────────
             - tapOn:
-                id: "com.natkibe.videoplayerpro.autosky:id/playerView"
+                id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
             - assertVisible:
-                id: "com.natkibe.videoplayerpro.autosky:id/topBar"
+                id: "com.natkibe.videoplayerpro.s26ultra:id/topBar"
             - assertVisible:
-                id: "com.natkibe.videoplayerpro.autosky:id/centerControls"
+                id: "com.natkibe.videoplayerpro.s26ultra:id/centerControls"
             - assertVisible:
-                id: "com.natkibe.videoplayerpro.autosky:id/bottomBar"
+                id: "com.natkibe.videoplayerpro.s26ultra:id/bottomBar"
 
             # ── 2. Wait for auto-hide (controls disappear after 3s) ────────
             - swipe:
@@ -56,12 +56,12 @@ appId: com.natkibe.videoplayerpro.autosky
             - runFlow:
                 when:
                   notVisible:
-                    id: "com.natkibe.videoplayerpro.autosky:id/topBar"
+                    id: "com.natkibe.videoplayerpro.s26ultra:id/topBar"
                 commands:
                   - assertNotVisible:
-                      id: "com.natkibe.videoplayerpro.autosky:id/topBar"
+                      id: "com.natkibe.videoplayerpro.s26ultra:id/topBar"
                   - assertNotVisible:
-                      id: "com.natkibe.videoplayerpro.autosky:id/bottomBar"
+                      id: "com.natkibe.videoplayerpro.s26ultra:id/bottomBar"
 
             # ── 3. Swipe from right edge to open playlist drawer ───────────
             - swipe:
@@ -69,29 +69,29 @@ appId: com.natkibe.videoplayerpro.autosky
                 end: "70%,50%"
                 duration: 400
             - assertVisible:
-                id: "com.natkibe.videoplayerpro.autosky:id/sidePlaylist"
+                id: "com.natkibe.videoplayerpro.s26ultra:id/sidePlaylist"
             - assertVisible:
-                id: "com.natkibe.videoplayerpro.autosky:id/playlistDimOverlay"
+                id: "com.natkibe.videoplayerpro.s26ultra:id/playlistDimOverlay"
             - assertVisible:
-                id: "com.natkibe.videoplayerpro.autosky:id/playlistRecycler"
+                id: "com.natkibe.videoplayerpro.s26ultra:id/playlistRecycler"
 
             # ── 4. Tap outside drawer (dim overlay) → verify drawer closes ─
             - tapOn:
-                id: "com.natkibe.videoplayerpro.autosky:id/playlistDimOverlay"
+                id: "com.natkibe.videoplayerpro.s26ultra:id/playlistDimOverlay"
             - assertVisible:
-                id: "com.natkibe.videoplayerpro.autosky:id/playerView"
+                id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
             - assertNotVisible:
-                id: "com.natkibe.videoplayerpro.autosky:id/sidePlaylist"
+                id: "com.natkibe.videoplayerpro.s26ultra:id/sidePlaylist"
 
             # ── 5. Tap surface → controls visible again ────────────────────
             - tapOn:
-                id: "com.natkibe.videoplayerpro.autosky:id/playerView"
+                id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
             - assertVisible:
-                id: "com.natkibe.videoplayerpro.autosky:id/topBar"
+                id: "com.natkibe.videoplayerpro.s26ultra:id/topBar"
             - assertVisible:
-                id: "com.natkibe.videoplayerpro.autosky:id/centerControls"
+                id: "com.natkibe.videoplayerpro.s26ultra:id/centerControls"
             - assertVisible:
-                id: "com.natkibe.videoplayerpro.autosky:id/bottomBar"
+                id: "com.natkibe.videoplayerpro.s26ultra:id/bottomBar"
 
             # ── 6. Wait long enough for controls to auto-hide again ────────
             - swipe:
@@ -101,15 +101,15 @@ appId: com.natkibe.videoplayerpro.autosky
             - runFlow:
                 when:
                   notVisible:
-                    id: "com.natkibe.videoplayerpro.autosky:id/topBar"
+                    id: "com.natkibe.videoplayerpro.s26ultra:id/topBar"
                 commands:
                   - assertNotVisible:
-                      id: "com.natkibe.videoplayerpro.autosky:id/topBar"
+                      id: "com.natkibe.videoplayerpro.s26ultra:id/topBar"
                   - assertNotVisible:
-                      id: "com.natkibe.videoplayerpro.autosky:id/bottomBar"
+                      id: "com.natkibe.videoplayerpro.s26ultra:id/bottomBar"
 
             - tapOn:
-                id: "com.natkibe.videoplayerpro.autosky:id/closeButton"
+                id: "com.natkibe.videoplayerpro.s26ultra:id/closeButton"
             - assertVisible: "Main folder screen"
 
 # ── 6. Empty library fallback ───────────────────────────────────────────────
@@ -119,5 +119,5 @@ appId: com.natkibe.videoplayerpro.autosky
     commands:
       - assertVisible: "No video folders found"
       - assertVisible:
-          id: "com.natkibe.videoplayerpro.autosky:id/recycler"
+          id: "com.natkibe.videoplayerpro.s26ultra:id/recycler"
       - assertVisible: "Refresh"

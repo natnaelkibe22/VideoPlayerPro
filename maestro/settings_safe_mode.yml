@@ -1,4 +1,4 @@
-appId: com.natkibe.videoplayerpro.autosky
+appId: com.natkibe.videoplayerpro.s26ultra
 ---
 # Milestone 07 settings: Headunit Safe Mode, playlist drawer, floating permission setting where possible.
 - launchApp
@@ -9,9 +9,9 @@ appId: com.natkibe.videoplayerpro.autosky
       - tapOn: "Allow"
 - assertVisible: "Main folder screen"
 - tapOn:
-    id: "com.natkibe.videoplayerpro.autosky:id/settingsTab"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/settingsTab"
 - assertVisible:
-    id: "com.natkibe.videoplayerpro.autosky:id/settingsContainer"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/settingsContainer"
 - assertVisible: "Settings screen"
 - scrollUntilVisible:
     element: "Safe Mode toggle"
@@ -19,7 +19,7 @@ appId: com.natkibe.videoplayerpro.autosky
 - assertVisible: "Safe Mode toggle"
 - tapOn: "Safe Mode toggle"
 - assertVisible:
-    id: "com.natkibe.videoplayerpro.autosky:id/settingsContainer"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/settingsContainer"
 - tapOn: "Safe Mode toggle"
 - scrollUntilVisible:
     element: "Playlist drawer setting toggle"
@@ -34,4 +34,4 @@ appId: com.natkibe.videoplayerpro.autosky
 - tapOn: "Floating player setting toggle"
 - tapOn: "Floating player setting toggle"
 - assertVisible:
-    id: "com.natkibe.videoplayerpro.autosky:id/settingsContainer"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/settingsContainer"

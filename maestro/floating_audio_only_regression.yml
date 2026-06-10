@@ -1,0 +1,48 @@
+appId: com.natkibe.videoplayerpro.s26ultra
+---
+# Regression: floating Play as Music exits the overlay and keeps the shared player alive.
+# Requires maestro/run_seeded_player_regressions.sh seeded videos.
+- launchApp
+- runFlow:
+    when:
+      visible: "Allow"
+    commands:
+      - tapOn: "Allow"
+- runFlow:
+    when:
+      visible: "While using the app"
+    commands:
+      - tapOn: "While using the app"
+- assertVisible: "Main folder screen"
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/videoTab"
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/refreshButton"
+- extendedWaitUntil:
+    visible:
+      id: "com.natkibe.videoplayerpro.s26ultra:id/recycler"
+    timeout: 15000
+- scrollUntilVisible:
+    element: "VideoPlayerProMaestro"
+    direction: DOWN
+- tapOn: "VideoPlayerProMaestro"
+- scrollUntilVisible:
+    element: "vpp_maestro_01.mp4"
+    direction: DOWN
+- tapOn: "vpp_maestro_01.mp4"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/menuButton"
+- tapOn: "Float toggle"
+- pressKey: Home
+- extendedWaitUntil:
+    visible:
+      id: "com.natkibe.videoplayerpro.s26ultra:id/floatingPlayerControl"
+    timeout: 10000
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatMusicButton"
+- assertNotVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatingPlayerControl"

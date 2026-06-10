@@ -1,4 +1,4 @@
-appId: com.natkibe.videoplayerpro.autosky
+appId: com.natkibe.videoplayerpro.s26ultra
 ---
 # Stability, Headunit & Polish Test
 # Requires mock video at /sdcard/Movies/test_video_720p.mp4
@@ -7,7 +7,7 @@ appId: com.natkibe.videoplayerpro.autosky
 # ── 1. Navigate to Settings
 - tapOn: "Settings"
 - assertVisible:
-    id: "com.natkibe.videoplayerpro.autosky:id/statusText"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/statusText"
 # ── 2. Open Diagnostics ──
 - tapOn: "Diagnostics"
 - assertVisible: "Player Diagnostics"
@@ -20,12 +20,12 @@ appId: com.natkibe.videoplayerpro.autosky
 - assertVisible: "test_video_720p.mp4"
 - tapOn: "test_video_720p.mp4"
 - assertVisible:
-    id: "com.natkibe.videoplayerpro.autosky:id/playerView"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
 # ── 4. Tap to reveal controls, verify player works ──
 - tapOn:
-    id: "com.natkibe.videoplayerpro.autosky:id/playerView"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
 - assertVisible:
-    id: "com.natkibe.videoplayerpro.autosky:id/repeatButton"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/repeatButton"
 # ── 5. Go back, verify no crash ──
 - back
 - assertVisible: "VideoPlayer Pro"

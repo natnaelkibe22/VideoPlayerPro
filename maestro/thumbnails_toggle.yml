@@ -1,4 +1,4 @@
-appId: com.natkibe.videoplayerpro.autosky
+appId: com.natkibe.videoplayerpro.s26ultra
 ---
 # Milestone 07 thumbnails setting: toggle thumbnails on/off and return to folders.
 - launchApp
@@ -9,14 +9,14 @@ appId: com.natkibe.videoplayerpro.autosky
       - tapOn: "Allow"
 - assertVisible: "Main folder screen"
 - tapOn:
-    id: "com.natkibe.videoplayerpro.autosky:id/settingsTab"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/settingsTab"
 - assertVisible:
-    id: "com.natkibe.videoplayerpro.autosky:id/settingsContainer"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/settingsContainer"
 - assertVisible: "Thumbnail toggle"
 - tapOn: "Thumbnail toggle"
 - tapOn: "Thumbnail toggle"
 - tapOn:
-    id: "com.natkibe.videoplayerpro.autosky:id/videoTab"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/videoTab"
 - assertVisible: "Main folder screen"
 - assertVisible:
-    id: "com.natkibe.videoplayerpro.autosky:id/recycler"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/recycler"

@@ -1,0 +1,344 @@
+appId: com.natkibe.videoplayerpro.s26ultra
+---
+# Giant seeded regression flow.
+# Requires maestro/run_seeded_player_regressions.sh to seed:
+#   /sdcard/Movies/VideoPlayerProMaestro/*.mp4
+#   /sdcard/Movies/VideoPlayerProMaestroAlt/*.mp4
+- launchApp
+- runFlow:
+    when:
+      visible: "Allow"
+    commands:
+      - tapOn: "Allow"
+- runFlow:
+    when:
+      visible: "While using the app"
+    commands:
+      - tapOn: "While using the app"
+- runFlow:
+    when:
+      visible: "Pixel Launcher isn't responding"
+    commands:
+      - tapOn: "Wait"
+- assertVisible: "Main folder screen"
+
+# Top tabs and settings should remain reachable without bottom nav overlap.
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/videoTab"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/recycler"
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/recentTab"
+- runFlow:
+    when:
+      visible: "Pixel Launcher isn't responding"
+    commands:
+      - tapOn: "Wait"
+- assertVisible: "Recently watched videos"
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/storageTab"
+- runFlow:
+    when:
+      visible: "Pixel Launcher isn't responding"
+    commands:
+      - tapOn: "Wait"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/statusText"
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/settingsTab"
+- runFlow:
+    when:
+      visible: "Pixel Launcher isn't responding"
+    commands:
+      - tapOn: "Wait"
+- assertVisible: "Settings screen"
+- assertVisible: "Thumbnail toggle"
+- tapOn: "Thumbnail toggle"
+- assertVisible: "Settings screen"
+- tapOn: "Thumbnail toggle"
+- scrollUntilVisible:
+    element: "Playlist drawer setting toggle"
+    direction: DOWN
+- tapOn: "Playlist drawer setting toggle"
+- assertVisible: "Settings screen"
+- tapOn: "Playlist drawer setting toggle"
+- scrollUntilVisible:
+    element: "Safe Mode toggle"
+    direction: DOWN
+- tapOn: "Safe Mode toggle"
+- assertVisible: "Settings screen"
+- tapOn: "Safe Mode toggle"
+- scrollUntilVisible:
+    element:
+      id: "com.natkibe.videoplayerpro.s26ultra:id/btnDefaultSpeed"
+    direction: DOWN
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/btnDefaultSpeed"
+- assertVisible: "Settings screen"
+- scrollUntilVisible:
+    element: "Thumbnail toggle"
+    direction: UP
+- tapOn: "Thumbnail toggle"
+
+# Seeded folders should list multiple aspect ratios and durations.
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/videoTab"
+- runFlow:
+    when:
+      visible: "Pixel Launcher isn't responding"
+    commands:
+      - tapOn: "Wait"
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/refreshButton"
+- extendedWaitUntil:
+    visible:
+      id: "com.natkibe.videoplayerpro.s26ultra:id/recycler"
+    timeout: 15000
+- scrollUntilVisible:
+    element: "VideoPlayerProMaestro"
+    direction: DOWN
+- assertVisible: "VideoPlayerProMaestro"
+- scrollUntilVisible:
+    element: "VideoPlayerProMaestroAlt"
+    direction: DOWN
+- assertVisible: "VideoPlayerProMaestroAlt"
+- scrollUntilVisible:
+    element: "VideoPlayerProMaestro"
+    direction: UP
+- tapOn: "VideoPlayerProMaestro"
+- extendedWaitUntil:
+    visible:
+      id: "com.natkibe.videoplayerpro.s26ultra:id/recycler"
+    timeout: 10000
+- scrollUntilVisible:
+    element: "vpp_maestro_01.mp4"
+    direction: DOWN
+- assertVisible: "vpp_maestro_01.mp4"
+- scrollUntilVisible:
+    element: "vpp_maestro_04_portrait.mp4"
+    direction: DOWN
+- assertVisible: "vpp_maestro_04_portrait.mp4"
+- scrollUntilVisible:
+    element: "vpp_maestro_06_long.mp4"
+    direction: DOWN
+    visibilityPercentage: 50
+    timeout: 30000
+- assertVisible: "vpp_maestro_06_long.mp4"
+- scrollUntilVisible:
+    element: "vpp_maestro_07_stress_long.mp4"
+    direction: DOWN
+    visibilityPercentage: 50
+    timeout: 30000
+- assertVisible: "vpp_maestro_07_stress_long.mp4"
+- scrollUntilVisible:
+    element: "vpp_maestro_07_stress_long.mp4"
+    direction: UP
+- tapOn: "vpp_maestro_07_stress_long.mp4"
+- extendedWaitUntil:
+    visible:
+      id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
+    timeout: 10000
+
+# Main player controls: top actions, transport, seek, repeat, playlist, menu.
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/videoTitle"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/topSpeedButton"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/topAudioOnlyButton"
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/topSpeedButton"
+- assertVisible: "Playback Speed"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/playbackSpeedSlider"
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/playbackSpeedSlider"
+    point: "75%,50%"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/playbackSpeedValueLabel"
+- pressKey: Back
+- extendedWaitUntil:
+    visible:
+      id: "com.natkibe.videoplayerpro.s26ultra:id/speedLabel"
+    timeout: 10000
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/topAudioOnlyButton"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/musicStatusLabel"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/audioArtworkView"
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/topAudioOnlyButton"
+- extendedWaitUntil:
+    visible:
+      id: "com.natkibe.videoplayerpro.s26ultra:id/speedLabel"
+    timeout: 10000
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/centerPlayPause"
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/centerPlayPause"
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/seekForward15"
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/seekBack5"
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/nextButton"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/prevButton"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/repeatButton"
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/repeatButton"
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/repeatButton"
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/playlistButton"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/sidePlaylist"
+- assertVisible: "vpp_maestro_01.mp4"
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/playlistButton"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/menuButton"
+- assertVisible: "Playback menu"
+- assertVisible: "Repeat Mode"
+- assertVisible: "Audio Only Mode"
+- assertVisible: "Floating Window"
+- tapOn: "Repeat toggle"
+
+# Floating player stress: keep fullscreen in-app, then expose compact overlay from Home.
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/menuButton"
+- tapOn: "Float toggle"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
+- pressKey: Home
+- runFlow:
+    when:
+      visible: "Pixel Launcher isn't responding"
+    commands:
+      - tapOn: "Wait"
+- extendedWaitUntil:
+    visible:
+      id: "com.natkibe.videoplayerpro.s26ultra:id/floatingPlayerControl"
+    timeout: 10000
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatingTitle"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatResizeHandle"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatPreviousButton"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatPlayPauseButton"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatNextButton"
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatPlayPauseButton"
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatPlayPauseButton"
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatNextButton"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatingPlayerControl"
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatPreviousButton"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatingPlayerControl"
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatSpeedButton"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatingSpeedPanel"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatingSpeedSlider"
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatingSpeedSlider"
+    point: "75%,50%"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatingPlayerControl"
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatFoldersButton"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatingFolderPanel"
+- assertVisible: "vpp_maestro_01.mp4"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/videoThumbImage"
+- tapOn: "vpp_maestro_01.mp4"
+- extendedWaitUntil:
+    visible:
+      id: "com.natkibe.videoplayerpro.s26ultra:id/floatingPlayerControl"
+    timeout: 10000
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatFoldersButton"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatingPlayerControl"
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatFullscreenButton"
+- extendedWaitUntil:
+    visible:
+      id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
+    timeout: 5000
+
+# Close main player, verify recents/storage update, and play an alternate portrait fixture.
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/closeButton"
+- assertVisible: "Main folder screen"
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/recentTab"
+- runFlow:
+    when:
+      visible: "Pixel Launcher isn't responding"
+    commands:
+      - tapOn: "Wait"
+- assertVisible: "Recently watched videos"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/recycler"
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/storageTab"
+- runFlow:
+    when:
+      visible: "Pixel Launcher isn't responding"
+    commands:
+      - tapOn: "Wait"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/statusText"
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/videoTab"
+- runFlow:
+    when:
+      visible: "Pixel Launcher isn't responding"
+    commands:
+      - tapOn: "Wait"
+- scrollUntilVisible:
+    element: "VideoPlayerProMaestroAlt"
+    direction: DOWN
+- tapOn: "VideoPlayerProMaestroAlt"
+- scrollUntilVisible:
+    element: "vpp_alt_02_portrait.mp4"
+    direction: DOWN
+- tapOn: "vpp_alt_02_portrait.mp4"
+- extendedWaitUntil:
+    visible:
+      id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
+    timeout: 10000
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/topAudioOnlyButton"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/musicStatusLabel"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/audioArtworkView"
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/topAudioOnlyButton"
+- extendedWaitUntil:
+    visible:
+      id: "com.natkibe.videoplayerpro.s26ultra:id/speedLabel"
+    timeout: 10000

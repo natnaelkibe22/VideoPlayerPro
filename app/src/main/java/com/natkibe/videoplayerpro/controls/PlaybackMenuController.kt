@@ -15,7 +15,7 @@ import android.widget.TextView
  *
  * Menu items (in order):
  * 1. "Playback Speed"   → [onSpeedClicked]
- * 2. "Repeat Mode"      → [onRepeatClicked]
+ * 2. "Repeat Mode"      → [onRepeatClicked] cycles Off → One → Folder → Off
  * 3. "Audio Only Mode"  → [onAudioOnlyClicked] (with checkbox indicator)
  * 4. "Floating Window"  → [onFloatingClicked]  (with checkbox indicator)
  * 5. "Settings"         → [onSettingsClicked]
@@ -77,7 +77,7 @@ class PlaybackMenuController(
             buildRow(
                 label = "Repeat Mode",
                 detail = currentRepeat,
-                checked = false,
+                checked = currentRepeat != "Repeat Off",
                 contentDescription = "Repeat toggle",
                 onClick = { callbacks.onRepeatClicked() }
             )

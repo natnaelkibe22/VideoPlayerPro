@@ -104,6 +104,13 @@ maestro test maestro/regression_no_duplicate_float.yml
 
 The flows prefer stable resource IDs/content descriptions and avoid exact video names. Empty media libraries are handled with conditional branches; player-specific steps execute when at least one folder/video row is available. Floating overlay assertions require Android overlay permission to be granted before running those flows; without permission the flows verify fullscreen recovery instead.
 
+For a real emulator regression pass with deterministic media, use the seeded runner. It builds the chosen flavor, installs it, generates two tiny H.264 test videos, pushes them into `/sdcard/Movies/VideoPlayerProMaestro`, refreshes MediaStore, grants overlay permission when possible, and runs the player regression flow:
+
+```bash
+./maestro/run_seeded_player_regressions.sh autosky debug
+./maestro/run_seeded_player_regressions.sh s26ultra release
+```
+
 ## Milestones
 
 - `v0.1-ultra-light-video-only` — folders/videos only

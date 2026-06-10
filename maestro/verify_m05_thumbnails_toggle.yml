@@ -1,4 +1,4 @@
-appId: com.natkibe.videoplayerpro.autosky
+appId: com.natkibe.videoplayerpro.s26ultra
 ---
 # Verify M05: Thumbnail toggle can be switched on/off and does not crash.
 # Verifies the row placeholder changes in response to the toggle.
@@ -17,15 +17,15 @@ appId: com.natkibe.videoplayerpro.autosky
 
 # ── 1. Ensure thumbnails ON in Settings ─────────────────────────────────────
 - tapOn:
-    id: "com.natkibe.videoplayerpro.autosky:id/settingsTab"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/settingsTab"
 - assertVisible:
-    id: "com.natkibe.videoplayerpro.autosky:id/settingsContainer"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/settingsContainer"
 - assertVisible: "Thumbnail toggle"
 - tapOn: "Thumbnail toggle"
 - tapOn:
-    id: "com.natkibe.videoplayerpro.autosky:id/videoTab"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/videoTab"
 - assertVisible:
-    id: "com.natkibe.videoplayerpro.autosky:id/recycler"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/recycler"
 
 # ── 2. Navigate to folder with videos ───────────────────────────────────────
 - runFlow:
@@ -44,24 +44,24 @@ appId: com.natkibe.videoplayerpro.autosky
             - runFlow:
                 when:
                   visible:
-                    id: "com.natkibe.videoplayerpro.autosky:id/videoThumbImage"
+                    id: "com.natkibe.videoplayerpro.s26ultra:id/videoThumbImage"
                 commands:
                   - assertVisible:
-                      id: "com.natkibe.videoplayerpro.autosky:id/videoThumbImage"
+                      id: "com.natkibe.videoplayerpro.s26ultra:id/videoThumbImage"
             # Placeholder is always present regardless of thumbnail state
             - assertVisible:
-                id: "com.natkibe.videoplayerpro.autosky:id/videoThumb"
+                id: "com.natkibe.videoplayerpro.s26ultra:id/videoThumb"
             - tapOn:
-                id: "com.natkibe.videoplayerpro.autosky:id/videoTab"
+                id: "com.natkibe.videoplayerpro.s26ultra:id/videoTab"
             - assertVisible: "Main folder screen"
 
 # ── 3. Turn thumbnails OFF in Settings ────────────────────────────────────
 - tapOn:
-    id: "com.natkibe.videoplayerpro.autosky:id/settingsTab"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/settingsTab"
 - assertVisible: "Thumbnail toggle"
 - tapOn: "Thumbnail toggle"
 - tapOn:
-    id: "com.natkibe.videoplayerpro.autosky:id/videoTab"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/videoTab"
 - assertVisible: "Main folder screen"
 
 # ── 4. Navigate back to folder, verify thumbnail images are gone ────────────
@@ -79,9 +79,9 @@ appId: com.natkibe.videoplayerpro.autosky
             - assertVisible: "Video row"
             # With thumbnails OFF, videoThumbImage should never be visible
             - assertNotVisible:
-                id: "com.natkibe.videoplayerpro.autosky:id/videoThumbImage"
+                id: "com.natkibe.videoplayerpro.s26ultra:id/videoThumbImage"
             - assertVisible:
-                id: "com.natkibe.videoplayerpro.autosky:id/videoThumb"
+                id: "com.natkibe.videoplayerpro.s26ultra:id/videoThumb"
 
 # ── 5. Empty library fallback ───────────────────────────────────────────────
 - runFlow:
@@ -90,5 +90,5 @@ appId: com.natkibe.videoplayerpro.autosky
     commands:
       - assertVisible: "No video folders found"
       - assertVisible:
-          id: "com.natkibe.videoplayerpro.autosky:id/recycler"
+          id: "com.natkibe.videoplayerpro.s26ultra:id/recycler"
       - assertVisible: "Refresh"

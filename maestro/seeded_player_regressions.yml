@@ -1,0 +1,129 @@
+appId: com.natkibe.videoplayerpro.s26ultra
+---
+# Seeded emulator regression flow.
+# Requires maestro/run_seeded_player_regressions.sh to install the APK and seed:
+# /sdcard/Movies/VideoPlayerProMaestro/vpp_maestro_01.mp4
+- launchApp
+- runFlow:
+    when:
+      visible: "Allow"
+    commands:
+      - tapOn: "Allow"
+- runFlow:
+    when:
+      visible: "While using the app"
+    commands:
+      - tapOn: "While using the app"
+- assertVisible: "Main folder screen"
+
+# Folder view should open and refresh into a real seeded folder.
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/videoTab"
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/refreshButton"
+- extendedWaitUntil:
+    visible:
+      id: "com.natkibe.videoplayerpro.s26ultra:id/recycler"
+    timeout: 15000
+- scrollUntilVisible:
+    element: "VideoPlayerProMaestro"
+    direction: DOWN
+- tapOn: "VideoPlayerProMaestro"
+- extendedWaitUntil:
+    visible:
+      id: "com.natkibe.videoplayerpro.s26ultra:id/recycler"
+    timeout: 10000
+- scrollUntilVisible:
+    element: "vpp_maestro_01.mp4"
+    direction: DOWN
+- tapOn: "vpp_maestro_01.mp4"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
+
+# Repeat is one button: off -> current video -> folder -> off.
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
+- tapOn:
+    point: "17%,86%"
+- assertVisible: "Playback Speed"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/playbackSpeedSlider"
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/playbackSpeedSlider"
+    point: "75%,50%"
+- tapOn:
+    point: "11%,86%"
+- tapOn:
+    point: "11%,86%"
+- tapOn:
+    point: "11%,86%"
+
+# Menu repeat row cycles the same state instead of opening a separate picker.
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/menuButton"
+- assertVisible: "Playback menu"
+- assertVisible: "Repeat Off"
+- tapOn: "Repeat toggle"
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/menuButton"
+- assertVisible: "Repeat One"
+- tapOn: "Repeat toggle"
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/menuButton"
+- assertVisible: "Repeat Folder"
+- tapOn: "Repeat toggle"
+
+# Play as Music should visibly enter and exit audio-only mode.
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/menuButton"
+- tapOn: "Play as Music toggle"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/musicStatusLabel"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/audioArtworkView"
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/menuButton"
+- tapOn: "Play as Music toggle"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/speedLabel"
+
+# Floating player should show one overlay and return to fullscreen when closed.
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/menuButton"
+- tapOn: "Float toggle"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
+- pressKey: Home
+- extendedWaitUntil:
+    visible:
+      id: "com.natkibe.videoplayerpro.s26ultra:id/floatingPlayerControl"
+    timeout: 10000
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatFoldersButton"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatSpeedButton"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatMusicButton"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatFullscreenButton"
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatSpeedButton"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatingSpeedPanel"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatingSpeedSlider"
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatingSpeedSlider"
+    point: "75%,50%"
+- assertNotVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatingPlayerControl"
+    index: 1
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatFullscreenButton"
+- extendedWaitUntil:
+    visible:
+      id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
+    timeout: 5000
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/closeButton"
+- assertVisible: "Main folder screen"

@@ -1,4 +1,4 @@
-appId: com.natkibe.videoplayerpro.autosky
+appId: com.natkibe.videoplayerpro.s26ultra
 ---
 # ExoPlayer Edge Case: Corrupted MKV Playback
 # Validates the player handles corrupted/incomplete MKV files gracefully

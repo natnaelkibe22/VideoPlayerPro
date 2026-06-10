@@ -1,6 +1,6 @@
 # Milestone 05 - Library Cache, Thumbnails, Resume, Favorites
 # Tests: Folder navigation, thumbnail toggle, resume, favorites
-appId: com.natkibe.videoplayerpro.autosky
+appId: com.natkibe.videoplayerpro.s26ultra
 ---
 # Setup: Launch app
 - launchApp
@@ -8,53 +8,53 @@ appId: com.natkibe.videoplayerpro.autosky
 
 # Test 1: Navigate folders (cached data loads first)
 - tapOn:
-    id: "com.natkibe.videoplayerpro.autosky:id/videoTab"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/videoTab"
 - assertVisible: "Video folders"
 
 # Test 2: Toggle thumbnails ON in settings
 - tapOn:
-    id: "com.natkibe.videoplayerpro.autosky:id/settingsTab"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/settingsTab"
 - assertVisible: "Show Thumbnails"
 - tapOn:
-    id: "com.natkibe.videoplayerpro.autosky:id/switchThumbnails"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/switchThumbnails"
 - assertVisible: "Diagnostics"
 
 # Test 3: Navigate back to folders with thumbnails ON
 - tapOn:
-    id: "com.natkibe.videoplayerpro.autosky:id/videoTab"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/videoTab"
 - assertVisible: "Video folders"
 
 # Test 4: Toggle thumbnails OFF
 - tapOn:
-    id: "com.natkibe.videoplayerpro.autosky:id/settingsTab"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/settingsTab"
 - tapOn:
-    id: "com.natkibe.videoplayerpro.autosky:id/switchThumbnails"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/switchThumbnails"
 
 # Test 5: Open a video, seek, exit
 - tapOn:
-    id: "com.natkibe.videoplayerpro.autosky:id/videoTab"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/videoTab"
 - tapOn:
     text: "Movies"
 - tapOn:
     text: "test_video_720p.mp4"
 - assertVisible:
-    id: "com.natkibe.videoplayerpro.autosky:id/playerView"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
 # Seek forward ~10s via the seek-back-5 button (press center to show controls first)
 - tapOn:
-    id: "com.natkibe.videoplayerpro.autosky:id/playerView"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
 - tapOn:
-    id: "com.natkibe.videoplayerpro.autosky:id/seekForward15"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/seekForward15"
 
 # Test 6: Add to favorites via long-press — test from main library after returning
 - pressKey: back
 - tapOn:
-    id: "com.natkibe.videoplayerpro.autosky:id/videoTab"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/videoTab"
 # Long-press not easily simulated in Maestro; verify recent shows the video
 - tapOn:
-    id: "com.natkibe.videoplayerpro.autosky:id/recentTab"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/recentTab"
 - assertVisible: "test_video_720p.mp4"
 
 # Test 7: Refresh library button works
 - tapOn:
-    id: "com.natkibe.videoplayerpro.autosky:id/refreshButton"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/refreshButton"
 - assertVisible: "Refreshing videos in background"

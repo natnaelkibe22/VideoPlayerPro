@@ -1,4 +1,4 @@
-appId: com.natkibe.videoplayerpro.autosky
+appId: com.natkibe.videoplayerpro.s26ultra
 ---
 # Micro-Module: Core
 # Validates core module contracts: PermissionService, StorageClassifier, TimeFormat.
@@ -18,7 +18,7 @@ appId: com.natkibe.videoplayerpro.autosky
 - tapOn: "Folders"
 - assertVisible: "Main folder screen"
 - assertVisible:
-    id: "com.natkibe.videoplayerpro.autosky:id/recycler"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/recycler"
 - runFlow:
     when:
       visible: "No video folders found"
@@ -32,4 +32,4 @@ appId: com.natkibe.videoplayerpro.autosky
 # Verify storage/media refresh entry point works regardless of library state.
 - tapOn: "Refresh"
 - assertVisible:
-    id: "com.natkibe.videoplayerpro.autosky:id/statusText"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/statusText"

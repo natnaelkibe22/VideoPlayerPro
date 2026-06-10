@@ -4,5 +4,6 @@ data class VideoFolderSummary(
     val folderName: String,
     val storageRoot: String,
     val videoCount: Int,
-    val latestModified: Long
+    val latestModified: Long,
+    val previewUri: String? = null
 )

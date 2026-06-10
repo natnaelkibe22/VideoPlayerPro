@@ -1,0 +1,70 @@
+appId: com.natkibe.videoplayerpro.s26ultra
+---
+# Regression: floating overlay keeps controls local instead of forcing fullscreen.
+# Requires maestro/run_seeded_player_regressions.sh seeded videos.
+- launchApp
+- runFlow:
+    when:
+      visible: "Allow"
+    commands:
+      - tapOn: "Allow"
+- runFlow:
+    when:
+      visible: "While using the app"
+    commands:
+      - tapOn: "While using the app"
+- assertVisible: "Main folder screen"
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/videoTab"
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/refreshButton"
+- extendedWaitUntil:
+    visible:
+      id: "com.natkibe.videoplayerpro.s26ultra:id/recycler"
+    timeout: 15000
+- scrollUntilVisible:
+    element: "VideoPlayerProMaestro"
+    direction: DOWN
+- tapOn: "VideoPlayerProMaestro"
+- scrollUntilVisible:
+    element: "vpp_maestro_01.mp4"
+    direction: DOWN
+- tapOn: "vpp_maestro_01.mp4"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/menuButton"
+- tapOn: "Float toggle"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
+- pressKey: Home
+- extendedWaitUntil:
+    visible:
+      id: "com.natkibe.videoplayerpro.s26ultra:id/floatingPlayerControl"
+    timeout: 10000
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatingTitle"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatPreviousButton"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatPlayPauseButton"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatNextButton"
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatFoldersButton"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatingFolderPanel"
+- assertVisible: "vpp_maestro_01.mp4"
+- assertVisible: "vpp_maestro_02.mp4"
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatFoldersButton"
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatFullscreenButton"
+- extendedWaitUntil:
+    visible:
+      id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
+    timeout: 5000
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"

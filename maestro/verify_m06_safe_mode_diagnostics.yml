@@ -1,4 +1,4 @@
-appId: com.natkibe.videoplayerpro.autosky
+appId: com.natkibe.videoplayerpro.s26ultra
 ---
 # Verify M06: Safe Mode toggle → Refresh → Diagnostics panel.
 # Robust to empty/non-empty library.
@@ -17,36 +17,36 @@ appId: com.natkibe.videoplayerpro.autosky
 
 # ── 1. Open Settings → enable Safe Mode ─────────────────────────────────────
 - tapOn:
-    id: "com.natkibe.videoplayerpro.autosky:id/settingsTab"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/settingsTab"
 - assertVisible:
-    id: "com.natkibe.videoplayerpro.autosky:id/settingsContainer"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/settingsContainer"
 - scrollUntilVisible:
     element: "Safe Mode toggle"
     direction: DOWN
 - assertVisible: "Safe Mode toggle"
 - tapOn: "Safe Mode toggle"
 - assertVisible:
-    id: "com.natkibe.videoplayerpro.autosky:id/settingsContainer"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/settingsContainer"
 
 # ── 2. Go back to main screen, verify Refresh button works ──────────────────
 - tapOn:
-    id: "com.natkibe.videoplayerpro.autosky:id/videoTab"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/videoTab"
 - assertVisible: "Main folder screen"
 - assertVisible: "Refresh"
 - tapOn: "Refresh"
 - assertVisible:
-    id: "com.natkibe.videoplayerpro.autosky:id/recycler"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/recycler"
 
 # ── 3. Open Settings → disable Safe Mode ────────────────────────────────────
 - tapOn:
-    id: "com.natkibe.videoplayerpro.autosky:id/settingsTab"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/settingsTab"
 - scrollUntilVisible:
     element: "Safe Mode toggle"
     direction: DOWN
 - assertVisible: "Safe Mode toggle"
 - tapOn: "Safe Mode toggle"
 - assertVisible:
-    id: "com.natkibe.videoplayerpro.autosky:id/settingsContainer"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/settingsContainer"
 
 # ── 4. Open Diagnostics panel → verify content visible ──────────────────────
 - scrollUntilVisible:
@@ -55,16 +55,16 @@ appId: com.natkibe.videoplayerpro.autosky
 - assertVisible: "Diagnostics"
 - tapOn: "Diagnostics"
 - assertVisible:
-    id: "com.natkibe.videoplayerpro.autosky:id/diagnosticsContent"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/diagnosticsContent"
 - assertVisible: "Close"
 - back
 - assertVisible:
-    id: "com.natkibe.videoplayerpro.autosky:id/settingsContainer"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/settingsContainer"
 
 # ── 5. Return to library, verify shell intact ───────────────────────────────
 - tapOn:
-    id: "com.natkibe.videoplayerpro.autosky:id/videoTab"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/videoTab"
 - assertVisible: "Main folder screen"
 - assertVisible:
-    id: "com.natkibe.videoplayerpro.autosky:id/recycler"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/recycler"
 - assertVisible: "Refresh"

@@ -1,4 +1,4 @@
-appId: com.natkibe.videoplayerpro.autosky
+appId: com.natkibe.videoplayerpro.s26ultra
 ---
 # Milestone 07 Play as Music: toggle audio-only mode on and off from playback menu.
 - launchApp
@@ -9,7 +9,7 @@ appId: com.natkibe.videoplayerpro.autosky
       - tapOn: "Allow"
 - assertVisible: "Main folder screen"
 - tapOn:
-    id: "com.natkibe.videoplayerpro.autosky:id/videoTab"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/videoTab"
 - runFlow:
     when:
       visible: "Folder row"
@@ -25,19 +25,19 @@ appId: com.natkibe.videoplayerpro.autosky
                 text: "Video row"
                 index: 0
             - assertVisible:
-                id: "com.natkibe.videoplayerpro.autosky:id/playerView"
+                id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
             - tapOn:
-                id: "com.natkibe.videoplayerpro.autosky:id/playerView"
+                id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
             - tapOn:
-                id: "com.natkibe.videoplayerpro.autosky:id/menuButton"
+                id: "com.natkibe.videoplayerpro.s26ultra:id/menuButton"
             - tapOn: "Play as Music toggle"
             - assertVisible:
-                id: "com.natkibe.videoplayerpro.autosky:id/playerView"
+                id: "com.natkibe.videoplayerpro.s26ultra:id/musicStatusLabel"
             - tapOn:
-                id: "com.natkibe.videoplayerpro.autosky:id/menuButton"
+                id: "com.natkibe.videoplayerpro.s26ultra:id/menuButton"
             - tapOn: "Play as Music toggle"
             - assertVisible:
-                id: "com.natkibe.videoplayerpro.autosky:id/playerView"
+                id: "com.natkibe.videoplayerpro.s26ultra:id/speedLabel"
 - runFlow:
     when:
       visible: "No video folders found"

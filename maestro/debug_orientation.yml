@@ -1,4 +1,4 @@
-appId: com.natkibe.videoplayerpro.autosky
+appId: com.natkibe.videoplayerpro.s26ultra
 ---
 # Debug: Orientation Handling
 # Validates landscape-locked activities handle orientation correctly
@@ -13,4 +13,4 @@ appId: com.natkibe.videoplayerpro.autosky
 # Verify no ANR or crash when switching between tabs
 - tapOn: "Settings"
 - assertVisible:
-    id: "com.natkibe.videoplayerpro.autosky:id/statusText"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/statusText"

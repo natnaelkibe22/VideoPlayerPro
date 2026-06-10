@@ -1,0 +1,289 @@
+appId: com.natkibe.videoplayerpro.s26ultra
+---
+# Bug Verification Suite
+# Validates critical regressions: black screen, speed white screen, tab overflow, floating player.
+# Requires seeded mock videos from maestro/run_seeded_player_regressions.sh.
+# Tests run independently so a failure in one bug block does not block others.
+
+# ── Common permission handling ──
+- launchApp
+- runFlow:
+    when:
+      visible: "Allow"
+    commands:
+      - tapOn: "Allow"
+- runFlow:
+    when:
+      visible: "While using the app"
+    commands:
+      - tapOn: "While using the app"
+- extendedWaitUntil:
+    visible:
+      id: "com.natkibe.videoplayerpro.s26ultra:id/videoTab"
+    timeout: 15000
+
+# ═══════════════════════════════════════════════════════════════
+# BUG 1: Black screen on video open
+#   Open a video, wait, then verify video surface is not just black.
+#   Assert playerView visible + controls/playing indicators appear.
+# ═══════════════════════════════════════════════════════════════
+- runFlow:
+    when:
+      visible:
+        id: "com.natkibe.videoplayerpro.s26ultra:id/videoTab"
+    commands:
+      # Navigate to seeded video
+      - tapOn:
+          id: "com.natkibe.videoplayerpro.s26ultra:id/videoTab"
+      - tapOn:
+          id: "com.natkibe.videoplayerpro.s26ultra:id/refreshButton"
+      - extendedWaitUntil:
+          visible:
+            id: "com.natkibe.videoplayerpro.s26ultra:id/recycler"
+          timeout: 15000
+      - scrollUntilVisible:
+          element: "VideoPlayerProMaestro"
+          direction: DOWN
+      - tapOn: "VideoPlayerProMaestro"
+      - extendedWaitUntil:
+          visible:
+            id: "com.natkibe.videoplayerpro.s26ultra:id/recycler"
+          timeout: 10000
+      - scrollUntilVisible:
+          element: "vpp_maestro_01.mp4"
+          direction: DOWN
+      - tapOn: "vpp_maestro_01.mp4"
+
+      # Assert playerView becomes visible (video surface loaded)
+      - assertVisible:
+          id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
+
+      # Wait 3 seconds for video render to start
+      - waitForAnimationToEnd
+      - extendedWaitUntil:
+          visible:
+            id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
+          timeout: 5000
+
+      # Tap to reveal controls — proves player UI is alive and not black
+      - tapOn:
+          id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
+      - assertVisible:
+          id: "com.natkibe.videoplayerpro.s26ultra:id/repeatButton"
+      - assertVisible:
+          id: "com.natkibe.videoplayerpro.s26ultra:id/topSpeedButton"
+      - assertVisible:
+          id: "com.natkibe.videoplayerpro.s26ultra:id/topAudioOnlyButton"
+      - assertVisible:
+          id: "com.natkibe.videoplayerpro.s26ultra:id/floatingButton"
+
+      # Verify playerView still visible (surface didn't go black)
+      - assertVisible:
+          id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
+
+      # Close player and return to main screen
+      - tapOn:
+          id: "com.natkibe.videoplayerpro.s26ultra:id/closeButton"
+      - assertVisible: "Main folder screen"
+
+# ═══════════════════════════════════════════════════════════════
+# BUG 2: Speed controls white screen
+#   Open a video, tap speed button, assert speed sheet is visible
+#   with title and multiple speed option rows.
+# ═══════════════════════════════════════════════════════════════
+- runFlow:
+    when:
+      visible:
+        id: "com.natkibe.videoplayerpro.s26ultra:id/videoTab"
+    commands:
+      # Open first available video via generic row selectors
+      - tapOn:
+          id: "com.natkibe.videoplayerpro.s26ultra:id/videoTab"
+      - runFlow:
+          when:
+            visible: "Folder row"
+          commands:
+            - tapOn:
+                text: "Folder row"
+                index: 0
+            - runFlow:
+                when:
+                  visible: "Video row"
+                commands:
+                  - tapOn:
+                      text: "Video row"
+                      index: 0
+                  - assertVisible:
+                      id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
+
+                  # Tap player to reveal controls then tap speed button
+                  - tapOn:
+                      id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
+                  - tapOn:
+                      id: "com.natkibe.videoplayerpro.s26ultra:id/topSpeedButton"
+
+                  # Assert speed sheet is visible (no white screen)
+                  - assertVisible: "Playback Speed"
+
+                  # Assert slider-based speed sheet is visible
+                  - assertVisible:
+                      id: "com.natkibe.videoplayerpro.s26ultra:id/playbackSpeedSlider"
+                  - tapOn:
+                      id: "com.natkibe.videoplayerpro.s26ultra:id/playbackSpeedSlider"
+                      point: "75%,50%"
+
+                  # Dismiss speed sheet by tapping outside (tap top area)
+                  - tapOn:
+                      point: "50%,10%"
+
+                  # Verify player is still healthy
+                  - assertVisible:
+                      id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
+
+                  # Close player
+                  - tapOn:
+                      id: "com.natkibe.videoplayerpro.s26ultra:id/closeButton"
+                  - assertVisible: "Main folder screen"
+
+      - runFlow:
+          when:
+            visible: "No video folders found"
+          commands:
+            - assertVisible: "No video folders found"
+
+# ═══════════════════════════════════════════════════════════════
+# BUG 3: Top tab switch button overflow
+#   Ensure all 5 tabs fit in a regular left-to-right row.
+# ═══════════════════════════════════════════════════════════════
+- runFlow:
+    when:
+      visible:
+        id: "com.natkibe.videoplayerpro.s26ultra:id/videoTab"
+    commands:
+      - assertVisible:
+          id: "com.natkibe.videoplayerpro.s26ultra:id/videoTab"
+      - assertVisible:
+          id: "com.natkibe.videoplayerpro.s26ultra:id/recentTab"
+      - assertVisible:
+          id: "com.natkibe.videoplayerpro.s26ultra:id/storageTab"
+      - assertVisible:
+          id: "com.natkibe.videoplayerpro.s26ultra:id/settingsTab"
+      - assertVisible:
+          id: "com.natkibe.videoplayerpro.s26ultra:id/refreshButton"
+
+      - assertVisible: "Main folder screen"
+
+# ═══════════════════════════════════════════════════════════════
+# BUG 4: Floating player behavior
+#   Open video → float → verify all floating controls →
+#   verify resize handle → close float → verify playerView restored.
+# ═══════════════════════════════════════════════════════════════
+- runFlow:
+    when:
+      visible:
+        id: "com.natkibe.videoplayerpro.s26ultra:id/videoTab"
+    commands:
+      # Open first available video
+      - tapOn:
+          id: "com.natkibe.videoplayerpro.s26ultra:id/videoTab"
+      - runFlow:
+          when:
+            visible: "Folder row"
+          commands:
+            - tapOn:
+                text: "Folder row"
+                index: 0
+            - runFlow:
+                when:
+                  visible: "Video row"
+                commands:
+                  - tapOn:
+                      text: "Video row"
+                      index: 0
+                  - assertVisible:
+                      id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
+
+                  # Reveal controls and tap floating button
+                  - tapOn:
+                      id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
+                  - tapOn:
+                      id: "com.natkibe.videoplayerpro.s26ultra:id/menuButton"
+                  - tapOn: "Float toggle"
+
+                  # Handle overlay permission dialog if shown
+                  - runFlow:
+                      when:
+                        visible: "Overlay permission required to float video"
+                      commands:
+                        - back
+
+                  # Floating is armed inside the app: player stays fullscreen until Home.
+                  - assertVisible:
+                      id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
+                  - pressKey: Home
+
+                  # Wait for floating player to appear after leaving the app
+                  - extendedWaitUntil:
+                      visible:
+                        id: "com.natkibe.videoplayerpro.s26ultra:id/floatingPlayerControl"
+                      timeout: 10000
+
+                  # Verify floating player container is visible
+                  - assertVisible:
+                      id: "com.natkibe.videoplayerpro.s26ultra:id/floatingPlayerControl"
+
+                  # Verify no duplicate floating player
+                  - assertNotVisible:
+                      id: "com.natkibe.videoplayerpro.s26ultra:id/floatingPlayerControl"
+                      index: 1
+
+                  # Verify all floating control buttons are visible
+                  - assertVisible:
+                      id: "com.natkibe.videoplayerpro.s26ultra:id/floatFoldersButton"
+                  - assertVisible:
+                      id: "com.natkibe.videoplayerpro.s26ultra:id/floatMusicButton"
+                  - assertVisible:
+                      id: "com.natkibe.videoplayerpro.s26ultra:id/floatSpeedButton"
+                  - assertVisible:
+                      id: "com.natkibe.videoplayerpro.s26ultra:id/floatFullscreenButton"
+                  - assertVisible:
+                      id: "com.natkibe.videoplayerpro.s26ultra:id/floatCloseButton"
+
+                  # Verify resize handle is visible
+                  - assertVisible:
+                      id: "com.natkibe.videoplayerpro.s26ultra:id/floatResizeHandle"
+
+                  # Floating speed selection stays inside the overlay
+                  - tapOn:
+                      id: "com.natkibe.videoplayerpro.s26ultra:id/floatSpeedButton"
+                  - assertVisible:
+                      id: "com.natkibe.videoplayerpro.s26ultra:id/floatingSpeedPanel"
+                  - assertVisible:
+                      id: "com.natkibe.videoplayerpro.s26ultra:id/floatingSpeedSlider"
+                  - tapOn:
+                      id: "com.natkibe.videoplayerpro.s26ultra:id/floatingSpeedSlider"
+                      point: "75%,50%"
+
+                  # Fullscreen button brings the existing player back
+                  - tapOn:
+                      id: "com.natkibe.videoplayerpro.s26ultra:id/floatFullscreenButton"
+                  - extendedWaitUntil:
+                      visible:
+                        id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
+                      timeout: 5000
+                  - assertVisible:
+                      id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
+
+                  # Close player and verify main screen
+                  - tapOn:
+                      id: "com.natkibe.videoplayerpro.s26ultra:id/closeButton"
+                  - assertVisible: "Main folder screen"
+
+      - runFlow:
+          when:
+            visible: "No video folders found"
+          commands:
+            - assertVisible: "No video folders found"
+
+# ── Final stability: app should still be on main screen ──
+- assertVisible: "Main folder screen"

@@ -1,4 +1,4 @@
-appId: com.natkibe.videoplayerpro.autosky
+appId: com.natkibe.videoplayerpro.s26ultra
 ---
 # Playlist, Thumbnails & Cache Test
 # Requires mock video at /sdcard/Movies/test_video_720p.mp4
@@ -10,15 +10,15 @@ appId: com.natkibe.videoplayerpro.autosky
 - tapOn: "test_video_720p.mp4"
 # Wait for player
 - assertVisible:
-    id: "com.natkibe.videoplayerpro.autosky:id/playerView"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
 # ── 1. Tap player to reveal controls, then toggle playlist ──
 - tapOn:
-    id: "com.natkibe.videoplayerpro.autosky:id/playerView"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
 - tapOn:
-    id: "com.natkibe.videoplayerpro.autosky:id/playlistButton"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/playlistButton"
 # Verify no crash - player still visible
 - assertVisible:
-    id: "com.natkibe.videoplayerpro.autosky:id/playerView"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
 # ── 2. Thumbnails toggle in Settings ──
 - back
 - tapOn: "Settings"

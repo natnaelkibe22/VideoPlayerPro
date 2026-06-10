@@ -1,4 +1,4 @@
-appId: com.natkibe.videoplayerpro.autosky
+appId: com.natkibe.videoplayerpro.s26ultra
 ---
 # Settings Full Toggle Test
 # Validates settings controls are visible and interactive without assuming persisted state.
@@ -13,7 +13,7 @@ appId: com.natkibe.videoplayerpro.autosky
 - tapOn: "Settings"
 # ── 2. Verify settings screen and stable controls are visible ──
 - assertVisible:
-    id: "com.natkibe.videoplayerpro.autosky:id/statusText"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/statusText"
 - assertVisible: "Settings screen"
 - assertVisible: "Thumbnail toggle"
 # ── 3. Toggle thumbnails twice by content description; no initial ON/OFF assumption ──
@@ -36,7 +36,7 @@ appId: com.natkibe.videoplayerpro.autosky
     direction: DOWN
 - tapOn: "Diagnostics"
 - assertVisible:
-    id: "com.natkibe.videoplayerpro.autosky:id/diagnosticsContent"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/diagnosticsContent"
 # ── 6. Return to main screen and verify settings are still reachable ──
 - back
 - assertVisible: "VideoPlayer Pro"

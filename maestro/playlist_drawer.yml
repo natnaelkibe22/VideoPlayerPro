@@ -1,4 +1,4 @@
-appId: com.natkibe.videoplayerpro.autosky
+appId: com.natkibe.videoplayerpro.s26ultra
 ---
 # Milestone 07 playlist drawer: open from right, select row, close by swipe and outside tap.
 - launchApp
@@ -9,7 +9,7 @@ appId: com.natkibe.videoplayerpro.autosky
       - tapOn: "Allow"
 - assertVisible: "Main folder screen"
 - tapOn:
-    id: "com.natkibe.videoplayerpro.autosky:id/videoTab"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/videoTab"
 - runFlow:
     when:
       visible: "Folder row"
@@ -25,43 +25,43 @@ appId: com.natkibe.videoplayerpro.autosky
                 text: "Video row"
                 index: 0
             - assertVisible:
-                id: "com.natkibe.videoplayerpro.autosky:id/playerView"
+                id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
             - tapOn:
-                id: "com.natkibe.videoplayerpro.autosky:id/playerView"
+                id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
             - swipe:
                 start: "98%,50%"
                 end: "68%,50%"
                 duration: 400
             - assertVisible:
-                id: "com.natkibe.videoplayerpro.autosky:id/sidePlaylist"
+                id: "com.natkibe.videoplayerpro.s26ultra:id/sidePlaylist"
             - runFlow:
                 when:
                   visible:
-                    id: "com.natkibe.videoplayerpro.autosky:id/itemTitle"
+                    id: "com.natkibe.videoplayerpro.s26ultra:id/itemTitle"
                 commands:
                   - tapOn:
-                      id: "com.natkibe.videoplayerpro.autosky:id/itemTitle"
+                      id: "com.natkibe.videoplayerpro.s26ultra:id/itemTitle"
                       index: 0
                   - assertVisible:
-                      id: "com.natkibe.videoplayerpro.autosky:id/playerView"
+                      id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
             - tapOn:
-                id: "com.natkibe.videoplayerpro.autosky:id/playlistButton"
+                id: "com.natkibe.videoplayerpro.s26ultra:id/playlistButton"
             - assertVisible:
-                id: "com.natkibe.videoplayerpro.autosky:id/sidePlaylist"
+                id: "com.natkibe.videoplayerpro.s26ultra:id/sidePlaylist"
             - swipe:
                 start: "80%,50%"
                 end: "98%,50%"
                 duration: 300
             - assertVisible:
-                id: "com.natkibe.videoplayerpro.autosky:id/playerView"
+                id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
             - tapOn:
-                id: "com.natkibe.videoplayerpro.autosky:id/playlistButton"
+                id: "com.natkibe.videoplayerpro.s26ultra:id/playlistButton"
             - assertVisible:
-                id: "com.natkibe.videoplayerpro.autosky:id/sidePlaylist"
+                id: "com.natkibe.videoplayerpro.s26ultra:id/sidePlaylist"
             - tapOn:
-                id: "com.natkibe.videoplayerpro.autosky:id/playlistDimOverlay"
+                id: "com.natkibe.videoplayerpro.s26ultra:id/playlistDimOverlay"
             - assertVisible:
-                id: "com.natkibe.videoplayerpro.autosky:id/playerView"
+                id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
 - runFlow:
     when:
       visible: "No video folders found"

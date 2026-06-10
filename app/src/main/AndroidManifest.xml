@@ -17,6 +17,7 @@
         <activity
             android:name=".player.PlayerActivity"
             android:configChanges="orientation|screenSize|keyboardHidden"
+            android:launchMode="singleTop"
             android:screenOrientation="landscape"
             android:supportsPictureInPicture="true"
             android:exported="false" />

@@ -1,0 +1,223 @@
+appId: com.natkibe.videoplayerpro.s26ultra
+---
+# ── Settings Stress Test ──
+# Purpose: Stress-test every toggle and button in the Settings screen
+# to verify resilience, persistence, and no visual glitches.
+# Uses exact text labels from the UI for reliable element matching.
+
+# ── 1. Launch ──
+- launchApp
+- runFlow:
+    when:
+      visible: "Allow"
+    commands:
+      - tapOn: "Allow"
+- assertVisible: "VideoPlayer Pro"
+
+# ── 2. Navigate to Settings ──
+- tapOn: "Settings"
+- assertVisible: "Settings screen"
+
+# ── 3. Scroll to top of settings ──
+- scrollUntilVisible:
+    element:
+      text: "Show Thumbnails"
+    direction: UP
+
+# ═══════════════════════════════════════════════════════════════
+# PASS 1: Toggle every switch TWICE via text labels
+# ═══════════════════════════════════════════════════════════════
+
+# 3.1 Show Thumbnails
+- tapOn: "Thumbnail toggle"
+- extendedWaitUntil:
+    visible: "Settings screen"
+    timeout: 3000
+- tapOn: "Thumbnail toggle"
+
+# 3.2 Floating Player
+- scrollUntilVisible:
+    element:
+      text: "Floating Player"
+    direction: DOWN
+- tapOn: "Floating player setting toggle"
+- extendedWaitUntil:
+    visible: "Settings screen"
+    timeout: 3000
+- tapOn: "Floating player setting toggle"
+
+# 3.3 Floating Controls Only
+- scrollUntilVisible:
+    element:
+      text: "Floating Controls Only"
+    direction: DOWN
+- tapOn: "Floating controls toggle"
+- extendedWaitUntil:
+    visible: "Settings screen"
+    timeout: 3000
+- tapOn: "Floating controls toggle"
+
+# 3.4 Show Playlist While Watching
+- scrollUntilVisible:
+    element:
+      text: "Show Playlist While Watching"
+    direction: DOWN
+- tapOn: "Playlist drawer setting toggle"
+- extendedWaitUntil:
+    visible: "Settings screen"
+    timeout: 3000
+- tapOn: "Playlist drawer setting toggle"
+
+# 3.5 Dark Theme
+- scrollUntilVisible:
+    element:
+      text: "Dark Theme"
+    direction: DOWN
+- tapOn: "Dark theme toggle"
+- extendedWaitUntil:
+    visible: "Settings screen"
+    timeout: 3000
+- tapOn: "Dark theme toggle"
+
+# 3.6 Resume Playback
+- scrollUntilVisible:
+    element:
+      text: "Resume Playback"
+    direction: DOWN
+- tapOn: "Resume playback toggle"
+- extendedWaitUntil:
+    visible: "Settings screen"
+    timeout: 3000
+- tapOn: "Resume playback toggle"
+
+# 3.7 Auto-Play Next
+- scrollUntilVisible:
+    element:
+      text: "Auto-Play Next"
+    direction: DOWN
+- tapOn: "Autoplay next toggle"
+- extendedWaitUntil:
+    visible: "Settings screen"
+    timeout: 3000
+- tapOn: "Autoplay next toggle"
+
+# 3.8 Headunit Safe Mode
+- scrollUntilVisible:
+    element:
+      text: "Headunit Safe Mode"
+    direction: DOWN
+- tapOn: "Safe Mode toggle"
+- extendedWaitUntil:
+    visible: "Settings screen"
+    timeout: 3000
+- tapOn: "Safe Mode toggle"
+
+# 3.9 Auto-Hide Controls
+- scrollUntilVisible:
+    element:
+      text: "Auto-Hide Controls"
+    direction: DOWN
+- tapOn: "Auto-hide controls toggle"
+- extendedWaitUntil:
+    visible: "Settings screen"
+    timeout: 3000
+- tapOn: "Auto-hide controls toggle"
+
+# 3.10 Use Fancy Blur
+- scrollUntilVisible:
+    element:
+      text: "Use Fancy Blur"
+    direction: DOWN
+- tapOn: "Fancy blur toggle"
+- extendedWaitUntil:
+    visible: "Settings screen"
+    timeout: 3000
+- tapOn: "Fancy blur toggle"
+
+# 3.11 Compact Playlist Rows
+- scrollUntilVisible:
+    element:
+      text: "Compact Playlist Rows"
+    direction: DOWN
+- tapOn: "Compact playlist toggle"
+- extendedWaitUntil:
+    visible: "Settings screen"
+    timeout: 3000
+- tapOn: "Compact playlist toggle"
+
+# ═══════════════════════════════════════════════════════════════
+# PASS 2: Interaction buttons (tap on text labels)
+# ═══════════════════════════════════════════════════════════════
+
+# 3.12 Accent Color
+- scrollUntilVisible:
+    element:
+      text: "Accent Color"
+    direction: DOWN
+- tapOn: "Accent Color"
+- extendedWaitUntil:
+    visible: "Settings screen"
+    timeout: 3000
+
+# 3.13 Default Speed
+- scrollUntilVisible:
+    element:
+      text: "Default Speed"
+    direction: DOWN
+- tapOn: "Default Speed"
+- extendedWaitUntil:
+    visible: "Settings screen"
+    timeout: 3000
+
+# 3.14 Default Repeat Mode
+- scrollUntilVisible:
+    element:
+      text: "Default Repeat Mode"
+    direction: DOWN
+- tapOn: "Default Repeat Mode"
+- extendedWaitUntil:
+    visible: "Settings screen"
+    timeout: 3000
+
+# ═══════════════════════════════════════════════════════════════
+# PASS 3: Diagnostics
+# ═══════════════════════════════════════════════════════════════
+- scrollUntilVisible:
+    element:
+      text: "DIAGNOSTICS"
+    direction: DOWN
+- tapOn: "Diagnostics"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/diagnosticsContent"
+- back
+
+# ═══════════════════════════════════════════════════════════════
+# PASS 4: Tab navigation stress
+# ═══════════════════════════════════════════════════════════════
+- assertVisible: "VideoPlayer Pro"
+- tapOn: "Folders"
+- tapOn: "Settings"
+- assertVisible: "Settings screen"
+- tapOn: "Folders"
+- tapOn: "Settings"
+- assertVisible: "Settings screen"
+
+# ═══════════════════════════════════════════════════════════════
+# PASS 5: Final state verification
+# ═══════════════════════════════════════════════════════════════
+- scrollUntilVisible:
+    element:
+      text: "Show Thumbnails"
+    direction: UP
+- assertVisible: "Show Thumbnails"
+- scrollUntilVisible:
+    element:
+      text: "Headunit Safe Mode"
+    direction: DOWN
+- assertVisible: "Headunit Safe Mode"
+- scrollUntilVisible:
+    element:
+      text: "DIAGNOSTICS"
+    direction: DOWN
+- assertVisible: "Diagnostics"
+

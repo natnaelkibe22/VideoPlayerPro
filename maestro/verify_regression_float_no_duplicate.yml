@@ -1,4 +1,4 @@
-appId: com.natkibe.videoplayerpro.autosky
+appId: com.natkibe.videoplayerpro.s26ultra
 ---
 # Verify no duplicate floating player controls when toggling Float ON/OFF/ON.
 # Handles overlay permission prompt gracefully.
@@ -15,9 +15,9 @@ appId: com.natkibe.videoplayerpro.autosky
       - tapOn: "While using the app"
 - assertVisible: "Main folder screen"
 - tapOn:
-    id: "com.natkibe.videoplayerpro.autosky:id/videoTab"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/videoTab"
 - assertVisible:
-    id: "com.natkibe.videoplayerpro.autosky:id/recycler"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/recycler"
 
 - runFlow:
     when:
@@ -34,15 +34,15 @@ appId: com.natkibe.videoplayerpro.autosky
                 text: "Video row"
                 index: 0
             - assertVisible:
-                id: "com.natkibe.videoplayerpro.autosky:id/playerScreen"
+                id: "com.natkibe.videoplayerpro.s26ultra:id/playerScreen"
             - assertVisible:
-                id: "com.natkibe.videoplayerpro.autosky:id/playerView"
+                id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
             - tapOn:
-                id: "com.natkibe.videoplayerpro.autosky:id/playerView"
+                id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
             - assertVisible:
-                id: "com.natkibe.videoplayerpro.autosky:id/menuButton"
+                id: "com.natkibe.videoplayerpro.s26ultra:id/menuButton"
             - tapOn:
-                id: "com.natkibe.videoplayerpro.autosky:id/menuButton"
+                id: "com.natkibe.videoplayerpro.s26ultra:id/menuButton"
             - assertVisible: "Playback menu"
             - tapOn: "Float toggle"
 
@@ -53,46 +53,52 @@ appId: com.natkibe.videoplayerpro.autosky
                 commands:
                   - assertVisible: "Overlay permission required to float video"
                   - back
+            - assertVisible:
+                id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
+            - pressKey: Home
 
             # If permission granted, verify single floating control
             - runFlow:
                 when:
                   visible:
-                    id: "com.natkibe.videoplayerpro.autosky:id/floatingPlayerControl"
+                    id: "com.natkibe.videoplayerpro.s26ultra:id/floatingPlayerControl"
                 commands:
                   - assertVisible:
-                      id: "com.natkibe.videoplayerpro.autosky:id/floatingPlayerControl"
+                      id: "com.natkibe.videoplayerpro.s26ultra:id/floatingPlayerControl"
                   - assertNotVisible:
-                      id: "com.natkibe.videoplayerpro.autosky:id/floatingPlayerControl"
+                      id: "com.natkibe.videoplayerpro.s26ultra:id/floatingPlayerControl"
                       index: 1
 
                   # Toggle OFF → restore fullscreen player
                   - tapOn:
-                      id: "com.natkibe.videoplayerpro.autosky:id/floatCloseButton"
+                      id: "com.natkibe.videoplayerpro.s26ultra:id/floatFullscreenButton"
                   - assertVisible:
-                      id: "com.natkibe.videoplayerpro.autosky:id/playerScreen"
+                      id: "com.natkibe.videoplayerpro.s26ultra:id/playerScreen"
                   - assertVisible:
-                      id: "com.natkibe.videoplayerpro.autosky:id/playerView"
+                      id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
 
                   # Toggle ON again → verify single floating control again
                   - tapOn:
-                      id: "com.natkibe.videoplayerpro.autosky:id/playerView"
+                      id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
                   - tapOn:
-                      id: "com.natkibe.videoplayerpro.autosky:id/menuButton"
+                      id: "com.natkibe.videoplayerpro.s26ultra:id/menuButton"
                   - tapOn: "Float toggle"
                   - assertVisible:
-                      id: "com.natkibe.videoplayerpro.autosky:id/floatingPlayerControl"
+                      id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
+                  - pressKey: Home
+                  - assertVisible:
+                      id: "com.natkibe.videoplayerpro.s26ultra:id/floatingPlayerControl"
                   - assertNotVisible:
-                      id: "com.natkibe.videoplayerpro.autosky:id/floatingPlayerControl"
+                      id: "com.natkibe.videoplayerpro.s26ultra:id/floatingPlayerControl"
                       index: 1
 
                   # Toggle OFF to finish cleanly
                   - tapOn:
-                      id: "com.natkibe.videoplayerpro.autosky:id/floatCloseButton"
+                      id: "com.natkibe.videoplayerpro.s26ultra:id/floatFullscreenButton"
                   - assertVisible:
-                      id: "com.natkibe.videoplayerpro.autosky:id/playerScreen"
+                      id: "com.natkibe.videoplayerpro.s26ultra:id/playerScreen"
                   - assertVisible:
-                      id: "com.natkibe.videoplayerpro.autosky:id/playerView"
+                      id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
 
 # Empty library fallback
 - runFlow:
@@ -101,5 +107,5 @@ appId: com.natkibe.videoplayerpro.autosky
     commands:
       - assertVisible: "No video folders found"
       - assertVisible:
-          id: "com.natkibe.videoplayerpro.autosky:id/recycler"
+          id: "com.natkibe.videoplayerpro.s26ultra:id/recycler"
       - assertVisible: "Refresh"

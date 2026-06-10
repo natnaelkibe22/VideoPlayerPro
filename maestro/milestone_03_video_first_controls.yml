@@ -5,7 +5,7 @@
 #
 # Prerequisites:
 #   adb push mock_video.mp4 /sdcard/Movies/test_video_720p.mp4
-appId: com.natkibe.videoplayerpro.autosky
+appId: com.natkibe.videoplayerpro.s26ultra
 ---
 # Setup: Launch app and navigate to a video
 - launchApp
@@ -18,7 +18,7 @@ appId: com.natkibe.videoplayerpro.autosky
 
 # Wait for player to load
 - assertVisible:
-    id: "com.natkibe.videoplayerpro.autosky:id/playerView"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
 
 # ============================================================
 # Flow 1: Video-First — controls auto-hide after ~3s of playing
@@ -34,89 +34,92 @@ appId: com.natkibe.videoplayerpro.autosky
 # Flow 2: Tap player surface to reveal controls
 # ============================================================
 - tapOn:
-    id: "com.natkibe.videoplayerpro.autosky:id/playerView"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
 - waitForAnimationToEnd
 # Essential controls now visible
 - assertVisible:
-    id: "com.natkibe.videoplayerpro.autosky:id/centerPlayPause"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/centerPlayPause"
 - assertVisible:
-    id: "com.natkibe.videoplayerpro.autosky:id/seekBar"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/seekBar"
 - assertVisible:
-    id: "com.natkibe.videoplayerpro.autosky:id/playlistButton"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/playlistButton"
 - assertVisible:
-    id: "com.natkibe.videoplayerpro.autosky:id/menuButton"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/menuButton"
 # Speed label is visible in the top bar (default 1.0x)
 - assertVisible:
-    id: "com.natkibe.videoplayerpro.autosky:id/speedLabel"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/speedLabel"
 
 # ============================================================
 # Flow 3: Open playback menu → Playback Speed → select 1.25x
 # ============================================================
 - tapOn:
-    id: "com.natkibe.videoplayerpro.autosky:id/menuButton"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/menuButton"
 - waitForAnimationToEnd
 # Popup menu is open — tap "Playback Speed" row
 - tapOn: "Playback Speed"
 - waitForAnimationToEnd
-# PlaybackSpeedSheet dialog appears with title and radio options
+# PlaybackSpeedSheet dialog appears with title and slider
 - assertVisible: "Playback Speed"
-# Tap the 1.25x radio option
-- tapOn: "1.25x"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/playbackSpeedSlider"
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/playbackSpeedSlider"
+    point: "62%,50%"
 - waitForAnimationToEnd
 # Dialog dismissed — re-reveal controls to inspect the speed label
 - tapOn:
-    id: "com.natkibe.videoplayerpro.autosky:id/playerView"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
 - waitForAnimationToEnd
 # Speed label should now display "1.25x" in the top bar
 - assertVisible: "1.25x"
 - assertVisible:
-    id: "com.natkibe.videoplayerpro.autosky:id/speedLabel"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/speedLabel"
 
 # ============================================================
 # Flow 4: Open menu → Audio Only Mode (Play as Music) ON
 # ============================================================
 - tapOn:
-    id: "com.natkibe.videoplayerpro.autosky:id/menuButton"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/menuButton"
 - waitForAnimationToEnd
 - tapOn: "Audio Only Mode"
 - waitForAnimationToEnd
 # Audio-only indicator (🎵 musicStatusLabel) should be visible in top bar
 - tapOn:
-    id: "com.natkibe.videoplayerpro.autosky:id/playerView"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
 - waitForAnimationToEnd
 - assertVisible:
-    id: "com.natkibe.videoplayerpro.autosky:id/musicStatusLabel"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/musicStatusLabel"
 # Speed label should be hidden while audio-only mode is active
 - assertNotVisible:
-    id: "com.natkibe.videoplayerpro.autosky:id/speedLabel"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/speedLabel"
 
 # ============================================================
 # Flow 5: Open menu → Audio Only Mode OFF (restore video)
 # ============================================================
 - tapOn:
-    id: "com.natkibe.videoplayerpro.autosky:id/menuButton"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/menuButton"
 - waitForAnimationToEnd
 - tapOn: "Audio Only Mode"
 - waitForAnimationToEnd
 # Normal video mode restored — speed label visible, music indicator gone
 - tapOn:
-    id: "com.natkibe.videoplayerpro.autosky:id/playerView"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
 - waitForAnimationToEnd
 - assertVisible:
-    id: "com.natkibe.videoplayerpro.autosky:id/speedLabel"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/speedLabel"
 - assertNotVisible:
-    id: "com.natkibe.videoplayerpro.autosky:id/musicStatusLabel"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/musicStatusLabel"
 
 # ============================================================
 # Flow 6: Verify player view still alive and functional
 # ============================================================
 - assertVisible:
-    id: "com.natkibe.videoplayerpro.autosky:id/playerView"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
 - assertVisible:
-    id: "com.natkibe.videoplayerpro.autosky:id/centerPlayPause"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/centerPlayPause"
 # Tap play/pause to verify controls respond
 - tapOn:
-    id: "com.natkibe.videoplayerpro.autosky:id/centerPlayPause"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/centerPlayPause"
 - waitForAnimationToEnd
 - assertVisible:
-    id: "com.natkibe.videoplayerpro.autosky:id/playerView"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"

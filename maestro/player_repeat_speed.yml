@@ -1,59 +1,54 @@
-appId: com.natkibe.videoplayerpro.autosky
+appId: com.natkibe.videoplayerpro.s26ultra
 ---
 # Repeat & Speed Controls Test
-# Requires mock video at /sdcard/Movies/test_video_720p.mp4
-# Validates: repeat button cycles OFF→ONE→ALL→OFF
-#            speed button cycles values
+# Requires seeded mock videos from maestro/run_seeded_player_regressions.sh
+# Validates: repeat button cycles OFF→ONE→FOLDER→OFF and speed menu opens.
 #
-# Prerequisites:
-#   adb push mock_video.mp4 /sdcard/Movies/test_video_720p.mp4
 - launchApp
 - assertVisible: "VideoPlayer Pro"
 - tapOn: "Folders"
-- assertVisible: "Movies"
-- tapOn: "Movies"
-- assertVisible: "test_video_720p.mp4"
-- tapOn: "test_video_720p.mp4"
+- tapOn: "Refresh"
+- extendedWaitUntil:
+    visible:
+      id: "com.natkibe.videoplayerpro.s26ultra:id/recycler"
+    timeout: 15000
+- scrollUntilVisible:
+    element: "VideoPlayerProMaestro"
+    direction: DOWN
+- tapOn: "VideoPlayerProMaestro"
+- scrollUntilVisible:
+    element: "vpp_maestro_01.mp4"
+    direction: DOWN
+- tapOn: "vpp_maestro_01.mp4"
 # Wait for player to load
 - assertVisible:
-    id: "com.natkibe.videoplayerpro.autosky:id/playerView"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
 # Tap player to reveal controls
 - tapOn:
-    id: "com.natkibe.videoplayerpro.autosky:id/playerView"
-# ── Repeat Button: cycle OFF → REPEAT_ONE → REPEAT_ALL → OFF ──
+    id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
+# ── Repeat Button: cycle OFF → REPEAT_ONE → REPEAT_FOLDER → OFF ──
 - assertVisible:
-    id: "com.natkibe.videoplayerpro.autosky:id/repeatButton"
-# Cycle through all 3 states (tap 3 times returns to OFF)
+    id: "com.natkibe.videoplayerpro.s26ultra:id/repeatButton"
+- assertVisible: "Repeat off"
 - tapOn:
-    id: "com.natkibe.videoplayerpro.autosky:id/repeatButton"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/repeatButton"
+- assertVisible: "Repeat one selected"
 - tapOn:
-    id: "com.natkibe.videoplayerpro.autosky:id/repeatButton"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/repeatButton"
+- assertVisible: "Repeat folder selected"
 - tapOn:
-    id: "com.natkibe.videoplayerpro.autosky:id/repeatButton"
-# Re-reveal controls and verify button is present
+    id: "com.natkibe.videoplayerpro.s26ultra:id/repeatButton"
+- assertVisible: "Repeat off"
+# ── Speed menu still opens alongside repeat ──
 - tapOn:
-    id: "com.natkibe.videoplayerpro.autosky:id/playerView"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/menuButton"
+- tapOn: "Speed button"
+- assertVisible: "Playback Speed"
 - assertVisible:
-    id: "com.natkibe.videoplayerpro.autosky:id/repeatButton"
-# ── Speed Button: cycle through speed values ──
-- assertVisible:
-    id: "com.natkibe.videoplayerpro.autosky:id/speedButton"
-# Tap 5 times to complete full cycle
+    id: "com.natkibe.videoplayerpro.s26ultra:id/playbackSpeedSlider"
 - tapOn:
-    id: "com.natkibe.videoplayerpro.autosky:id/speedButton"
-- tapOn:
-    id: "com.natkibe.videoplayerpro.autosky:id/speedButton"
-- tapOn:
-    id: "com.natkibe.videoplayerpro.autosky:id/speedButton"
-- tapOn:
-    id: "com.natkibe.videoplayerpro.autosky:id/speedButton"
-- tapOn:
-    id: "com.natkibe.videoplayerpro.autosky:id/speedButton"
-# Re-reveal controls and verify button still present
-- tapOn:
-    id: "com.natkibe.videoplayerpro.autosky:id/playerView"
-- assertVisible:
-    id: "com.natkibe.videoplayerpro.autosky:id/speedButton"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/playbackSpeedSlider"
+    point: "75%,50%"
 # ── Verify player is still functional ──
 - assertVisible:
-    id: "com.natkibe.videoplayerpro.autosky:id/playerView"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"

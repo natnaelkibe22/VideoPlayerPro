@@ -11,33 +11,10 @@
     android:focusable="true"
     android:contentDescription="Video row item">
 
-    <FrameLayout
-        android:layout_width="64dp"
-        android:layout_height="56dp"
-        android:contentDescription="Thumbnail placeholder">
-
-        <TextView
-            android:id="@+id/videoThumb"
-            android:layout_width="64dp"
-            android:layout_height="56dp"
-            android:gravity="center"
-            android:text="▶"
-            android:textColor="#FFFFFF"
-            android:textSize="24sp" />
-
-        <ImageView
-            android:id="@+id/videoThumbImage"
-            android:layout_width="64dp"
-            android:layout_height="56dp"
-            android:scaleType="centerCrop"
-            android:visibility="gone"
-            android:contentDescription="Video thumbnail" />
-    </FrameLayout>
-
     <LinearLayout
         android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:layout_weight="1"
+        android:layout_weight="4"
         android:gravity="center_vertical"
         android:orientation="vertical"
         android:paddingStart="8dp"
@@ -62,4 +39,30 @@
             android:textColor="#B8BDC7"
             android:textSize="14sp" />
     </LinearLayout>
+
+    <FrameLayout
+        android:layout_width="0dp"
+        android:layout_height="56dp"
+        android:layout_weight="1"
+        android:layout_marginStart="6dp"
+        android:contentDescription="Thumbnail placeholder"
+        android:minWidth="48dp">
+
+        <TextView
+            android:id="@+id/videoThumb"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:text="▶"
+            android:textColor="#FFFFFF"
+            android:textSize="20sp" />
+
+        <ImageView
+            android:id="@+id/videoThumbImage"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop"
+            android:visibility="gone"
+            android:contentDescription="Video thumbnail" />
+    </FrameLayout>
 </LinearLayout>

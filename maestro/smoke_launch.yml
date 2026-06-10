@@ -1,4 +1,4 @@
-appId: com.natkibe.videoplayerpro.autosky
+appId: com.natkibe.videoplayerpro.s26ultra
 ---
 # Milestone 07 smoke: launch, grant media permission when prompted, verify main screen.
 - launchApp
@@ -15,4 +15,4 @@ appId: com.natkibe.videoplayerpro.autosky
 - assertVisible: "VideoPlayer Pro"
 - assertVisible: "Main folder screen"
 - assertVisible:
-    id: "com.natkibe.videoplayerpro.autosky:id/recycler"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/recycler"

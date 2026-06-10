@@ -67,27 +67,36 @@ class PlayerControlsController(
      */
     fun onUserInteraction() {
         cancelAutoHide()
+        val wasVisible = _state.controlsVisible
         _state = _state.copy(
             controlsVisible = true,
             lastInteractionTime = System.currentTimeMillis()
         )
-        onStateChanged(_state)
+        if (!wasVisible) {
+            onStateChanged(_state)
+        }
         scheduleAutoHideIfNeeded()
     }
 
     /**
      * Update the playback state.
      * - Paused → keep controls visible, cancel any pending hide.
-     * - Playing → start the auto-hide timer if applicable.
+     * - Playing → show controls if hidden, then start the auto-hide timer if applicable.
      */
     fun onPlaybackStateChanged(isPlaying: Boolean) {
         cancelAutoHide()
+        val wasHidden = !_state.controlsVisible
         _state = _state.copy(isPlaying = isPlaying)
         if (!isPlaying) {
             // Paused: keep controls visible, don't auto-hide
             _state = _state.copy(controlsVisible = true)
             onStateChanged(_state)
         } else {
+            // Ensure controls are shown on initial playback start
+            if (wasHidden) {
+                _state = _state.copy(controlsVisible = true)
+                onStateChanged(_state)
+            }
             scheduleAutoHideIfNeeded()
         }
     }

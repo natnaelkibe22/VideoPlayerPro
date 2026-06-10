@@ -13,7 +13,7 @@ import kotlinx.coroutines.flow.map
 private val Context.videoPlayerProDataStore by preferencesDataStore("videoplayer_pro_settings")
 
 data class VideoPlayerProSettings(
-    val showThumbnails: Boolean = false,
+    val showThumbnails: Boolean = true,
     val enableFloatingPlayer: Boolean = false,
     val enableFloatingControlsOnly: Boolean = false,
     val showPlaylistWhileWatching: Boolean = true,
@@ -49,7 +49,7 @@ class SettingsStore(private val context: Context) {
 
     val settings: Flow<VideoPlayerProSettings> = context.videoPlayerProDataStore.data.map { p ->
         VideoPlayerProSettings(
-            showThumbnails = p[Keys.SHOW_THUMBNAILS] ?: false,
+            showThumbnails = p[Keys.SHOW_THUMBNAILS] ?: true,
             enableFloatingPlayer = p[Keys.ENABLE_FLOATING] ?: false,
             enableFloatingControlsOnly = p[Keys.ENABLE_FLOATING_CONTROLS] ?: false,
             showPlaylistWhileWatching = p[Keys.SHOW_PLAYLIST] ?: true,

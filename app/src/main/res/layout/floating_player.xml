@@ -16,31 +16,281 @@
     <View
         android:id="@+id/floatDragHandle"
         android:layout_width="match_parent"
-        android:layout_height="42dp"
+        android:layout_height="36dp"
         android:layout_gravity="top"
         android:background="#66000000" />
 
-    <!-- Close button at top-right -->
-    <ImageButton
-        android:id="@+id/floatCloseButton"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
+    <TextView
+        android:id="@+id/floatingTitle"
+        android:layout_width="match_parent"
+        android:layout_height="24dp"
+        android:layout_gravity="top|start"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="3dp"
+        android:layout_marginEnd="180dp"
+        android:contentDescription="Floating media title"
+        android:ellipsize="end"
+        android:gravity="center_vertical"
+        android:maxLines="1"
+        android:text="Now Playing"
+        android:textColor="#FFFFFF"
+        android:textSize="13sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/floatingSubtitle"
+        android:layout_width="match_parent"
+        android:layout_height="18dp"
+        android:layout_gravity="top|start"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="24dp"
+        android:layout_marginEnd="180dp"
+        android:contentDescription="Floating media subtitle"
+        android:ellipsize="end"
+        android:gravity="center_vertical"
+        android:maxLines="1"
+        android:text="Now Playing"
+        android:textColor="#CCFFFFFF"
+        android:textSize="10sp" />
+
+    <LinearLayout
+        android:id="@+id/floatingControlBar"
+        android:layout_width="wrap_content"
+        android:layout_height="34dp"
         android:layout_gravity="top|end"
-        android:layout_margin="4dp"
-        android:background="?attr/selectableItemBackgroundBorderless"
-        android:src="@drawable/ic_close"
-        android:contentDescription="Close floating player"
-        android:scaleType="centerInside" />
+        android:layout_margin="3dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <ImageButton
+            android:id="@+id/floatFoldersButton"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:background="@drawable/bg_floating_control_button"
+            android:src="@drawable/ic_playlist"
+            android:contentDescription="Open folders from floating player"
+            android:scaleType="centerInside" />
+
+        <ImageButton
+            android:id="@+id/floatSpeedButton"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_marginStart="3dp"
+            android:background="@drawable/bg_floating_control_button"
+            android:src="@drawable/ic_speed"
+            android:contentDescription="Floating speed control"
+            android:scaleType="centerInside" />
+
+        <ImageButton
+            android:id="@+id/floatMusicButton"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_marginStart="3dp"
+            android:background="@drawable/bg_floating_control_button"
+            android:src="@drawable/ic_music_note"
+            android:contentDescription="Play as Music from floating player"
+            android:scaleType="centerInside" />
+
+        <ImageButton
+            android:id="@+id/floatFullscreenButton"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_marginStart="3dp"
+            android:background="@drawable/bg_floating_control_button"
+            android:src="@drawable/ic_fullscreen"
+            android:contentDescription="Return to fullscreen"
+            android:scaleType="centerInside" />
+
+        <ImageButton
+            android:id="@+id/floatCloseButton"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_marginStart="3dp"
+            android:background="@drawable/bg_floating_control_button"
+            android:src="@drawable/ic_close"
+            android:contentDescription="Close floating player"
+            android:scaleType="centerInside" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/floatTransportBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:background="#CC000000"
+        android:orientation="vertical"
+        android:paddingBottom="6dp"
+        android:paddingTop="4dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp">
+
+            <ImageButton
+                android:id="@+id/floatPreviousButton"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="@drawable/bg_floating_control_button"
+                android:src="@drawable/ic_skip_previous"
+                android:contentDescription="Floating previous"
+                android:scaleType="centerInside" />
+
+            <ImageButton
+                android:id="@+id/floatPlayPauseButton"
+                android:layout_width="46dp"
+                android:layout_height="46dp"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp"
+                android:background="@drawable/bg_floating_control_button"
+                android:src="@drawable/ic_pause"
+                android:contentDescription="Floating play pause"
+                android:scaleType="centerInside" />
+
+            <ImageButton
+                android:id="@+id/floatNextButton"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="@drawable/bg_floating_control_button"
+                android:src="@drawable/ic_skip_next"
+                android:contentDescription="Floating next"
+                android:scaleType="centerInside" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp">
+
+            <TextView
+                android:id="@+id/floatingCurrentTime"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0:00"
+                android:textColor="#FFFFFF"
+                android:textSize="11sp" />
+
+            <SeekBar
+                android:id="@+id/floatingSeekBar"
+                android:layout_width="0dp"
+                android:layout_height="34dp"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp"
+                android:layout_weight="1"
+                android:max="1000" />
+
+            <TextView
+                android:id="@+id/floatingTotalTime"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0:00"
+                android:textColor="#FFFFFF"
+                android:textSize="11sp" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/floatingSpeedPanel"
+        android:layout_width="240dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|end"
+        android:layout_marginTop="44dp"
+        android:layout_marginEnd="12dp"
+        android:background="@drawable/bg_floating_speed_panel"
+        android:contentDescription="Floating speed selector"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:paddingTop="8dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Playback Speed"
+                android:textColor="#FFFFFF"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/floatingSpeedValue"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="1.0x"
+                android:textColor="#FF8AB4FF"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <SeekBar
+            android:id="@+id/floatingSpeedSlider"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="6dp"
+            android:layout_marginEnd="6dp"
+            android:max="200"
+            android:progress="100" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:paddingBottom="8dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="0x"
+                android:textColor="#AAFFFFFF"
+                android:textSize="10sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="2x"
+                android:textColor="#AAFFFFFF"
+                android:textSize="10sp" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/floatingFolderPanel"
+        android:layout_width="180dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="start"
+        android:layout_marginTop="18dp"
+        android:layout_marginBottom="8dp"
+        android:background="@drawable/bg_floating_speed_panel"
+        android:contentDescription="Floating folder panel"
+        android:visibility="gone">
+    </androidx.recyclerview.widget.RecyclerView>
 
     <!-- Resize handle at bottom-right -->
-    <TextView
+    <ImageButton
         android:id="@+id/floatResizeHandle"
-        android:layout_width="54dp"
-        android:layout_height="54dp"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
         android:layout_gravity="bottom|end"
-        android:gravity="center"
-        android:text="◇"
-        android:textColor="#FFFFFF"
-        android:textSize="28sp"
-        android:background="#66000000" />
+        android:layout_margin="3dp"
+        android:background="@drawable/bg_floating_control_button"
+        android:contentDescription="Resize floating player"
+        android:src="@drawable/ic_resize_curve"
+        android:scaleType="centerInside" />
 </FrameLayout>

@@ -90,6 +90,12 @@ class PlayerEngine private constructor(
     private fun setupPlayerListener(exoPlayer: ExoPlayer) {
         exoPlayer.addListener(object : Player.Listener {
             override fun onPlaybackStateChanged(playbackState: Int) {
+                if (playbackState == Player.STATE_READY &&
+                    !_state.value.isFloating &&
+                    !_state.value.isAudioOnly
+                ) {
+                    surfaceRouter.attachToFullscreen()
+                }
                 updateStateFromPlayer()
                 if (playbackState == Player.STATE_ENDED) {
                     saveProgress()
@@ -157,6 +163,9 @@ class PlayerEngine private constructor(
 
     fun play(uri: Uri, title: String = "", startPositionMs: Long = 0L) {
         val exoPlayer = getOrCreatePlayer()
+        if (!_state.value.isFloating && !_state.value.isAudioOnly) {
+            surfaceRouter.attachToFullscreen()
+        }
         saveProgress()
 
         val mediaItem = MediaItem.fromUri(uri)
@@ -167,6 +176,9 @@ class PlayerEngine private constructor(
             exoPlayer.seekTo(startPositionMs)
         }
         exoPlayer.playWhenReady = true
+        if (!_state.value.isFloating && !_state.value.isAudioOnly) {
+            surfaceRouter.attachToFullscreen()
+        }
 
         // Extract MIME type from MediaItem for diagnostics
         val mimeType = try {
@@ -227,7 +239,7 @@ class PlayerEngine private constructor(
         val current = customRepeatMode ?: p.repeatMode
         val newMode = when (current) {
             Player.REPEAT_MODE_OFF -> Player.REPEAT_MODE_ONE
-            Player.REPEAT_MODE_ONE -> Player.REPEAT_MODE_ALL
+            Player.REPEAT_MODE_ONE -> RepeatMode.FOLDER
             Player.REPEAT_MODE_ALL -> RepeatMode.FOLDER
             RepeatMode.FOLDER -> Player.REPEAT_MODE_OFF
             else -> Player.REPEAT_MODE_OFF
@@ -354,7 +366,7 @@ class PlayerEngine private constructor(
         surfaceRouter.registerFullscreenView(playerView)
         // Attach player if we're in fullscreen mode
         if (!_state.value.isFloating && !_state.value.isAudioOnly) {
-            playerView.player = player
+            surfaceRouter.attachToFullscreen()
         }
     }
 

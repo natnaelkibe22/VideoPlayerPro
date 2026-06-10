@@ -1,4 +1,4 @@
-appId: com.natkibe.videoplayerpro.autosky
+appId: com.natkibe.videoplayerpro.s26ultra
 ---
 # Milestone 07 resume playback: enable setting, seek a playable video, reopen through Recent when available.
 - launchApp
@@ -9,11 +9,11 @@ appId: com.natkibe.videoplayerpro.autosky
       - tapOn: "Allow"
 - assertVisible: "Main folder screen"
 - tapOn:
-    id: "com.natkibe.videoplayerpro.autosky:id/settingsTab"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/settingsTab"
 - assertVisible: "Resume playback toggle"
 - tapOn: "Resume playback toggle"
 - tapOn:
-    id: "com.natkibe.videoplayerpro.autosky:id/videoTab"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/videoTab"
 - runFlow:
     when:
       visible: "Folder row"
@@ -29,16 +29,16 @@ appId: com.natkibe.videoplayerpro.autosky
                 text: "Video row"
                 index: 0
             - assertVisible:
-                id: "com.natkibe.videoplayerpro.autosky:id/playerView"
+                id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
             - tapOn:
-                id: "com.natkibe.videoplayerpro.autosky:id/playerView"
+                id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
             - tapOn:
-                id: "com.natkibe.videoplayerpro.autosky:id/seekForward15"
+                id: "com.natkibe.videoplayerpro.s26ultra:id/seekForward15"
             - tapOn:
-                id: "com.natkibe.videoplayerpro.autosky:id/closeButton"
+                id: "com.natkibe.videoplayerpro.s26ultra:id/closeButton"
             - assertVisible: "Main folder screen"
             - tapOn:
-                id: "com.natkibe.videoplayerpro.autosky:id/recentTab"
+                id: "com.natkibe.videoplayerpro.s26ultra:id/recentTab"
             - runFlow:
                 when:
                   visible: "Video row"
@@ -47,7 +47,7 @@ appId: com.natkibe.videoplayerpro.autosky
                       text: "Video row"
                       index: 0
                   - assertVisible:
-                      id: "com.natkibe.videoplayerpro.autosky:id/playerView"
+                      id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
 - runFlow:
     when:
       visible: "No video folders found"

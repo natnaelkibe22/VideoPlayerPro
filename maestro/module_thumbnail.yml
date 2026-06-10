@@ -1,4 +1,4 @@
-appId: com.natkibe.videoplayerpro.autosky
+appId: com.natkibe.videoplayerpro.s26ultra
 ---
 # Micro-Module: Thumbnail
 # Validates thumbnail loading via Coil image loader
@@ -11,7 +11,7 @@ appId: com.natkibe.videoplayerpro.autosky
 # - Memory caching
 - tapOn: "Settings"
 - assertVisible:
-    id: "com.natkibe.videoplayerpro.autosky:id/statusText"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/statusText"
 # Verify thumbnails load in folder view without crash
 - tapOn: "Folders"
 - assertVisible: "No video folders found. Tap Refresh to scan USB/SD cards."

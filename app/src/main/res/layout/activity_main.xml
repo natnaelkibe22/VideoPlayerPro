@@ -5,43 +5,113 @@
     android:orientation="vertical"
     android:background="#101114"
     android:contentDescription="Main folder screen"
-    android:padding="12dp">
+    android:fitsSystemWindows="true"
+    android:paddingStart="12dp"
+    android:paddingTop="12dp"
+    android:paddingEnd="24dp"
+    android:paddingBottom="12dp">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="VideoPlayer Pro"
+        android:textColor="#FFFFFF"
+        android:textSize="24sp"
+        android:textStyle="bold" />
 
     <LinearLayout
+        android:id="@+id/topTabBar"
         android:layout_width="match_parent"
-        android:layout_height="60dp"
+        android:layout_height="46dp"
+        android:layout_marginTop="8dp"
         android:gravity="center_vertical"
         android:orientation="horizontal">
 
         <TextView
+            android:id="@+id/videoTab"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="40dp"
+            android:layout_marginEnd="4dp"
             android:layout_weight="1"
-            android:text="VideoPlayer Pro"
+            android:background="@drawable/bg_top_tab"
+            android:clickable="true"
+            android:contentDescription="Folders"
+            android:ellipsize="end"
+            android:focusable="true"
+            android:gravity="center"
+            android:maxLines="1"
+            android:minWidth="0dp"
+            android:text="Folders"
             android:textColor="#FFFFFF"
-            android:textSize="26sp"
+            android:textSize="12sp"
             android:textStyle="bold" />
-
-        <ImageButton android:id="@+id/videoTab" android:layout_width="50dp" android:layout_height="50dp"
-            android:src="@drawable/ic_playlist" android:contentDescription="Folders"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:scaleType="centerInside" />
-        <ImageButton android:id="@+id/recentTab" android:layout_width="50dp" android:layout_height="50dp"
-            android:src="@drawable/ic_replay_5" android:contentDescription="Recent"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:scaleType="centerInside" />
-        <ImageButton android:id="@+id/storageTab" android:layout_width="50dp" android:layout_height="50dp"
-            android:src="@drawable/ic_fullscreen" android:contentDescription="Storage"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:scaleType="centerInside" />
-        <ImageButton android:id="@+id/settingsTab" android:layout_width="50dp" android:layout_height="50dp"
-            android:src="@drawable/ic_speed" android:contentDescription="Settings"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:scaleType="centerInside" />
-        <ImageButton android:id="@+id/refreshButton" android:layout_width="50dp" android:layout_height="50dp"
-            android:src="@drawable/ic_replay_5" android:contentDescription="Refresh"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:scaleType="centerInside" />
+        <TextView
+            android:id="@+id/recentTab"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_marginEnd="4dp"
+            android:layout_weight="1"
+            android:background="@drawable/bg_top_tab"
+            android:clickable="true"
+            android:contentDescription="Recent"
+            android:ellipsize="end"
+            android:focusable="true"
+            android:gravity="center"
+            android:maxLines="1"
+            android:minWidth="0dp"
+            android:text="Recent"
+            android:textColor="#FFFFFF"
+            android:textSize="12sp" />
+        <TextView
+            android:id="@+id/storageTab"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_marginEnd="4dp"
+            android:layout_weight="1"
+            android:background="@drawable/bg_top_tab"
+            android:clickable="true"
+            android:contentDescription="Storage"
+            android:ellipsize="end"
+            android:focusable="true"
+            android:gravity="center"
+            android:maxLines="1"
+            android:minWidth="0dp"
+            android:text="Storage"
+            android:textColor="#FFFFFF"
+            android:textSize="12sp" />
+        <TextView
+            android:id="@+id/settingsTab"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_marginEnd="4dp"
+            android:layout_weight="1"
+            android:background="@drawable/bg_top_tab"
+            android:clickable="true"
+            android:contentDescription="Settings"
+            android:ellipsize="end"
+            android:focusable="true"
+            android:gravity="center"
+            android:maxLines="1"
+            android:minWidth="0dp"
+            android:text="Settings"
+            android:textColor="#FFFFFF"
+            android:textSize="12sp" />
+        <TextView
+            android:id="@+id/refreshButton"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_weight="1"
+            android:background="@drawable/bg_setting_chip"
+            android:clickable="true"
+            android:contentDescription="Refresh"
+            android:ellipsize="end"
+            android:focusable="true"
+            android:gravity="center"
+            android:maxLines="1"
+            android:minWidth="0dp"
+            android:text="Refresh"
+            android:textColor="#B8BDC7"
+            android:textSize="12sp" />
     </LinearLayout>
 
     <TextView
@@ -68,7 +138,10 @@
             android:layout_height="wrap_content"
             android:contentDescription="Settings screen"
             android:orientation="vertical"
-            android:padding="4dp">
+            android:paddingStart="4dp"
+            android:paddingTop="4dp"
+            android:paddingEnd="72dp"
+            android:paddingBottom="4dp">
 
             <!-- All 13 settings toggles -->
             <LinearLayout
@@ -109,6 +182,7 @@
                     android:text="Floating Controls Only" android:textColor="#FFFFFF" android:textSize="14sp" />
                 <androidx.appcompat.widget.SwitchCompat
                     android:id="@+id/switchFloatingControls"
+                    android:contentDescription="Floating controls toggle"
                     android:layout_width="wrap_content" android:layout_height="wrap_content" />
             </LinearLayout>
 
@@ -136,6 +210,7 @@
                     android:text="Dark Theme" android:textColor="#FFFFFF" android:textSize="14sp" />
                 <androidx.appcompat.widget.SwitchCompat
                     android:id="@+id/switchDarkTheme"
+                    android:contentDescription="Dark theme toggle"
                     android:layout_width="wrap_content" android:layout_height="wrap_content" />
             </LinearLayout>
 
@@ -163,6 +238,7 @@
                     android:text="Auto-Play Next" android:textColor="#FFFFFF" android:textSize="14sp" />
                 <androidx.appcompat.widget.SwitchCompat
                     android:id="@+id/switchAutoplayNext"
+                    android:contentDescription="Autoplay next toggle"
                     android:layout_width="wrap_content" android:layout_height="wrap_content" />
             </LinearLayout>
 
@@ -190,6 +266,7 @@
                     android:text="Auto-Hide Controls" android:textColor="#FFFFFF" android:textSize="14sp" />
                 <androidx.appcompat.widget.SwitchCompat
                     android:id="@+id/switchAutoHideControls"
+                    android:contentDescription="Auto-hide controls toggle"
                     android:layout_width="wrap_content" android:layout_height="wrap_content" />
             </LinearLayout>
 
@@ -203,6 +280,7 @@
                     android:text="Use Fancy Blur" android:textColor="#FFFFFF" android:textSize="14sp" />
                 <androidx.appcompat.widget.SwitchCompat
                     android:id="@+id/switchFancyBlur"
+                    android:contentDescription="Fancy blur toggle"
                     android:layout_width="wrap_content" android:layout_height="wrap_content" />
             </LinearLayout>
 
@@ -217,6 +295,7 @@
                     android:text="Compact Playlist Rows" android:textColor="#FFFFFF" android:textSize="14sp" />
                 <androidx.appcompat.widget.SwitchCompat
                     android:id="@+id/switchCompactPlaylist"
+                    android:contentDescription="Compact playlist toggle"
                     android:layout_width="wrap_content" android:layout_height="wrap_content" />
             </LinearLayout>
 
@@ -229,11 +308,17 @@
                 android:paddingVertical="6dp">
                 <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
                     android:text="Accent Color" android:textColor="#FFFFFF" android:textSize="14sp" />
-                <Button
+                <TextView
                     android:id="@+id/btnAccentColor"
-                    android:layout_width="wrap_content" android:layout_height="38dp"
-                    android:text="Blue" android:textSize="12sp"
-                    android:minWidth="80dp" android:paddingHorizontal="12dp" />
+                    android:layout_width="wrap_content" android:layout_height="40dp"
+                    android:background="@drawable/bg_setting_chip"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center"
+                    android:minWidth="88dp"
+                    android:text="Blue"
+                    android:textColor="#FFFFFF"
+                    android:textSize="13sp" />
             </LinearLayout>
 
             <!-- Default speed (button cycle) -->
@@ -245,11 +330,17 @@
                 android:paddingVertical="6dp">
                 <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
                     android:text="Default Speed" android:textColor="#FFFFFF" android:textSize="14sp" />
-                <Button
+                <TextView
                     android:id="@+id/btnDefaultSpeed"
-                    android:layout_width="wrap_content" android:layout_height="38dp"
-                    android:text="1.0x" android:textSize="12sp"
-                    android:minWidth="80dp" android:paddingHorizontal="12dp" />
+                    android:layout_width="wrap_content" android:layout_height="40dp"
+                    android:background="@drawable/bg_setting_chip"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center"
+                    android:minWidth="88dp"
+                    android:text="1.0x"
+                    android:textColor="#FFFFFF"
+                    android:textSize="13sp" />
             </LinearLayout>
 
             <!-- Default repeat mode (button cycle) -->
@@ -261,11 +352,17 @@
                 android:paddingVertical="6dp">
                 <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
                     android:text="Default Repeat Mode" android:textColor="#FFFFFF" android:textSize="14sp" />
-                <Button
+                <TextView
                     android:id="@+id/btnRepeatMode"
-                    android:layout_width="wrap_content" android:layout_height="38dp"
-                    android:text="Off" android:textSize="12sp"
-                    android:minWidth="80dp" android:paddingHorizontal="12dp" />
+                    android:layout_width="wrap_content" android:layout_height="40dp"
+                    android:background="@drawable/bg_setting_chip"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center"
+                    android:minWidth="88dp"
+                    android:text="Off"
+                    android:textColor="#FFFFFF"
+                    android:textSize="13sp" />
             </LinearLayout>
 
             <!-- Open Diagnostics button -->

@@ -1,4 +1,4 @@
-appId: com.natkibe.videoplayerpro.autosky
+appId: com.natkibe.videoplayerpro.s26ultra
 ---
 # Playlist Panel Test
 # Requires mock video at /sdcard/Movies/test_video_720p.mp4
@@ -15,16 +15,16 @@ appId: com.natkibe.videoplayerpro.autosky
 - tapOn: "test_video_720p.mp4"
 # Wait for player to load
 - assertVisible:
-    id: "com.natkibe.videoplayerpro.autosky:id/playerView"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
 # Tap player to reveal controls
 - tapOn:
-    id: "com.natkibe.videoplayerpro.autosky:id/playerView"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
 # Verify playlist button exists
 - assertVisible:
-    id: "com.natkibe.videoplayerpro.autosky:id/playlistButton"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/playlistButton"
 # Toggle playlist panel
 - tapOn:
-    id: "com.natkibe.videoplayerpro.autosky:id/playlistButton"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/playlistButton"
 # Verify player is still visible (no crash after toggle)
 - assertVisible:
-    id: "com.natkibe.videoplayerpro.autosky:id/playerView"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"

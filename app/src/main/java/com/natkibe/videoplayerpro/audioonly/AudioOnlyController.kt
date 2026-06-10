@@ -2,6 +2,7 @@ package com.natkibe.videoplayerpro.audioonly
 
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import com.natkibe.videoplayerpro.player.PlaybackCommand
 import com.natkibe.videoplayerpro.player.PlayerEngine
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -22,9 +23,19 @@ class AudioOnlyController(private val context: Context) {
 
     /** Enter audio-only mode. */
     fun enter() {
-        if (_state.value.isActive) return
         val engine = PlayerEngine.get()
         val current = engine.state.value
+        if (_state.value.isActive && current.isAudioOnly) return
+        if (current.isAudioOnly) {
+            _state.update {
+                AudioOnlyState(
+                    isActive = true,
+                    videoUri = current.currentVideoUri?.toString(),
+                    displayTitle = current.currentTitle.ifBlank { "Playing as Music" }
+                )
+            }
+            return
+        }
 
         // Turn off floating if active
         if (current.isFloating) {
@@ -36,7 +47,11 @@ class AudioOnlyController(private val context: Context) {
 
         // Start foreground notification
         val intent = Intent(context, AudioOnlyNotificationController::class.java)
-        context.startForegroundService(intent)
+        if (Build.VERSION.SDK_INT >= 26) {
+            context.startForegroundService(intent)
+        } else {
+            context.startService(intent)
+        }
 
         _state.update {
             AudioOnlyState(
@@ -49,8 +64,8 @@ class AudioOnlyController(private val context: Context) {
 
     /** Exit audio-only mode, re-attach video surface. */
     fun exit() {
-        if (!_state.value.isActive) return
         val engine = PlayerEngine.get()
+        if (!_state.value.isActive && !engine.state.value.isAudioOnly) return
 
         // Re-attach fullscreen
         engine.returnToFullscreen()

@@ -1,6 +1,6 @@
-appId: com.natkibe.videoplayerpro.autosky
+appId: com.natkibe.videoplayerpro.s26ultra
 ---
-# Milestone 07 playback menu toggles: Repeat Video, Repeat Folder, Play as Music, Float.
+# Milestone 07 playback menu toggles: single Repeat cycle, Play as Music, Float.
 - launchApp
 - runFlow:
     when:
@@ -9,7 +9,7 @@ appId: com.natkibe.videoplayerpro.autosky
       - tapOn: "Allow"
 - assertVisible: "Main folder screen"
 - tapOn:
-    id: "com.natkibe.videoplayerpro.autosky:id/videoTab"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/videoTab"
 - runFlow:
     when:
       visible: "Folder row"
@@ -25,39 +25,38 @@ appId: com.natkibe.videoplayerpro.autosky
                 text: "Video row"
                 index: 0
             - assertVisible:
-                id: "com.natkibe.videoplayerpro.autosky:id/playerView"
+                id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
             - tapOn:
-                id: "com.natkibe.videoplayerpro.autosky:id/playerView"
+                id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
             - tapOn:
-                id: "com.natkibe.videoplayerpro.autosky:id/menuButton"
+                id: "com.natkibe.videoplayerpro.s26ultra:id/menuButton"
             - assertVisible: "Playback menu"
+            - assertVisible: "Repeat Off"
             - tapOn: "Repeat toggle"
-            - assertVisible: "Repeat Mode"
-            - tapOn: "Repeat Video toggle"
             - tapOn:
-                id: "com.natkibe.videoplayerpro.autosky:id/menuButton"
+                id: "com.natkibe.videoplayerpro.s26ultra:id/menuButton"
+            - assertVisible: "Repeat One"
             - tapOn: "Repeat toggle"
-            - tapOn: "Repeat Off"
             - tapOn:
-                id: "com.natkibe.videoplayerpro.autosky:id/menuButton"
+                id: "com.natkibe.videoplayerpro.s26ultra:id/menuButton"
+            - assertVisible: "Repeat Folder"
             - tapOn: "Repeat toggle"
-            - tapOn: "Repeat folder toggle"
             - tapOn:
-                id: "com.natkibe.videoplayerpro.autosky:id/menuButton"
+                id: "com.natkibe.videoplayerpro.s26ultra:id/menuButton"
+            - assertVisible: "Repeat Off"
             - tapOn: "Repeat toggle"
-            - tapOn: "Repeat Off"
             - tapOn:
-                id: "com.natkibe.videoplayerpro.autosky:id/menuButton"
+                id: "com.natkibe.videoplayerpro.s26ultra:id/menuButton"
             - tapOn: "Play as Music toggle"
             - assertVisible:
-                id: "com.natkibe.videoplayerpro.autosky:id/playerView"
+                id: "com.natkibe.videoplayerpro.s26ultra:id/musicStatusLabel"
             - tapOn:
-                id: "com.natkibe.videoplayerpro.autosky:id/menuButton"
+                id: "com.natkibe.videoplayerpro.s26ultra:id/menuButton"
             - tapOn: "Play as Music toggle"
             - assertVisible:
-                id: "com.natkibe.videoplayerpro.autosky:id/playerView"
+                id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
             - tapOn:
-                id: "com.natkibe.videoplayerpro.autosky:id/menuButton"
+                id: "com.natkibe.videoplayerpro.s26ultra:id/menuButton"
             - tapOn: "Float toggle"
             - runFlow:
                 when:
@@ -65,19 +64,19 @@ appId: com.natkibe.videoplayerpro.autosky
                 commands:
                   - back
             - assertVisible:
-                id: "com.natkibe.videoplayerpro.autosky:id/playerView"
+                id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
             - tapOn:
-                id: "com.natkibe.videoplayerpro.autosky:id/playerView"
+                id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
             - tapOn:
-                id: "com.natkibe.videoplayerpro.autosky:id/menuButton"
+                id: "com.natkibe.videoplayerpro.s26ultra:id/menuButton"
             - tapOn: "Float toggle"
             - runFlow:
                 when:
                   visible:
-                    id: "com.natkibe.videoplayerpro.autosky:id/playerView"
+                    id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
                 commands:
                   - assertVisible:
-                      id: "com.natkibe.videoplayerpro.autosky:id/playerView"
+                      id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
 - runFlow:
     when:
       visible: "No video folders found"

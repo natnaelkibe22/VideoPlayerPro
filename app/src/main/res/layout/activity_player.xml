@@ -17,6 +17,38 @@
         app:use_controller="false"
         app:resize_mode="fit" />
 
+    <ImageView
+        android:id="@+id/audioArtworkView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:contentDescription="Audio artwork background"
+        android:background="#FF0A0A0A"
+        android:scaleType="centerCrop"
+        android:alpha="0.32"
+        android:visibility="gone" />
+
+    <FrameLayout
+        android:id="@+id/audioArtworkDeck"
+        android:layout_width="260dp"
+        android:layout_height="260dp"
+        android:layout_gravity="center"
+        android:background="@drawable/bg_audio_artwork_ring"
+        android:contentDescription="Audio player artwork"
+        android:visibility="gone">
+
+        <ImageView
+            android:id="@+id/audioArtworkThumb"
+            android:layout_width="132dp"
+            android:layout_height="132dp"
+            android:layout_gravity="center"
+            android:background="@drawable/bg_audio_artwork_disc"
+            android:clipToOutline="true"
+            android:contentDescription="Audio player thumbnail"
+            android:padding="8dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/ic_music_note" />
+    </FrameLayout>
+
     <!-- Error Banner -->
     <TextView
         android:id="@+id/playerErrorText"
@@ -42,75 +74,102 @@
     <RelativeLayout
         android:id="@+id/topBar"
         android:layout_width="match_parent"
-        android:layout_height="56dp"
+        android:layout_height="68dp"
         android:layout_gravity="top"
         android:background="#AA000000"
-        android:gravity="center_vertical"
+        android:paddingTop="4dp"
+        android:paddingBottom="4dp"
+        android:paddingStart="4dp"
+        android:paddingEnd="8dp"
+        android:clipToPadding="false"
         android:visibility="gone">
 
         <!-- Close button (left side) -->
         <ImageButton
             android:id="@+id/closeButton"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
             android:layout_alignParentStart="true"
             android:layout_centerVertical="true"
-            android:layout_marginStart="4dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:text="✕"
             android:textColor="#FFFFFF"
-            android:textSize="20sp"
+            android:textSize="18sp"
             android:contentDescription="Close player"
             android:scaleType="centerInside" />
 
         <TextView
             android:id="@+id/videoTitle"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
-            android:layout_marginStart="52dp"
-            android:layout_toStartOf="@+id/speedLabel"
+            android:layout_toEndOf="@id/closeButton"
+            android:layout_toStartOf="@+id/topSpeedButton"
+            android:layout_marginStart="2dp"
+            android:layout_marginEnd="4dp"
             android:ellipsize="end"
             android:maxLines="1"
             android:textColor="#FFFFFF"
-            android:textSize="20sp"
+            android:textSize="17sp"
             android:textStyle="bold" />
 
         <TextView
             android:id="@+id/speedLabel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:contentDescription="Speed button"
-            android:layout_centerVertical="true"
-            android:layout_toStartOf="@+id/menuButton"
-            android:layout_marginEnd="4dp"
+            android:layout_below="@id/topSpeedButton"
+            android:layout_alignStart="@id/topSpeedButton"
+            android:layout_alignEnd="@id/topSpeedButton"
+            android:gravity="center"
             android:text="1.0x"
             android:textColor="#BBBBBB"
-            android:textSize="12sp"
-            android:gravity="center_vertical"
-            android:minWidth="40dp"
-            android:visibility="visible" />
+            android:textSize="9sp"
+            android:visibility="visible"
+            android:contentDescription="Speed button" />
 
         <TextView
             android:id="@+id/musicStatusLabel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
-            android:layout_toStartOf="@+id/menuButton"
+            android:layout_toStartOf="@+id/topSpeedButton"
             android:layout_marginEnd="4dp"
             android:text="🎵"
             android:textSize="14sp"
             android:gravity="center_vertical"
-            android:minWidth="40dp"
+            android:minWidth="36dp"
             android:visibility="gone" />
 
         <ImageButton
+            android:id="@+id/topSpeedButton"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_centerVertical="true"
+            android:layout_toStartOf="@+id/topAudioOnlyButton"
+            android:layout_marginEnd="2dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_speed"
+            android:contentDescription="Speed"
+            android:scaleType="centerInside" />
+
+        <ImageButton
+            android:id="@+id/topAudioOnlyButton"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_centerVertical="true"
+            android:layout_toStartOf="@+id/menuButton"
+            android:layout_marginEnd="2dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_music_note"
+            android:contentDescription="Play as Music"
+            android:scaleType="centerInside" />
+
+        <ImageButton
             android:id="@+id/menuButton"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
+            android:layout_width="42dp"
+            android:layout_height="42dp"
             android:layout_alignParentEnd="true"
             android:layout_centerVertical="true"
-            android:layout_marginEnd="8dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:src="@drawable/ic_menu"
             android:contentDescription="Menu"
@@ -245,18 +304,36 @@
 
             <LinearLayout
                 android:layout_width="wrap_content"
-                android:layout_height="48dp"
+                android:layout_height="42dp"
                 android:gravity="center_vertical"
                 android:orientation="horizontal"
                 android:paddingHorizontal="8dp">
 
                 <ImageButton
                     android:id="@+id/playlistButton"
-                    android:layout_width="48dp"
-                    android:layout_height="44dp"
+                    android:layout_width="42dp"
+                    android:layout_height="38dp"
                     android:background="?attr/selectableItemBackgroundBorderless"
                     android:src="@drawable/ic_playlist"
                     android:contentDescription="Playlist"
+                    android:scaleType="centerInside" />
+
+                <ImageButton
+                    android:id="@+id/repeatButton"
+                    android:layout_width="42dp"
+                    android:layout_height="38dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:src="@drawable/ic_repeat"
+                    android:contentDescription="Repeat off"
+                    android:scaleType="centerInside" />
+
+                <ImageButton
+                    android:id="@+id/floatingButton"
+                    android:layout_width="42dp"
+                    android:layout_height="38dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:src="@drawable/ic_float"
+                    android:contentDescription="Floating player"
                     android:scaleType="centerInside" />
             </LinearLayout>
         </HorizontalScrollView>

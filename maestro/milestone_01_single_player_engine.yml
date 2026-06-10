@@ -1,6 +1,6 @@
 # Milestone 01 - Single Player Engine Stability
 # Tests: Float toggle, Audio-only toggle, Repeat toggle, player survives all modes
-appId: com.natkibe.videoplayerpro.autosky
+appId: com.natkibe.videoplayerpro.s26ultra
 ---
 # Setup: Launch app and navigate to a video
 - launchApp
@@ -13,17 +13,17 @@ appId: com.natkibe.videoplayerpro.autosky
 
 # Verify player is showing and controls are revealed
 - assertVisible:
-    id: "com.natkibe.videoplayerpro.autosky:id/playerView"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
 - tapOn:
-    id: "com.natkibe.videoplayerpro.autosky:id/playerView"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
 - assertVisible:
-    id: "com.natkibe.videoplayerpro.autosky:id/floatingButton"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatingButton"
 
 # Test 1: Float toggle - open floating, verify it appears, then relaunch to dismiss
 - tapOn:
-    id: "com.natkibe.videoplayerpro.autosky:id/floatingButton"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatingButton"
 - assertVisible:
-    id: "com.natkibe.videoplayerpro.autosky:id/floatingPlayerView"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatingPlayerView"
 - launchApp
 
 # Test 2: Audio-only toggle - activate, verify player stays visible, deactivate
@@ -31,35 +31,35 @@ appId: com.natkibe.videoplayerpro.autosky
 - tapOn: "Movies"
 - tapOn: "test_video_720p.mp4"
 - assertVisible:
-    id: "com.natkibe.videoplayerpro.autosky:id/playerView"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
 - tapOn:
-    id: "com.natkibe.videoplayerpro.autosky:id/playerView"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
 - assertVisible:
-    id: "com.natkibe.videoplayerpro.autosky:id/audioOnlyButton"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/topAudioOnlyButton"
 - tapOn:
-    id: "com.natkibe.videoplayerpro.autosky:id/audioOnlyButton"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/topAudioOnlyButton"
 # Player stays visible in audio-only mode (activity stays open)
 - assertVisible:
-    id: "com.natkibe.videoplayerpro.autosky:id/playerView"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
 - tapOn:
-    id: "com.natkibe.videoplayerpro.autosky:id/audioOnlyButton"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/topAudioOnlyButton"
 - assertVisible:
-    id: "com.natkibe.videoplayerpro.autosky:id/playerView"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
 
 # Test 3: Repeat toggle - tap twice, button stays visible
 - tapOn:
-    id: "com.natkibe.videoplayerpro.autosky:id/playerView"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
 - assertVisible:
-    id: "com.natkibe.videoplayerpro.autosky:id/repeatButton"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/repeatButton"
 - tapOn:
-    id: "com.natkibe.videoplayerpro.autosky:id/repeatButton"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/repeatButton"
 - assertVisible:
-    id: "com.natkibe.videoplayerpro.autosky:id/repeatButton"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/repeatButton"
 - tapOn:
-    id: "com.natkibe.videoplayerpro.autosky:id/repeatButton"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/repeatButton"
 - assertVisible:
-    id: "com.natkibe.videoplayerpro.autosky:id/repeatButton"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/repeatButton"
 
 # Test 4: Player view still survives after all mode toggles
 - assertVisible:
-    id: "com.natkibe.videoplayerpro.autosky:id/playerView"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"

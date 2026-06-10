@@ -1,4 +1,4 @@
-appId: com.natkibe.videoplayerpro.autosky
+appId: com.natkibe.videoplayerpro.s26ultra
 ---
 # Milestone 07 player controls: play/pause, seek, previous/next when a video is available.
 - launchApp
@@ -9,7 +9,7 @@ appId: com.natkibe.videoplayerpro.autosky
       - tapOn: "Allow"
 - assertVisible: "Main folder screen"
 - tapOn:
-    id: "com.natkibe.videoplayerpro.autosky:id/videoTab"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/videoTab"
 - runFlow:
     when:
       visible: "Folder row"
@@ -25,25 +25,25 @@ appId: com.natkibe.videoplayerpro.autosky
                 text: "Video row"
                 index: 0
             - assertVisible:
-                id: "com.natkibe.videoplayerpro.autosky:id/playerScreen"
+                id: "com.natkibe.videoplayerpro.s26ultra:id/playerScreen"
             - tapOn:
-                id: "com.natkibe.videoplayerpro.autosky:id/playerView"
+                id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
             - assertVisible:
-                id: "com.natkibe.videoplayerpro.autosky:id/centerPlayPause"
+                id: "com.natkibe.videoplayerpro.s26ultra:id/centerPlayPause"
             - tapOn:
-                id: "com.natkibe.videoplayerpro.autosky:id/centerPlayPause"
+                id: "com.natkibe.videoplayerpro.s26ultra:id/centerPlayPause"
             - tapOn:
-                id: "com.natkibe.videoplayerpro.autosky:id/centerPlayPause"
+                id: "com.natkibe.videoplayerpro.s26ultra:id/centerPlayPause"
             - tapOn:
-                id: "com.natkibe.videoplayerpro.autosky:id/seekForward15"
+                id: "com.natkibe.videoplayerpro.s26ultra:id/seekForward15"
             - tapOn:
-                id: "com.natkibe.videoplayerpro.autosky:id/seekBack5"
+                id: "com.natkibe.videoplayerpro.s26ultra:id/seekBack5"
             - tapOn:
-                id: "com.natkibe.videoplayerpro.autosky:id/nextButton"
+                id: "com.natkibe.videoplayerpro.s26ultra:id/nextButton"
             - tapOn:
-                id: "com.natkibe.videoplayerpro.autosky:id/prevButton"
+                id: "com.natkibe.videoplayerpro.s26ultra:id/prevButton"
             - assertVisible:
-                id: "com.natkibe.videoplayerpro.autosky:id/playerView"
+                id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
 - runFlow:
     when:
       visible: "No video folders found"

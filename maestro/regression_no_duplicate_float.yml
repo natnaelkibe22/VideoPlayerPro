@@ -1,4 +1,4 @@
-appId: com.natkibe.videoplayerpro.autosky
+appId: com.natkibe.videoplayerpro.s26ultra
 ---
 # Milestone 07 regression: Float ON/OFF/ON should not create duplicate floating controls and fullscreen restores.
 - launchApp
@@ -9,7 +9,7 @@ appId: com.natkibe.videoplayerpro.autosky
       - tapOn: "Allow"
 - assertVisible: "Main folder screen"
 - tapOn:
-    id: "com.natkibe.videoplayerpro.autosky:id/videoTab"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/videoTab"
 - runFlow:
     when:
       visible: "Folder row"
@@ -25,47 +25,53 @@ appId: com.natkibe.videoplayerpro.autosky
                 text: "Video row"
                 index: 0
             - assertVisible:
-                id: "com.natkibe.videoplayerpro.autosky:id/playerScreen"
+                id: "com.natkibe.videoplayerpro.s26ultra:id/playerScreen"
             - tapOn:
-                id: "com.natkibe.videoplayerpro.autosky:id/playerView"
+                id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
             - tapOn:
-                id: "com.natkibe.videoplayerpro.autosky:id/menuButton"
+                id: "com.natkibe.videoplayerpro.s26ultra:id/menuButton"
             - tapOn: "Float toggle"
             - runFlow:
                 when:
                   visible: "Overlay permission required to float video"
                 commands:
                   - back
+            - assertVisible:
+                id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
+            - pressKey: Home
             - runFlow:
                 when:
                   visible:
-                    id: "com.natkibe.videoplayerpro.autosky:id/floatingPlayerControl"
+                    id: "com.natkibe.videoplayerpro.s26ultra:id/floatingPlayerControl"
                 commands:
                   - assertVisible:
-                      id: "com.natkibe.videoplayerpro.autosky:id/floatingPlayerControl"
+                      id: "com.natkibe.videoplayerpro.s26ultra:id/floatingPlayerControl"
                   - assertNotVisible:
-                      id: "com.natkibe.videoplayerpro.autosky:id/floatingPlayerControl"
+                      id: "com.natkibe.videoplayerpro.s26ultra:id/floatingPlayerControl"
                       index: 1
                   - tapOn:
-                      id: "com.natkibe.videoplayerpro.autosky:id/floatCloseButton"
+                      id: "com.natkibe.videoplayerpro.s26ultra:id/floatFullscreenButton"
                   - assertVisible:
-                      id: "com.natkibe.videoplayerpro.autosky:id/playerScreen"
+                      id: "com.natkibe.videoplayerpro.s26ultra:id/playerScreen"
                   - tapOn:
-                      id: "com.natkibe.videoplayerpro.autosky:id/playerView"
+                      id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
                   - tapOn:
-                      id: "com.natkibe.videoplayerpro.autosky:id/menuButton"
+                      id: "com.natkibe.videoplayerpro.s26ultra:id/menuButton"
                   - tapOn: "Float toggle"
                   - assertVisible:
-                      id: "com.natkibe.videoplayerpro.autosky:id/floatingPlayerControl"
+                      id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
+                  - pressKey: Home
+                  - assertVisible:
+                      id: "com.natkibe.videoplayerpro.s26ultra:id/floatingPlayerControl"
                   - assertNotVisible:
-                      id: "com.natkibe.videoplayerpro.autosky:id/floatingPlayerControl"
+                      id: "com.natkibe.videoplayerpro.s26ultra:id/floatingPlayerControl"
                       index: 1
                   - tapOn:
-                      id: "com.natkibe.videoplayerpro.autosky:id/floatCloseButton"
+                      id: "com.natkibe.videoplayerpro.s26ultra:id/floatFullscreenButton"
             - assertVisible:
-                id: "com.natkibe.videoplayerpro.autosky:id/playerScreen"
+                id: "com.natkibe.videoplayerpro.s26ultra:id/playerScreen"
             - assertVisible:
-                id: "com.natkibe.videoplayerpro.autosky:id/playerView"
+                id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
 - runFlow:
     when:
       visible: "No video folders found"

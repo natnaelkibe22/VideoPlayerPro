@@ -1,4 +1,4 @@
-appId: com.natkibe.videoplayerpro.autosky
+appId: com.natkibe.videoplayerpro.s26ultra
 ---
 # Floating Player Test
 # Requires mock video at /sdcard/Movies/test_video_720p.mp4
@@ -15,12 +15,12 @@ appId: com.natkibe.videoplayerpro.autosky
 - tapOn: "test_video_720p.mp4"
 # Wait for player to load
 - assertVisible:
-    id: "com.natkibe.videoplayerpro.autosky:id/playerView"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
 # Tap player to reveal controls, then tap floating button
 - tapOn:
-    id: "com.natkibe.videoplayerpro.autosky:id/playerView"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
 - tapOn:
-    id: "com.natkibe.videoplayerpro.autosky:id/floatingButton"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatingButton"
 # Verify floating player service started
 - assertVisible:
-    id: "com.natkibe.videoplayerpro.autosky:id/floatingPlayerView"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatingPlayerView"

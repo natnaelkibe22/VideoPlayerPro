@@ -1,4 +1,4 @@
-appId: com.natkibe.videoplayerpro.autosky
+appId: com.natkibe.videoplayerpro.s26ultra
 ---
 # Milestone 07 folder browser: robust to empty libraries, opens first folder/video when present.
 - launchApp
@@ -9,9 +9,9 @@ appId: com.natkibe.videoplayerpro.autosky
       - tapOn: "Allow"
 - assertVisible: "Main folder screen"
 - tapOn:
-    id: "com.natkibe.videoplayerpro.autosky:id/videoTab"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/videoTab"
 - assertVisible:
-    id: "com.natkibe.videoplayerpro.autosky:id/recycler"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/recycler"
 - runFlow:
     when:
       visible: "Folder row"
@@ -20,7 +20,7 @@ appId: com.natkibe.videoplayerpro.autosky
           text: "Folder row"
           index: 0
       - assertVisible:
-          id: "com.natkibe.videoplayerpro.autosky:id/recycler"
+          id: "com.natkibe.videoplayerpro.s26ultra:id/recycler"
       - runFlow:
           when:
             visible: "Video row"
@@ -29,9 +29,9 @@ appId: com.natkibe.videoplayerpro.autosky
                 text: "Video row"
                 index: 0
             - assertVisible:
-                id: "com.natkibe.videoplayerpro.autosky:id/playerScreen"
+                id: "com.natkibe.videoplayerpro.s26ultra:id/playerScreen"
             - assertVisible:
-                id: "com.natkibe.videoplayerpro.autosky:id/playerView"
+                id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
 - runFlow:
     when:
       visible: "No video folders found"

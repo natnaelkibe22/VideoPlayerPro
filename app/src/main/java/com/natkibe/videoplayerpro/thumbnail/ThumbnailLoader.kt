@@ -3,8 +3,11 @@ package com.natkibe.videoplayerpro.thumbnail
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.media.MediaMetadataRetriever
 import android.net.Uri
+import android.os.Build
 import android.provider.MediaStore
+import android.util.Size
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -18,26 +21,24 @@ class ThumbnailLoader(
     private val mutex = Mutex()
 
     suspend fun loadThumbnail(videoUri: String, targetWidth: Int = 128, targetHeight: Int = 72): Bitmap? {
-        val key = diskCache.keyFor(videoUri)
+        val cacheKey = cacheKeyFor(videoUri, targetWidth, targetHeight)
+        val key = diskCache.keyFor(cacheKey)
 
-        // Check memory cache first
         memoryCache.get(key)?.let { return it }
 
-        // Check disk cache
-        diskCache.get(videoUri)?.let { bitmap ->
+        diskCache.get(cacheKey)?.let { bitmap ->
             memoryCache.put(key, bitmap)
             return bitmap
         }
 
-        // Generate from MediaStore
         return withContext(Dispatchers.IO) {
             mutex.withLock {
-                // Double-check memory after lock
                 memoryCache.get(key)?.let { return@withContext it }
 
-                val bitmap = queryMediaStoreThumbnail(videoUri, targetWidth, targetHeight)
+                val bitmap = querySystemThumbnail(videoUri, targetWidth, targetHeight)
+                    ?: decodeFrameThumbnail(videoUri, targetWidth, targetHeight)
                 if (bitmap != null) {
-                    diskCache.put(videoUri, bitmap)
+                    diskCache.put(cacheKey, bitmap)
                     memoryCache.put(key, bitmap)
                 }
                 bitmap
@@ -45,26 +46,44 @@ class ThumbnailLoader(
         }
     }
 
-    private fun queryMediaStoreThumbnail(videoUri: String, targetWidth: Int, targetHeight: Int): Bitmap? {
+    fun memoryThumbnail(videoUri: String, targetWidth: Int = 128, targetHeight: Int = 72): Bitmap? =
+        memoryCache.get(diskCache.keyFor(cacheKeyFor(videoUri, targetWidth, targetHeight)))
+
+    private fun cacheKeyFor(videoUri: String, targetWidth: Int, targetHeight: Int): String =
+        "$videoUri#$targetWidth:$targetHeight"
+
+    private fun querySystemThumbnail(videoUri: String, targetWidth: Int, targetHeight: Int): Bitmap? {
         return try {
             val uri = Uri.parse(videoUri)
+            if (Build.VERSION.SDK_INT >= 29) {
+                return context.contentResolver.loadThumbnail(uri, Size(targetWidth, targetHeight), null)
+            }
             val id = uri.lastPathSegment?.toLongOrNull() ?: return null
-
-            val kind = MediaStore.Video.Thumbnails.MINI_KIND
-
             @Suppress("DEPRECATION")
             val bmpOptions = BitmapFactory.Options().apply {
                 inSampleSize = calculateInSampleSize(targetWidth, targetHeight)
                 inPreferredConfig = Bitmap.Config.RGB_565
             }
-
             @Suppress("DEPRECATION")
             MediaStore.Video.Thumbnails.getThumbnail(
                 context.contentResolver,
                 id,
-                kind,
+                MediaStore.Video.Thumbnails.MINI_KIND,
                 bmpOptions
             )
+        } catch (_: Exception) {
+            null
+        }
+    }
+
+    private fun decodeFrameThumbnail(videoUri: String, targetWidth: Int, targetHeight: Int): Bitmap? {
+        return try {
+            val source = Uri.parse(videoUri)
+            val frame = MediaMetadataRetriever().use { retriever ->
+                retriever.setDataSource(context, source)
+                retriever.getFrameAtTime(0, MediaMetadataRetriever.OPTION_CLOSEST_SYNC)
+            } ?: return null
+            Bitmap.createScaledBitmap(frame, targetWidth, targetHeight, true)
         } catch (_: Exception) {
             null
         }

@@ -1,4 +1,4 @@
-appId: com.natkibe.videoplayerpro.autosky
+appId: com.natkibe.videoplayerpro.s26ultra
 ---
 # Milestones 01/03 resilience: player surface basics, tap-to-reveal controls,
 # auto-hide when enabled, and empty-library fallback without fixed media names.
@@ -15,9 +15,9 @@ appId: com.natkibe.videoplayerpro.autosky
       - tapOn: "While using the app"
 - assertVisible: "Main folder screen"
 - tapOn:
-    id: "com.natkibe.videoplayerpro.autosky:id/videoTab"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/videoTab"
 - assertVisible:
-    id: "com.natkibe.videoplayerpro.autosky:id/recycler"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/recycler"
 
 # If media exists, open the first folder/video using stable row descriptions.
 - runFlow:
@@ -35,27 +35,27 @@ appId: com.natkibe.videoplayerpro.autosky
                 text: "Video row"
                 index: 0
             - assertVisible:
-                id: "com.natkibe.videoplayerpro.autosky:id/playerScreen"
+                id: "com.natkibe.videoplayerpro.s26ultra:id/playerScreen"
             - assertVisible:
-                id: "com.natkibe.videoplayerpro.autosky:id/playerView"
+                id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
             - tapOn:
-                id: "com.natkibe.videoplayerpro.autosky:id/playerView"
+                id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
             - assertVisible:
-                id: "com.natkibe.videoplayerpro.autosky:id/topBar"
+                id: "com.natkibe.videoplayerpro.s26ultra:id/topBar"
             - assertVisible:
-                id: "com.natkibe.videoplayerpro.autosky:id/centerControls"
+                id: "com.natkibe.videoplayerpro.s26ultra:id/centerControls"
             - assertVisible:
-                id: "com.natkibe.videoplayerpro.autosky:id/bottomBar"
+                id: "com.natkibe.videoplayerpro.s26ultra:id/bottomBar"
             - assertVisible:
-                id: "com.natkibe.videoplayerpro.autosky:id/centerPlayPause"
+                id: "com.natkibe.videoplayerpro.s26ultra:id/centerPlayPause"
             - assertVisible:
-                id: "com.natkibe.videoplayerpro.autosky:id/seekBar"
+                id: "com.natkibe.videoplayerpro.s26ultra:id/seekBar"
             - assertVisible:
-                id: "com.natkibe.videoplayerpro.autosky:id/playlistButton"
+                id: "com.natkibe.videoplayerpro.s26ultra:id/playlistButton"
             - assertVisible:
-                id: "com.natkibe.videoplayerpro.autosky:id/menuButton"
+                id: "com.natkibe.videoplayerpro.s26ultra:id/menuButton"
             - assertVisible:
-                id: "com.natkibe.videoplayerpro.autosky:id/speedLabel"
+                id: "com.natkibe.videoplayerpro.s26ultra:id/speedLabel"
             - swipe:
                 start: "50%,40%"
                 end: "50%,41%"
@@ -63,18 +63,18 @@ appId: com.natkibe.videoplayerpro.autosky
             - runFlow:
                 when:
                   notVisible:
-                    id: "com.natkibe.videoplayerpro.autosky:id/topBar"
+                    id: "com.natkibe.videoplayerpro.s26ultra:id/topBar"
                 commands:
                   - assertNotVisible:
-                      id: "com.natkibe.videoplayerpro.autosky:id/topBar"
+                      id: "com.natkibe.videoplayerpro.s26ultra:id/topBar"
                   - assertNotVisible:
-                      id: "com.natkibe.videoplayerpro.autosky:id/bottomBar"
+                      id: "com.natkibe.videoplayerpro.s26ultra:id/bottomBar"
             - tapOn:
-                id: "com.natkibe.videoplayerpro.autosky:id/playerView"
+                id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
             - assertVisible:
-                id: "com.natkibe.videoplayerpro.autosky:id/topBar"
+                id: "com.natkibe.videoplayerpro.s26ultra:id/topBar"
             - assertVisible:
-                id: "com.natkibe.videoplayerpro.autosky:id/playerView"
+                id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
 
 # Empty or unavailable media fallback still verifies the library shell.
 - runFlow:
@@ -83,5 +83,5 @@ appId: com.natkibe.videoplayerpro.autosky
     commands:
       - assertVisible: "No video folders found"
       - assertVisible:
-          id: "com.natkibe.videoplayerpro.autosky:id/recycler"
+          id: "com.natkibe.videoplayerpro.s26ultra:id/recycler"
       - assertVisible: "Refresh"

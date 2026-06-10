@@ -13,7 +13,11 @@ interface VideoDao {
     @Query("SELECT * FROM video_items ORDER BY folderName COLLATE NOCASE, displayName COLLATE NOCASE")
     fun observeVideos(): Flow<List<VideoItemEntity>>
 
-    @Query("SELECT folderName, storageRoot, COUNT(*) AS videoCount, MAX(dateModified) AS latestModified FROM video_items GROUP BY folderName, storageRoot ORDER BY folderName COLLATE NOCASE")
+    @Query(
+        "SELECT folderName, storageRoot, COUNT(*) AS videoCount, MAX(dateModified) AS latestModified, " +
+            "(SELECT uri FROM video_items v2 WHERE v2.folderName = video_items.folderName AND v2.storageRoot = video_items.storageRoot ORDER BY v2.dateModified DESC LIMIT 1) AS previewUri " +
+            "FROM video_items GROUP BY folderName, storageRoot ORDER BY folderName COLLATE NOCASE"
+    )
     fun observeFolders(): Flow<List<VideoFolderSummary>>
 
     @Query("SELECT * FROM video_items WHERE folderName = :folderName ORDER BY displayName COLLATE NOCASE")

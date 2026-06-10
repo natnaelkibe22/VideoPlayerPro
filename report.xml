@@ -1,0 +1,8 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<testsuites>
+  <testsuite name="Test Suite" device="S26_Ultra" tests="1" failures="1" time="103.0">
+    <testcase id="settings_stress_test" name="settings_stress_test" classname="settings_stress_test" file="maestro/settings_stress_test.yml" time="103.0" status="ERROR">
+      <failure>No visible element found: "Default repeat"</failure>
+    </testcase>
+  </testsuite>
+</testsuites>

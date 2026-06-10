@@ -1,4 +1,4 @@
-appId: com.natkibe.videoplayerpro.autosky
+appId: com.natkibe.videoplayerpro.s26ultra
 ---
 # Debug: Activity & Service Lifecycle
 # Validates lifecycle handling across foreground/background transitions
@@ -18,4 +18,4 @@ appId: com.natkibe.videoplayerpro.autosky
 # Verify no crash on rapid lifecycle transitions
 - tapOn: "Settings"
 - assertVisible:
-    id: "com.natkibe.videoplayerpro.autosky:id/statusText"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/statusText"

@@ -1,4 +1,4 @@
-appId: com.natkibe.videoplayerpro.autosky
+appId: com.natkibe.videoplayerpro.s26ultra
 ---
 # Debug: Resizing & Multi-Window
 # Validates resizeableActivity="true" and multi-window support
@@ -10,4 +10,4 @@ appId: com.natkibe.videoplayerpro.autosky
 # Verify all UI elements are properly sized and not clipped
 - tapOn: "Settings"
 - assertVisible:
-    id: "com.natkibe.videoplayerpro.autosky:id/statusText"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/statusText"

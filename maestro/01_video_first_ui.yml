@@ -1,4 +1,4 @@
-appId: com.natkibe.videoplayerpro.autosky
+appId: com.natkibe.videoplayerpro.s26ultra
 ---
 # Video-First UI Smoke Test
 # Navigates to Movies folder, taps first video, verifies player loads.
@@ -11,16 +11,16 @@ appId: com.natkibe.videoplayerpro.autosky
 - tapOn: "test_video_720p.mp4"
 # Verify player view loaded
 - assertVisible:
-    id: "com.natkibe.videoplayerpro.autosky:id/playerView"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
 # Tap player to reveal controls
 - tapOn:
-    id: "com.natkibe.videoplayerpro.autosky:id/playerView"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
 # Verify bottom bar controls are present
 - assertVisible:
-    id: "com.natkibe.videoplayerpro.autosky:id/repeatButton"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/repeatButton"
 - assertVisible:
-    id: "com.natkibe.videoplayerpro.autosky:id/speedButton"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/topSpeedButton"
 # Verify player view still visible
 - assertVisible:
-    id: "com.natkibe.videoplayerpro.autosky:id/playerView"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
 - waitForAnimationToEnd

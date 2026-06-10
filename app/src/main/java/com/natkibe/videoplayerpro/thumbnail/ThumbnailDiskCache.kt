@@ -7,14 +7,17 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileOutputStream
+import java.security.MessageDigest
 
 class ThumbnailDiskCache(private val context: Context) {
     private val cacheDir: File by lazy {
-        File(context.cacheDir, "thumbnails").also { it.mkdirs() }
+        File(context.cacheDir, "thumbnails_v2").also { it.mkdirs() }
     }
 
-    fun keyFor(uri: String): String =
-        java.math.BigInteger(1, uri.toByteArray()).toString(16).take(40)
+    fun keyFor(uri: String): String {
+        val digest = MessageDigest.getInstance("SHA-256").digest(uri.toByteArray(Charsets.UTF_8))
+        return digest.joinToString("") { "%02x".format(it) }
+    }
 
     suspend fun get(uri: String): Bitmap? = withContext(Dispatchers.IO) {
         val file = File(cacheDir, keyFor(uri))
