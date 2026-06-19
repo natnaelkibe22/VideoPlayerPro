@@ -2,7 +2,7 @@ package com.natkibe.videoplayerpro.core
 
 object TimeFormat {
     fun duration(ms: Long): String {
-        if (ms <= 0) return "--:--"
+        if (ms < 0) return "--:--"
         val totalSeconds = ms / 1000
         val hours = totalSeconds / 3600
         val minutes = (totalSeconds % 3600) / 60

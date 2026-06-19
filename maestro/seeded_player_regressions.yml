@@ -101,13 +101,13 @@ appId: com.natkibe.videoplayerpro.s26ultra
 - assertVisible:
     id: "com.natkibe.videoplayerpro.s26ultra:id/floatFoldersButton"
 - assertVisible:
-    id: "com.natkibe.videoplayerpro.s26ultra:id/floatSpeedButton"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatSpeedText"
 - assertVisible:
     id: "com.natkibe.videoplayerpro.s26ultra:id/floatMusicButton"
 - assertVisible:
     id: "com.natkibe.videoplayerpro.s26ultra:id/floatFullscreenButton"
 - tapOn:
-    id: "com.natkibe.videoplayerpro.s26ultra:id/floatSpeedButton"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatSpeedText"
 - assertVisible:
     id: "com.natkibe.videoplayerpro.s26ultra:id/floatingSpeedPanel"
 - assertVisible:

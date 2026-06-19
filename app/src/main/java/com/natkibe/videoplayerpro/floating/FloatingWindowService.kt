@@ -1,5 +1,6 @@
 package com.natkibe.videoplayerpro.floating
 
+import android.animation.ValueAnimator
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -8,6 +9,8 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.PixelFormat
+import android.graphics.PorterDuff
+import android.graphics.PorterDuffColorFilter
 import android.net.Uri
 import android.os.Build
 import android.os.IBinder
@@ -16,9 +19,8 @@ import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.WindowManager
-import android.widget.ImageView
+import android.view.animation.LinearInterpolator
 import android.widget.ImageButton
-import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.SeekBar
 import android.widget.TextView
@@ -35,11 +37,13 @@ import com.natkibe.videoplayerpro.thumbnail.ThumbnailLoader
 import com.natkibe.videoplayerpro.player.PlaybackCommand
 import com.natkibe.videoplayerpro.player.PlayerActivity
 import com.natkibe.videoplayerpro.player.PlayerEngine
-import com.natkibe.videoplayerpro.ui.VideoAdapter
+import com.natkibe.videoplayerpro.ui.FloatingVideoAdapter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -60,8 +64,13 @@ class FloatingWindowService : Service() {
     private var params: WindowManager.LayoutParams? = null
     private var resizeController: FloatingResizeController? = null
     private val thumbnailLoader by lazy { ThumbnailLoader(applicationContext) }
-    private var floatingFolderAdapter: VideoAdapter? = null
+    private var floatingFolderAdapter: FloatingVideoAdapter? = null
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
+    private val eqAnimators = mutableListOf<ValueAnimator>()
+    private var autoHideJob: Job? = null
+    private var floatingControlsVisible = true
+    private var panelOpen = false
+    private val accentColor = Color.parseColor("#FF2F80ED")
 
     companion object {
         const val ACTION_CLOSE = "com.natkibe.videoplayerpro.action.CLOSE_FLOATING"
@@ -101,6 +110,7 @@ class FloatingWindowService : Service() {
             }
         }
 
+        stopEqualizerAnimation()
         overlay?.let { windowManager?.removeView(it) }
         overlay = null
         params = null
@@ -169,6 +179,13 @@ class FloatingWindowService : Service() {
         setupProgressBar(overlay!!)
         observePlayerState(overlay!!)
 
+
+        // Setup audio mode overlay (hidden by default)
+        setupFloatingAudioMode(overlay!!)
+
+        // Setup auto-hide: tap the root (outside controls) to toggle visibility
+        setupFloatingAutoHide(overlay!!)
+
         // Attach drag & resize via the controller
         val root = overlay!!
         resizeController = FloatingResizeController(
@@ -195,12 +212,15 @@ class FloatingWindowService : Service() {
             } else {
                 engine.dispatch(PlaybackCommand.Resume)
             }
+            resetFloatingAutoHide(root)
         }
         root.findViewById<ImageButton>(R.id.floatPreviousButton).setOnClickListener {
             playAdjacentVideo(step = -1)
+            resetFloatingAutoHide(root)
         }
         root.findViewById<ImageButton>(R.id.floatNextButton).setOnClickListener {
             playAdjacentVideo(step = 1)
+            resetFloatingAutoHide(root)
         }
     }
 
@@ -237,8 +257,13 @@ class FloatingWindowService : Service() {
                 PlayerEngine.get().dispatch(PlaybackCommand.SeekTo(position))
             }
 
-            override fun onStartTrackingTouch(seekBar: SeekBar?) = Unit
-            override fun onStopTrackingTouch(seekBar: SeekBar?) = Unit
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {
+                autoHideJob?.cancel()
+            }
+
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {
+                if (floatingControlsVisible) scheduleFloatingAutoHide(overlay!!)
+            }
         })
 
         refreshProgress()
@@ -256,7 +281,11 @@ class FloatingWindowService : Service() {
         root.findViewById<ImageButton>(R.id.floatFoldersButton).setOnClickListener {
             if (panel.visibility == View.VISIBLE) {
                 panel.visibility = View.GONE
+                panelOpen = false
+                if (floatingControlsVisible) scheduleFloatingAutoHide(root)
             } else {
+                panelOpen = true
+                autoHideJob?.cancel()
                 serviceScope.launch {
                     populateFolderPanel(root)
                     panel.visibility = View.VISIBLE
@@ -267,11 +296,11 @@ class FloatingWindowService : Service() {
 
     private fun setupSpeedPanel(root: View) {
         val panel = root.findViewById<LinearLayout>(R.id.floatingSpeedPanel)
-        val button = root.findViewById<ImageButton>(R.id.floatSpeedButton)
         val speedValue = root.findViewById<TextView>(R.id.floatingSpeedValue)
         val speedSlider = root.findViewById<SeekBar>(R.id.floatingSpeedSlider)
+        val speedButton = root.findViewById<ImageButton>(R.id.floatSpeedButton)
 
-        fun formatSpeed(speed: Float): String = String.format("%.2fx", speed.coerceIn(0f, 2f))
+        fun formatSpeed(speed: Float): String = String.format("%.1fx", speed.coerceIn(0f, 2f))
 
         fun refreshSelection() {
             val currentSpeed = if (PlayerEngine.isInitialized()) {
@@ -283,11 +312,24 @@ class FloatingWindowService : Service() {
             if (!speedSlider.isPressed) {
                 speedSlider.progress = (currentSpeed.coerceIn(0f, 2f) * 100f).toInt()
             }
+            updateSpeedActiveState(root, currentSpeed)
         }
 
-        button.setOnClickListener {
-            refreshSelection()
-            panel.visibility = if (panel.visibility == View.VISIBLE) View.GONE else View.VISIBLE
+        refreshSelection()
+
+        // Toggle speed panel when user taps the speed button
+        speedButton.setOnClickListener {
+            if (panel.visibility == View.VISIBLE) {
+                panel.visibility = View.GONE
+                panelOpen = false
+                if (floatingControlsVisible) scheduleFloatingAutoHide(root)
+            } else {
+                panelOpen = true
+                autoHideJob?.cancel()
+                // Close folder panel if open to avoid overlap
+                root.findViewById<RecyclerView>(R.id.floatingFolderPanel)?.visibility = View.GONE
+                panel.visibility = View.VISIBLE
+            }
         }
 
         speedSlider.max = 200
@@ -298,11 +340,171 @@ class FloatingWindowService : Service() {
                 if (fromUser && PlayerEngine.isInitialized()) {
                     PlayerEngine.get().dispatch(PlaybackCommand.SetSpeed(speed))
                 }
+                updateSpeedActiveState(root, speed)
             }
-            override fun onStartTrackingTouch(seekBar: SeekBar?) = Unit
-            override fun onStopTrackingTouch(seekBar: SeekBar?) = Unit
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {
+                autoHideJob?.cancel()
+            }
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {
+                if (floatingControlsVisible) scheduleFloatingAutoHide(root)
+            }
         })
         refreshSelection()
+    }
+
+    private fun refreshSpeedTextDisplay() {
+        // Speed button icon tint is handled by updateSpeedActiveState
+    }
+
+    private fun updateSpeedActiveState(root: View, speed: Float) {
+        val speedButton = root.findViewById<ImageButton>(R.id.floatSpeedButton) ?: return
+        val isActive = (speed - 1.0f).let { it > 0.01f || it < -0.01f }
+        if (isActive) {
+            speedButton.setColorFilter(PorterDuffColorFilter(accentColor, PorterDuff.Mode.SRC_IN))
+        } else {
+            speedButton.clearColorFilter()
+        }
+    }
+
+    private fun setupFloatingAudioMode(root: View) {
+        // Audio ring and eq bars are initially hidden, shown/hidden by updateFloatingAudioMode
+    }
+
+    // ── Floating auto-hide controls ──────────────────────────────────────
+
+    private fun setupFloatingAutoHide(root: View) {
+        // Tap on the PlayerView (video surface) toggles controls.
+        // This avoids conflicts with control buttons and folder panel items.
+        val playerView = root.findViewById<PlayerView>(R.id.floatingPlayerView)
+        playerView?.setOnClickListener {
+            toggleFloatingControls(root)
+        }
+    }
+
+    private fun toggleFloatingControls(root: View) {
+        floatingControlsVisible = !floatingControlsVisible
+        if (floatingControlsVisible) {
+            showFloatingControls(root)
+            scheduleFloatingAutoHide(root)
+        } else {
+            hideFloatingControls(root)
+        }
+    }
+
+    private fun showFloatingControls(root: View) {
+        root.findViewById<LinearLayout>(R.id.floatingControlBar)?.visibility = View.VISIBLE
+        root.findViewById<LinearLayout>(R.id.floatTransportBar)?.visibility = View.VISIBLE
+        root.findViewById<TextView>(R.id.floatingTitle)?.visibility = View.VISIBLE
+        root.findViewById<TextView>(R.id.floatingSubtitle)?.visibility = View.VISIBLE
+    }
+
+    private fun hideFloatingControls(root: View) {
+        panelOpen = false
+        root.findViewById<LinearLayout>(R.id.floatingControlBar)?.visibility = View.GONE
+        root.findViewById<LinearLayout>(R.id.floatTransportBar)?.visibility = View.GONE
+        root.findViewById<TextView>(R.id.floatingTitle)?.visibility = View.GONE
+        root.findViewById<TextView>(R.id.floatingSubtitle)?.visibility = View.GONE
+        root.findViewById<LinearLayout>(R.id.floatingSpeedPanel)?.visibility = View.GONE
+        root.findViewById<RecyclerView>(R.id.floatingFolderPanel)?.visibility = View.GONE
+    }
+
+    private fun scheduleFloatingAutoHide(root: View) {
+        if (panelOpen) return // don't auto-hide while a panel is open
+        autoHideJob?.cancel()
+        autoHideJob = serviceScope.launch {
+            delay(4000L)
+            if (floatingControlsVisible && !panelOpen) {
+                floatingControlsVisible = false
+                hideFloatingControls(root)
+            }
+        }
+    }
+
+    private fun resetFloatingAutoHide(root: View) {
+        if (floatingControlsVisible) {
+            scheduleFloatingAutoHide(root)
+        }
+    }
+
+    private fun startEqualizerAnimation(root: View) {
+        stopEqualizerAnimation()
+
+        val eqBars = root.findViewById<LinearLayout>(R.id.floatingAudioEqBars)
+        val ring = root.findViewById<View>(R.id.floatingAudioRing)
+        if (eqBars == null && ring == null) return
+
+        // Ring pulse: alpha oscillates between 0.35 and 0.75
+        val ringAnim = ValueAnimator.ofFloat(0.35f, 0.75f).apply {
+            duration = 1200L
+            repeatCount = ValueAnimator.INFINITE
+            repeatMode = ValueAnimator.REVERSE
+            interpolator = LinearInterpolator()
+            addUpdateListener { a ->
+                ring?.alpha = a.animatedValue as Float
+            }
+            start()
+        }
+        eqAnimators.add(ringAnim)
+
+        // Equalizer bars: 4 bars, each with different duration for organic feel
+        val barIds = arrayOf(R.id.eqBar1, R.id.eqBar2, R.id.eqBar3, R.id.eqBar4)
+        val barDurations = longArrayOf(420L, 580L, 510L, 460L)
+        val density = resources.displayMetrics.density
+        val barMinPx = (4f * density).toInt()  // 4dp minimum
+        val barMaxPx = (18f * density).toInt() // 18dp maximum
+
+        for (i in barIds.indices) {
+            val bar = root.findViewById<View>(barIds[i]) ?: continue
+            val anim = ValueAnimator.ofInt(barMinPx, barMaxPx).apply {
+                duration = barDurations[i]
+                repeatCount = ValueAnimator.INFINITE
+                repeatMode = ValueAnimator.REVERSE
+                interpolator = LinearInterpolator()
+                addUpdateListener { a ->
+                    val h = a.animatedValue as Int
+                    bar.layoutParams = bar.layoutParams.also { it.height = h }
+                    bar.requestLayout()
+                }
+                start()
+            }
+            eqAnimators.add(anim)
+        }
+    }
+
+    private fun stopEqualizerAnimation() {
+        eqAnimators.forEach { it.cancel() }
+        eqAnimators.clear()
+    }
+
+    private fun updateFloatingAudioMode(root: View, isAudioOnly: Boolean, isPlaying: Boolean, videoUri: String?) {
+        val ring = root.findViewById<View>(R.id.floatingAudioRing)
+        val eqBars = root.findViewById<LinearLayout>(R.id.floatingAudioEqBars)
+        val musicButton = root.findViewById<ImageButton>(R.id.floatMusicButton)
+        val playerView = root.findViewById<PlayerView>(R.id.floatingPlayerView)
+
+        if (isAudioOnly) {
+            musicButton.setColorFilter(PorterDuffColorFilter(accentColor, PorterDuff.Mode.SRC_IN))
+            // Dim video surface to make audio mode visually distinct
+            playerView?.alpha = 0.25f
+            // Show ring and eq bars
+            ring?.visibility = View.VISIBLE
+            eqBars?.visibility = View.VISIBLE
+            // Start/stop animation based on play state
+            if (isPlaying) {
+                startEqualizerAnimation(root)
+            } else {
+                stopEqualizerAnimation()
+            }
+        } else {
+            musicButton.clearColorFilter()
+            // Restore video surface
+            playerView?.alpha = 1.0f
+            // Hide ring and eq bars
+            ring?.visibility = View.GONE
+            eqBars?.visibility = View.GONE
+            // Stop all animations
+            stopEqualizerAnimation()
+        }
     }
 
     private fun observePlayerState(root: View) {
@@ -323,6 +525,15 @@ class FloatingWindowService : Service() {
                     "Floating pause"
                 } else {
                     "Floating play"
+                }
+                updateSpeedActiveState(root, state.speed)
+                // Update audio mode overlay (handles ring, eq bars, music button tint, PlayerView dim)
+                updateFloatingAudioMode(root, state.isAudioOnly, state.isPlaying, state.currentVideoUri?.toString())
+                // Schedule auto-hide when playback starts, cancel when paused
+                if (state.isPlaying && floatingControlsVisible) {
+                    scheduleFloatingAutoHide(root)
+                } else if (!state.isPlaying) {
+                    autoHideJob?.cancel()
                 }
             }
         }
@@ -364,9 +575,8 @@ class FloatingWindowService : Service() {
         }
         val panel = root.findViewById<RecyclerView>(R.id.floatingFolderPanel)
         if (floatingFolderAdapter == null) {
-            floatingFolderAdapter = VideoAdapter(
+            floatingFolderAdapter = FloatingVideoAdapter(
                 emptyList(),
-                true,
                 onClick = { item ->
                     PlayerEngine.get().dispatch(
                         PlaybackCommand.Play(
@@ -379,7 +589,7 @@ class FloatingWindowService : Service() {
                 thumbnailBitmapProvider = { uri -> thumbnailLoader.memoryThumbnail(uri) },
                 onThumbnailMissing = { uri ->
                     serviceScope.launch {
-                        val bmp = withContext(Dispatchers.IO) { thumbnailLoader.loadThumbnail(uri, 96, 54) }
+                        val bmp = withContext(Dispatchers.IO) { thumbnailLoader.loadThumbnail(uri, 60, 60) }
                         if (bmp != null) {
                             withContext(Dispatchers.Main) {
                                 floatingFolderAdapter?.notifyUriChanged(uri)
@@ -390,7 +600,7 @@ class FloatingWindowService : Service() {
             )
             panel.adapter = floatingFolderAdapter
         }
-        floatingFolderAdapter?.submit(videos, true)
+        floatingFolderAdapter?.submit(videos)
     }
 
     private fun refreshFolderPanelThumbnails() {
@@ -425,7 +635,7 @@ class FloatingWindowService : Service() {
             val prevBtn = root.findViewById<ImageButton>(R.id.floatPreviousButton)
             val playBtn = root.findViewById<ImageButton>(R.id.floatPlayPauseButton)
             val nextBtn = root.findViewById<ImageButton>(R.id.floatNextButton)
-            val btnSize = (40 * scaleFactor).toInt().coerceAtLeast(24)
+            val btnSize = (108 * scaleFactor).toInt().coerceAtLeast(65)
             prevBtn.layoutParams = prevBtn.layoutParams.also { it.width = btnSize; it.height = btnSize }
             val playSize = (btnSize * 1.15f).toInt()
             playBtn.layoutParams = playBtn.layoutParams.also { it.width = playSize; it.height = playSize }
@@ -436,18 +646,25 @@ class FloatingWindowService : Service() {
         val topBarVisible = width >= 200 && height >= 120
         root.findViewById<LinearLayout>(R.id.floatingControlBar).visibility = if (topBarVisible) View.VISIBLE else View.GONE
         if (topBarVisible) {
-            val topBtnSize = (32 * scaleFactor).toInt().coerceAtLeast(20)
+            val topBtnSize = (86 * scaleFactor).toInt().coerceAtLeast(54)
             listOf(R.id.floatFoldersButton, R.id.floatSpeedButton, R.id.floatMusicButton,
                 R.id.floatFullscreenButton, R.id.floatCloseButton).forEach { id ->
                 val btn = root.findViewById<ImageButton>(id)
                 btn.layoutParams = btn.layoutParams.also { it.width = topBtnSize; it.height = topBtnSize }
             }
-            // Hide individual buttons at very small sizes
-            root.findViewById<ImageButton>(R.id.floatSpeedButton).visibility = if (width >= 280) View.VISIBLE else View.GONE
-            root.findViewById<ImageButton>(R.id.floatMusicButton).visibility = if (width >= 240) View.VISIBLE else View.GONE
-            root.findViewById<ImageButton>(R.id.floatFoldersButton).visibility = if (width >= 260) View.VISIBLE else View.GONE
+            // Speed text sizing
+            // Progressive left-to-right button reveal as window expands
+            root.findViewById<ImageButton>(R.id.floatCloseButton).visibility = if (width >= 180) View.VISIBLE else View.GONE
             root.findViewById<ImageButton>(R.id.floatFullscreenButton).visibility = if (width >= 220) View.VISIBLE else View.GONE
-            root.findViewById<ImageButton>(R.id.floatCloseButton).visibility = if (width >= 200) View.VISIBLE else View.GONE
+            root.findViewById<ImageButton>(R.id.floatMusicButton).visibility = if (width >= 260) View.VISIBLE else View.GONE
+            root.findViewById<ImageButton>(R.id.floatSpeedButton).visibility = if (width >= 300) View.VISIBLE else View.GONE
+            root.findViewById<ImageButton>(R.id.floatFoldersButton).visibility = if (width >= 340) View.VISIBLE else View.GONE
+        }
+
+        // Hide resize handle in audio mode
+        val isAudioOnly = PlayerEngine.isInitialized() && PlayerEngine.get().state.value.isAudioOnly
+        root.findViewById<ImageButton>(R.id.floatResizeHandle)?.let { handle ->
+            handle.visibility = if (isAudioOnly) View.GONE else View.VISIBLE
         }
 
         // Title: show when there's enough room
@@ -466,7 +683,7 @@ class FloatingWindowService : Service() {
         if (width < 260) root.findViewById<RecyclerView>(R.id.floatingFolderPanel).visibility = View.GONE
 
         // Drag handle: scale with width
-        root.findViewById<View>(R.id.floatDragHandle).layoutParams?.height = (36 * scaleFactor).toInt().coerceAtLeast(16)
+        root.findViewById<View>(R.id.floatDragHandle).layoutParams?.height = (97 * scaleFactor).toInt().coerceAtLeast(43)
     }
 
     private fun Int.floorMod(modulus: Int): Int = ((this % modulus) + modulus) % modulus

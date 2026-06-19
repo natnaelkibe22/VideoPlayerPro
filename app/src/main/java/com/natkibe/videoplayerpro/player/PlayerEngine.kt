@@ -1,13 +1,17 @@
 package com.natkibe.videoplayerpro.player
 
+import android.app.PendingIntent
 import android.content.Context
+import android.content.Intent
 import android.net.Uri
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
+import androidx.media3.common.MediaMetadata
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.session.MediaSession
 import com.natkibe.videoplayerpro.controls.RepeatMode
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -19,6 +23,7 @@ class PlayerEngine private constructor(
     private val progressCallback: ((Uri, Long, Long) -> Unit)? = null
 ) {
     private var player: ExoPlayer? = null
+    private var mediaSession: MediaSession? = null
     private var videoSurfaceAttached = false
 
     /**
@@ -40,6 +45,14 @@ class PlayerEngine private constructor(
     val surfaceRouter: PlayerSurfaceRouter by lazy {
         PlayerSurfaceRouter(context) { player }
     }
+
+    /**
+     * The [MediaSession] connected to the ExoPlayer.
+     * Available after the first call to [play] (lazy init).
+     * Use [MediaSession.getSessionActivity] or [MediaSession.getSessionToken]
+     * for integration with notification MediaStyle and system media controls.
+     */
+    fun getMediaSession(): MediaSession? = mediaSession
 
     companion object {
         @Volatile
@@ -84,7 +97,23 @@ class PlayerEngine private constructor(
             .also { exoPlayer ->
                 player = exoPlayer
                 setupPlayerListener(exoPlayer)
+                setupMediaSession(exoPlayer)
             }
+    }
+
+    private fun setupMediaSession(exoPlayer: ExoPlayer) {
+        mediaSession?.release()
+        val intent = Intent(context, PlayerActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
+        }
+        val pendingIntent = PendingIntent.getActivity(
+            context, 0, intent,
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        )
+        mediaSession = MediaSession.Builder(context, exoPlayer)
+            .setId("VideoPlayerPro_MediaSession")
+            .setSessionActivity(pendingIntent)
+            .build()
     }
 
     private fun setupPlayerListener(exoPlayer: ExoPlayer) {
@@ -168,7 +197,16 @@ class PlayerEngine private constructor(
         }
         saveProgress()
 
-        val mediaItem = MediaItem.fromUri(uri)
+        val mediaItem = MediaItem.Builder()
+            .setUri(uri)
+            .setMediaId(uri.toString())
+            .setMediaMetadata(
+                MediaMetadata.Builder()
+                    .setTitle(title.ifBlank { uri.lastPathSegment ?: "Unknown" })
+                    .setIsPlayable(true)
+                    .build()
+            )
+            .build()
         exoPlayer.setMediaItem(mediaItem)
         exoPlayer.prepare()
 
@@ -354,6 +392,8 @@ class PlayerEngine private constructor(
 
     fun destroyPlayer() {
         saveProgress()
+        mediaSession?.release()
+        mediaSession = null
         player?.stop()
         player?.release()
         player = null

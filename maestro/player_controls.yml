@@ -23,7 +23,7 @@ appId: com.natkibe.videoplayerpro.s26ultra
 - assertVisible:
     id: "com.natkibe.videoplayerpro.s26ultra:id/repeatButton"
 - assertVisible:
-    id: "com.natkibe.videoplayerpro.s26ultra:id/topSpeedButton"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/speedLabel"
 - assertVisible:
     id: "com.natkibe.videoplayerpro.s26ultra:id/topAudioOnlyButton"
 - assertVisible:

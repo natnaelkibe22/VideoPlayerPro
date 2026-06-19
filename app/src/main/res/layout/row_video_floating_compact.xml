@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="68dp"
+    android:minHeight="64dp"
+    android:layout_margin="2dp"
+    android:background="@drawable/bg_card"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:padding="4dp"
+    android:clickable="true"
+    android:focusable="true"
+    android:contentDescription="Video row item">
+
+    <!-- Compact thumbnail for floating panel -->
+    <FrameLayout
+        android:id="@+id/thumbnailContainer"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:layout_marginEnd="6dp"
+        android:contentDescription="Thumbnail">
+
+        <!-- Placeholder shown while loading -->
+        <TextView
+            android:id="@+id/videoThumb"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#FF1A1C20"
+            android:gravity="center"
+            android:text="▶"
+            android:textColor="#555555"
+            android:textSize="20sp" />
+
+        <!-- Actual thumbnail image -->
+        <ImageView
+            android:id="@+id/videoThumbImage"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop"
+            android:visibility="gone"
+            android:contentDescription="Video thumbnail" />
+
+        <!-- Duration badge - bottom-right overlay -->
+        <TextView
+            android:id="@+id/durationBadge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|end"
+            android:layout_margin="2dp"
+            android:background="#BB000000"
+            android:paddingLeft="2dp"
+            android:paddingRight="2dp"
+            android:paddingVertical="1dp"
+            android:textColor="#FFFFFF"
+            android:textSize="10sp"
+            android:textStyle="bold"
+            android:text="0:00" />
+
+        <!-- Quality badges - top-right overlay (hidden in floating compact) -->
+        <LinearLayout
+            android:id="@+id/qualityBadgeContainer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top|end"
+            android:layout_margin="2dp"
+            android:orientation="horizontal"
+            android:visibility="gone">
+        </LinearLayout>
+    </FrameLayout>
+
+    <!-- Title & metadata - compact for narrow space -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:gravity="center_vertical"
+        android:orientation="vertical"
+        android:paddingEnd="2dp">
+
+        <!-- Video title - condensed -->
+        <TextView
+            android:id="@+id/videoTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:text="Title"
+            android:textColor="#FFFFFF"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:lineSpacingExtra="1dp" />
+
+        <!-- Subtitle - compact metadata -->
+        <TextView
+            android:id="@+id/videoSubtitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:text="Subtitle"
+            android:textColor="#CCFFFFFF"
+            android:textSize="11sp" />
+    </LinearLayout>
+</LinearLayout>

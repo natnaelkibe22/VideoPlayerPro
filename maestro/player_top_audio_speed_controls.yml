@@ -35,11 +35,11 @@ appId: com.natkibe.videoplayerpro.s26ultra
 - tapOn:
     id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
 - assertVisible:
-    id: "com.natkibe.videoplayerpro.s26ultra:id/topSpeedButton"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/speedLabel"
 - assertVisible:
     id: "com.natkibe.videoplayerpro.s26ultra:id/topAudioOnlyButton"
 - tapOn:
-    id: "com.natkibe.videoplayerpro.s26ultra:id/topSpeedButton"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/speedLabel"
 - assertVisible: "Playback Speed"
 - assertVisible:
     id: "com.natkibe.videoplayerpro.s26ultra:id/playbackSpeedSlider"

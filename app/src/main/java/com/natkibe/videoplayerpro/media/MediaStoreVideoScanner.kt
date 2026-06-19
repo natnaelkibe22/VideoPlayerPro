@@ -2,6 +2,8 @@ package com.natkibe.videoplayerpro.media
 
 import android.content.ContentUris
 import android.content.Context
+import android.media.MediaMetadataRetriever
+import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
 import com.natkibe.videoplayerpro.core.StorageClassifier
@@ -20,8 +22,12 @@ class MediaStoreVideoScanner(private val context: Context) {
             add(MediaStore.Video.Media.DURATION)
             add(MediaStore.Video.Media.SIZE)
             add(MediaStore.Video.Media.DATE_MODIFIED)
-            if (Build.VERSION.SDK_INT >= 29) add(MediaStore.Video.Media.RELATIVE_PATH)
-            if (Build.VERSION.SDK_INT >= 29) add(MediaStore.Video.Media.VOLUME_NAME)
+            if (Build.VERSION.SDK_INT >= 29) {
+                add(MediaStore.Video.Media.RELATIVE_PATH)
+                add(MediaStore.Video.Media.VOLUME_NAME)
+                add(MediaStore.Video.Media.WIDTH)
+                add(MediaStore.Video.Media.HEIGHT)
+            }
         }.toTypedArray()
 
         val sort = "${MediaStore.Video.Media.BUCKET_DISPLAY_NAME} COLLATE NOCASE ASC, ${MediaStore.Video.Media.DISPLAY_NAME} COLLATE NOCASE ASC"
@@ -37,6 +43,8 @@ class MediaStoreVideoScanner(private val context: Context) {
             val modifiedCol = c.getColumnIndexOrThrow(MediaStore.Video.Media.DATE_MODIFIED)
             val pathCol = if (Build.VERSION.SDK_INT >= 29) c.getColumnIndex(MediaStore.Video.Media.RELATIVE_PATH) else -1
             val volumeCol = if (Build.VERSION.SDK_INT >= 29) c.getColumnIndex(MediaStore.Video.Media.VOLUME_NAME) else -1
+            val widthCol = if (Build.VERSION.SDK_INT >= 29) c.getColumnIndex(MediaStore.Video.Media.WIDTH) else -1
+            val heightCol = if (Build.VERSION.SDK_INT >= 29) c.getColumnIndex(MediaStore.Video.Media.HEIGHT) else -1
 
             while (c.moveToNext()) {
                 val id = c.getLong(idCol)
@@ -48,6 +56,32 @@ class MediaStoreVideoScanner(private val context: Context) {
                 val size = safeLong(c, sizeCol)
                 if (duration <= 0L && size <= 0L) continue
 
+                // Extract resolution from MediaStore or fallback to MediaMetadataRetriever
+                var width = safeInt(c, widthCol)
+                var height = safeInt(c, heightCol)
+                var resolution = if (width > 0 && height > 0) "${width}x${height}" else null
+
+                // Fallback: try MediaMetadataRetriever if MediaStore didn't report resolution
+                if (resolution == null) {
+                    try {
+                        val retriever = MediaMetadataRetriever().apply {
+                            setDataSource(context, Uri.parse(itemUri))
+                        }
+                        val wStr = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH)
+                        val hStr = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT)
+                        retriever.release()
+                        val w = wStr?.toIntOrNull() ?: 0
+                        val h = hStr?.toIntOrNull() ?: 0
+                        if (w > 0 && h > 0) {
+                            width = w
+                            height = h
+                            resolution = "${w}x${h}"
+                        }
+                    } catch (_: Exception) {
+                        // Silent fallback
+                    }
+                }
+
                 out += VideoItemEntity(
                     uri = itemUri,
                     displayName = name,
@@ -58,12 +92,16 @@ class MediaStoreVideoScanner(private val context: Context) {
                     durationMs = duration,
                     sizeBytes = size,
                     dateModified = safeLong(c, modifiedCol),
-                    lastIndexedAt = System.currentTimeMillis()
+                    lastIndexedAt = System.currentTimeMillis(),
+                    resolution = resolution
                 )
             }
         }
         out
     }
+
+    private fun safeInt(cursor: android.database.Cursor, index: Int): Int =
+        if (index >= 0 && !cursor.isNull(index)) cursor.getInt(index) else 0
 
     private fun safeLong(cursor: android.database.Cursor, index: Int): Long =
         if (index >= 0 && !cursor.isNull(index)) cursor.getLong(index) else 0L

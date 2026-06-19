@@ -1,0 +1,534 @@
+appId: com.natkibe.videoplayerpro.s26ultra
+---
+# ═══════════════════════════════════════════════════════════════
+# FLOATING STRESS & SAFE MODE – Comprehensive Stress Test
+# ═══════════════════════════════════════════════════════════════
+# Prerequisites:
+#   maestro/run_seeded_player_regressions.sh
+#
+# Covers:
+#   Phase 1 – Safe Mode ON + Float, verify all controls visible
+#             (safe mode disables animations, forces auto-hide to 0)
+#   Phase 2 – Floating controls stress (play/pause rapid toggle,
+#             next/prev, speed panel slider, folder panel switch,
+#             play-as-audio cycle, fullscreen return)
+#   Phase 3 – Resize handle stress + close button
+#             (verify overlay closes, app still alive)
+#   Phase 4 – Safe Mode OFF while floating
+#             (verify animations return, thumbnails appear)
+#   Phase 5 – Float toggle ON/OFF/ON stress
+#             (verify no duplicate controls)
+# ═══════════════════════════════════════════════════════════════
+
+# ── Setup: Launch & Permissions ──
+- launchApp
+- runFlow:
+    when:
+      visible: "Allow"
+    commands:
+      - tapOn: "Allow"
+- runFlow:
+    when:
+      visible: "While using the app"
+    commands:
+      - tapOn: "While using the app"
+- assertVisible: "Main folder screen"
+
+# ═══════════════════════════════════════════════════════════════
+# PHASE 1: Safe Mode ON + Float
+#   Enable safe mode, play a seeded video, enter floating mode,
+#   verify all floating controls are visible with no animations.
+# ═══════════════════════════════════════════════════════════════
+
+# ── 1a. Enable Safe Mode in Settings ──
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/settingsTab"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/settingsContainer"
+- assertVisible: "Settings screen"
+- scrollUntilVisible:
+    element: "Safe Mode toggle"
+    direction: DOWN
+- assertVisible: "Safe Mode toggle"
+- tapOn: "Safe Mode toggle"
+# Safe Mode is now ON – animations disabled, auto-hide delay forced to 0
+
+# ── 1b. Navigate to seeded video ──
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/videoTab"
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/refreshButton"
+- extendedWaitUntil:
+    visible:
+      id: "com.natkibe.videoplayerpro.s26ultra:id/recycler"
+    timeout: 15000
+- scrollUntilVisible:
+    element: "VideoPlayerProMaestro"
+    direction: DOWN
+- tapOn: "VideoPlayerProMaestro"
+- extendedWaitUntil:
+    visible:
+      id: "com.natkibe.videoplayerpro.s26ultra:id/recycler"
+    timeout: 10000
+- scrollUntilVisible:
+    element: "vpp_maestro_01.mp4"
+    direction: DOWN
+- tapOn: "vpp_maestro_01.mp4"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
+
+# ── 1c. In safe mode, controls should always be visible (auto-hide forced to 0) ──
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/repeatButton"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatingButton"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/speedLabel"
+
+# ── 1d. Enter floating mode ──
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/menuButton"
+- tapOn: "Float toggle"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
+- pressKey: Home
+- runFlow:
+    when:
+      visible: "Pixel Launcher isn't responding"
+    commands:
+      - tapOn: "Wait"
+- extendedWaitUntil:
+    visible:
+      id: "com.natkibe.videoplayerpro.s26ultra:id/floatingPlayerControl"
+    timeout: 10000
+
+# ── 1e. Verify all floating controls visible ──
+# Floating container and title
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatingPlayerControl"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatingTitle"
+
+# Top-right control bar buttons
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatFoldersButton"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatSpeedText"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatMusicButton"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatFullscreenButton"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatCloseButton"
+
+# Bottom transport bar
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatTransportBar"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatPreviousButton"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatPlayPauseButton"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatNextButton"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatingSeekBar"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatingCurrentTime"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatingTotalTime"
+
+# Resize handle
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatResizeHandle"
+
+# No duplicate floating player
+- assertNotVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatingPlayerControl"
+    index: 1
+
+# ═══════════════════════════════════════════════════════════════
+# PHASE 2: Floating Controls Stress
+#   Stress-test every floating control while Safe Mode is ON.
+# ═══════════════════════════════════════════════════════════════
+
+# ── 2a. Play/Pause toggle stress (rapid consecutive taps) ──
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatPlayPauseButton"
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatPlayPauseButton"
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatPlayPauseButton"
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatPlayPauseButton"
+# Floating overlay must survive rapid play/pause toggling
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatingPlayerControl"
+
+# ── 2b. Next/Previous button stress ──
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatNextButton"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatingPlayerControl"
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatPreviousButton"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatingPlayerControl"
+
+# ── 2c. Speed panel stress: open, drag slider, close ──
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatSpeedText"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatingSpeedPanel"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatingSpeedSlider"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatingSpeedValue"
+# Drag slider to slow speed (25%)
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatingSpeedSlider"
+    point: "25%,50%"
+# Drag slider to fast speed (75%)
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatingSpeedSlider"
+    point: "75%,50%"
+# Return to normal (50%)
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatingSpeedSlider"
+    point: "50%,50%"
+# Dismiss speed panel
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatSpeedText"
+- assertNotVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatingSpeedPanel"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatingPlayerControl"
+
+# ── 2d. Folder panel stress: open, verify items, switch video ──
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatFoldersButton"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatingFolderPanel"
+# Verify seeded videos are listed
+- assertVisible: "vpp_maestro_01.mp4"
+- assertVisible: "vpp_maestro_02.mp4"
+# Select a different video from the folder panel
+- tapOn: "vpp_maestro_02.mp4"
+- extendedWaitUntil:
+    visible:
+      id: "com.natkibe.videoplayerpro.s26ultra:id/floatingPlayerControl"
+    timeout: 10000
+# Floating player must still be alive with title after folder switch
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatingTitle"
+
+# ── 2e. Play-as-Audio cycle: enter audio mode, verify overlay, exit ──
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatMusicButton"
+# Audio overlay must appear with artwork and equalizer ring
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatingAudioOverlay"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatingAudioThumbContainer"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatingAudioEqRing"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatingAudioThumb"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatingAudioTitle"
+# Exit audio mode
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatMusicButton"
+# Back to video: control bar restored, audio overlay hidden
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatingPlayerControl"
+- assertNotVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatingAudioOverlay"
+
+# ── 2f. Fullscreen return button: go back to fullscreen player ──
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatFullscreenButton"
+- extendedWaitUntil:
+    visible:
+      id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
+    timeout: 5000
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
+# Safe mode: controls should remain visible without tapping
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatingButton"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/repeatButton"
+
+# ═══════════════════════════════════════════════════════════════
+# PHASE 3: Resize Handle Stress + Close Button
+#   Re-float and stress the resize handle, then test close.
+# ═══════════════════════════════════════════════════════════════
+
+# ── 3a. Re-enter floating mode ──
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/menuButton"
+- tapOn: "Float toggle"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
+- pressKey: Home
+- runFlow:
+    when:
+      visible: "Pixel Launcher isn't responding"
+    commands:
+      - tapOn: "Wait"
+- extendedWaitUntil:
+    visible:
+      id: "com.natkibe.videoplayerpro.s26ultra:id/floatingPlayerControl"
+    timeout: 10000
+
+# ── 3b. Resize handle: verify visible and interact ──
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatResizeHandle"
+# Tap resize handle (should not crash)
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatResizeHandle"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatingPlayerControl"
+# Simulate a small drag from the resize handle (bottom-right corner inward)
+- swipe:
+    start: "92%,92%"
+    end: "80%,80%"
+    duration: 500
+
+# ── 3c. Close button: tap and verify overlay closes ──
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatCloseButton"
+# Floating overlay must be gone
+- assertNotVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatingPlayerControl"
+
+# ── 3d. Verify main player is still alive by returning to app ──
+- launchApp
+- runFlow:
+    when:
+      visible: "Pixel Launcher isn't responding"
+    commands:
+      - tapOn: "Wait"
+# PlayerActivity should still be visible (main player survived close)
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
+# Safe mode: controls visible
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatingButton"
+
+# ═══════════════════════════════════════════════════════════════
+# PHASE 4: Safe Mode OFF while Floating
+#   Disable safe mode, re-float, verify animations return and
+#   thumbnails appear.
+# ═══════════════════════════════════════════════════════════════
+
+# ── 4a. Close current player ──
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/closeButton"
+- assertVisible: "Main folder screen"
+# ── 4b. Disable Safe Mode ──
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/settingsTab"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/settingsContainer"
+- scrollUntilVisible:
+    element: "Safe Mode toggle"
+    direction: DOWN
+- assertVisible: "Safe Mode toggle"
+- tapOn: "Safe Mode toggle"
+# Safe Mode is now OFF – animations enabled, auto-hide active
+
+# ── 4c. Play video again ──
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/videoTab"
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/refreshButton"
+- extendedWaitUntil:
+    visible:
+      id: "com.natkibe.videoplayerpro.s26ultra:id/recycler"
+    timeout: 15000
+- scrollUntilVisible:
+    element: "VideoPlayerProMaestro"
+    direction: DOWN
+- tapOn: "VideoPlayerProMaestro"
+- extendedWaitUntil:
+    visible:
+      id: "com.natkibe.videoplayerpro.s26ultra:id/recycler"
+    timeout: 10000
+- scrollUntilVisible:
+    element: "vpp_maestro_01.mp4"
+    direction: DOWN
+- tapOn: "vpp_maestro_01.mp4"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
+
+# ── 4d. Verify controls visible, then wait for auto-hide ──
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/speedLabel"
+# Wait for auto-hide (safe mode is off, controls should disappear after ~3s)
+- extendedWaitUntil:
+    notVisible:
+      id: "com.natkibe.videoplayerpro.s26ultra:id/speedLabel"
+    timeout: 5000
+# Tap to reveal controls again (verifies auto-hide is working)
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/speedLabel"
+
+# ── 4e. Enter floating mode (safe mode OFF now) ──
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/menuButton"
+- tapOn: "Float toggle"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
+- pressKey: Home
+- runFlow:
+    when:
+      visible: "Pixel Launcher isn't responding"
+    commands:
+      - tapOn: "Wait"
+- extendedWaitUntil:
+    visible:
+      id: "com.natkibe.videoplayerpro.s26ultra:id/floatingPlayerControl"
+    timeout: 10000
+
+# ── 4f. Verify animations are active (no safe mode restrictions) ──
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatingPlayerControl"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatingTitle"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatSpeedText"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatPlayPauseButton"
+# No duplicate floating player
+- assertNotVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatingPlayerControl"
+    index: 1
+
+# ═══════════════════════════════════════════════════════════════
+# PHASE 5: Float Toggle Stress
+#   Toggle floating ON/OFF/ON rapidly, verify no duplicate
+#   controls appear after each cycle.
+# ═══════════════════════════════════════════════════════════════
+
+# ── 5a. Return to fullscreen first ──
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatFullscreenButton"
+- extendedWaitUntil:
+    visible:
+      id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
+    timeout: 5000
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
+
+# ── 5b. Float toggle cycle 1: ON → OFF → ON (rapid) ──
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/menuButton"
+- tapOn: "Float toggle"
+# Float ON: playerView still visible in-app, float armed
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
+# Float OFF
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/menuButton"
+- tapOn: "Float toggle"
+# Float ON again
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/menuButton"
+- tapOn: "Float toggle"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
+
+# ── 5c. Go Home and verify single floating overlay ──
+- pressKey: Home
+- runFlow:
+    when:
+      visible: "Pixel Launcher isn't responding"
+    commands:
+      - tapOn: "Wait"
+- extendedWaitUntil:
+    visible:
+      id: "com.natkibe.videoplayerpro.s26ultra:id/floatingPlayerControl"
+    timeout: 10000
+# Verify exactly one floating player (no duplicates from rapid toggles)
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatingPlayerControl"
+- assertNotVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatingPlayerControl"
+    index: 1
+# Verify key controls present (not doubled)
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatPlayPauseButton"
+- assertNotVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatPlayPauseButton"
+    index: 1
+
+# ── 5d. Return to fullscreen and perform second toggle cycle ──
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatFullscreenButton"
+- extendedWaitUntil:
+    visible:
+      id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
+    timeout: 5000
+# Rapid OFF → ON → OFF → ON
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/menuButton"
+- tapOn: "Float toggle"
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/menuButton"
+- tapOn: "Float toggle"
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/menuButton"
+- tapOn: "Float toggle"
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/menuButton"
+- tapOn: "Float toggle"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
+
+# ── 5e. Go Home, verify no duplicate floating overlay ──
+- pressKey: Home
+- runFlow:
+    when:
+      visible: "Pixel Launcher isn't responding"
+    commands:
+      - tapOn: "Wait"
+- extendedWaitUntil:
+    visible:
+      id: "com.natkibe.videoplayerpro.s26ultra:id/floatingPlayerControl"
+    timeout: 10000
+# Verify exactly one floating player after second stress cycle
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatingPlayerControl"
+- assertNotVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatingPlayerControl"
+    index: 1
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatCloseButton"
+- assertNotVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatCloseButton"
+    index: 1
+
+# ── 5f. Cleanup: close floating, return to main screen ──
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatCloseButton"
+- assertNotVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatingPlayerControl"
+# Return to app and close player
+- launchApp
+- runFlow:
+    when:
+      visible: "Pixel Launcher isn't responding"
+    commands:
+      - tapOn: "Wait"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/closeButton"
+- assertVisible: "Main folder screen"

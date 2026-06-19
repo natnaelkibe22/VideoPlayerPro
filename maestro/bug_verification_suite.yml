@@ -71,7 +71,7 @@ appId: com.natkibe.videoplayerpro.s26ultra
       - assertVisible:
           id: "com.natkibe.videoplayerpro.s26ultra:id/repeatButton"
       - assertVisible:
-          id: "com.natkibe.videoplayerpro.s26ultra:id/topSpeedButton"
+          id: "com.natkibe.videoplayerpro.s26ultra:id/speedLabel"
       - assertVisible:
           id: "com.natkibe.videoplayerpro.s26ultra:id/topAudioOnlyButton"
       - assertVisible:
@@ -120,7 +120,7 @@ appId: com.natkibe.videoplayerpro.s26ultra
                   - tapOn:
                       id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
                   - tapOn:
-                      id: "com.natkibe.videoplayerpro.s26ultra:id/topSpeedButton"
+                      id: "com.natkibe.videoplayerpro.s26ultra:id/speedLabel"
 
                   # Assert speed sheet is visible (no white screen)
                   - assertVisible: "Playback Speed"
@@ -243,7 +243,7 @@ appId: com.natkibe.videoplayerpro.s26ultra
                   - assertVisible:
                       id: "com.natkibe.videoplayerpro.s26ultra:id/floatMusicButton"
                   - assertVisible:
-                      id: "com.natkibe.videoplayerpro.s26ultra:id/floatSpeedButton"
+                      id: "com.natkibe.videoplayerpro.s26ultra:id/floatSpeedText"
                   - assertVisible:
                       id: "com.natkibe.videoplayerpro.s26ultra:id/floatFullscreenButton"
                   - assertVisible:
@@ -255,7 +255,7 @@ appId: com.natkibe.videoplayerpro.s26ultra
 
                   # Floating speed selection stays inside the overlay
                   - tapOn:
-                      id: "com.natkibe.videoplayerpro.s26ultra:id/floatSpeedButton"
+                      id: "com.natkibe.videoplayerpro.s26ultra:id/floatSpeedText"
                   - assertVisible:
                       id: "com.natkibe.videoplayerpro.s26ultra:id/floatingSpeedPanel"
                   - assertVisible:

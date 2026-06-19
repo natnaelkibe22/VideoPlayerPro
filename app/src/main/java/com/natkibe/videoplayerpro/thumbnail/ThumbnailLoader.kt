@@ -19,6 +19,9 @@ class ThumbnailLoader(
     private val memoryCache: ThumbnailMemoryPolicy = ThumbnailMemoryPolicy()
 ) {
     private val mutex = Mutex()
+    private val smartSelector = SmartThumbnailSelector(context)
+    // Use smart selection only for full-size thumbnails, not tiny previews
+    private val smartSelectionMinDimension = 128
 
     suspend fun loadThumbnail(videoUri: String, targetWidth: Int = 128, targetHeight: Int = 72): Bitmap? {
         val cacheKey = cacheKeyFor(videoUri, targetWidth, targetHeight)
@@ -78,6 +81,16 @@ class ThumbnailLoader(
 
     private fun decodeFrameThumbnail(videoUri: String, targetWidth: Int, targetHeight: Int): Bitmap? {
         return try {
+            // Use smart selection for thumbnails that are large enough
+            // (for tiny previews like folder list, just grab frame at 0 for speed)
+            if (targetWidth >= smartSelectionMinDimension || targetHeight >= smartSelectionMinDimension) {
+                val smartBitmap = runBlockingOnIO {
+                    smartSelector.selectBestFrame(videoUri, targetWidth, targetHeight)
+                }
+                if (smartBitmap != null) return smartBitmap
+            }
+
+            // Fallback: frame at 0ms
             val source = Uri.parse(videoUri)
             val frame = MediaMetadataRetriever().use { retriever ->
                 retriever.setDataSource(context, source)
@@ -89,6 +102,13 @@ class ThumbnailLoader(
         }
     }
 
+    /** Run a suspend function synchronously on IO from a non-suspend context. */
+    private fun <T> runBlockingOnIO(block: suspend () -> T): T {
+        return kotlinx.coroutines.runBlocking(kotlinx.coroutines.Dispatchers.IO) {
+            block()
+        }
+    }
+
     private fun calculateInSampleSize(targetWidth: Int, targetHeight: Int): Int {
         var sampleSize = 1
         // Typical MINI_KIND thumbnails are ~512x384; scale down
@@ -96,6 +116,34 @@ class ThumbnailLoader(
             sampleSize *= 2
         }
         return sampleSize
+    }
+
+    /**
+     * Generates a thumbnail at a specific time position for seek preview.
+     * Does NOT cache the result (seek previews are transient).
+     */
+    suspend fun seekPreviewThumbnail(videoUri: String, positionMs: Long, targetWidth: Int, targetHeight: Int): Bitmap? = withContext(Dispatchers.IO) {
+        try {
+            val source = Uri.parse(videoUri)
+            val retriever = MediaMetadataRetriever().apply {
+                setDataSource(context, source)
+            }
+            // Convert ms to microseconds
+            val timeUs = positionMs * 1000L
+            val frame = try {
+                retriever.getFrameAtTime(timeUs, MediaMetadataRetriever.OPTION_CLOSEST_SYNC)
+            } catch (_: Exception) {
+                null
+            }
+            retriever.release()
+            if (frame != null) {
+                Bitmap.createScaledBitmap(frame, targetWidth, targetHeight, true)
+            } else {
+                null
+            }
+        } catch (_: Exception) {
+            null
+        }
     }
 
     fun clearMemory() = memoryCache.clear()

@@ -3,7 +3,8 @@
     android:id="@+id/floatingPlayerControl"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#E6000000"
+    android:background="#44000000"
+    android:clipChildren="false"
     android:contentDescription="Floating player control">
 
     <androidx.media3.ui.PlayerView
@@ -12,13 +13,62 @@
         android:layout_height="match_parent"
         app:use_controller="false" />
 
+    <!-- Audio-only ring overlay: subtle blue border pulse -->
+    <View
+        android:id="@+id/floatingAudioRing"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/bg_audio_equalizer_ring"
+        android:visibility="gone"
+        android:alpha="0.55" />
+
+    <!-- Compact equalizer bars for audio-only floating mode (4 tiny bars) -->
+    <LinearLayout
+        android:id="@+id/floatingAudioEqBars"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center_horizontal"
+        android:layout_marginBottom="86dp"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:visibility="gone">
+
+        <View
+            android:id="@+id/eqBar1"
+            android:layout_width="3dp"
+            android:layout_height="14dp"
+            android:layout_marginEnd="3dp"
+            android:background="#FF2F80ED" />
+
+        <View
+            android:id="@+id/eqBar2"
+            android:layout_width="3dp"
+            android:layout_height="14dp"
+            android:layout_marginEnd="3dp"
+            android:background="#FF2F80ED" />
+
+        <View
+            android:id="@+id/eqBar3"
+            android:layout_width="3dp"
+            android:layout_height="14dp"
+            android:layout_marginEnd="3dp"
+            android:background="#FF2F80ED" />
+
+        <View
+            android:id="@+id/eqBar4"
+            android:layout_width="3dp"
+            android:layout_height="14dp"
+            android:layout_marginEnd="0dp"
+            android:background="#FF2F80ED" />
+    </LinearLayout>
+
     <!-- Drag handle at top -->
     <View
         android:id="@+id/floatDragHandle"
         android:layout_width="match_parent"
         android:layout_height="36dp"
         android:layout_gravity="top"
-        android:background="#66000000" />
+        android:background="#22000000" />
 
     <TextView
         android:id="@+id/floatingTitle"
@@ -58,7 +108,8 @@
         android:layout_width="wrap_content"
         android:layout_height="34dp"
         android:layout_gravity="top|end"
-        android:layout_margin="3dp"
+        android:layout_marginTop="3dp"
+        android:layout_marginEnd="3dp"
         android:gravity="center_vertical"
         android:orientation="horizontal">
 
@@ -117,7 +168,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
-        android:background="#CC000000"
+        android:background="#33000000"
         android:orientation="vertical"
         android:paddingBottom="6dp"
         android:paddingTop="4dp">

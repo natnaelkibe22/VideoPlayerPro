@@ -1,62 +1,36 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="76dp"
-    android:layout_margin="6dp"
+    android:layout_height="90dp"
+    android:layout_margin="5dp"
     android:background="@drawable/bg_card"
     android:gravity="center_vertical"
     android:orientation="horizontal"
-    android:padding="10dp"
-    android:minHeight="64dp"
+    android:padding="6dp"
+    android:minHeight="80dp"
     android:clickable="true"
     android:focusable="true"
     android:contentDescription="Video row item">
 
-    <LinearLayout
-        android:layout_width="0dp"
-        android:layout_height="match_parent"
-        android:layout_weight="4"
-        android:gravity="center_vertical"
-        android:orientation="vertical"
-        android:paddingStart="8dp"
-        android:paddingEnd="8dp">
-
-        <TextView
-            android:id="@+id/videoTitle"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:ellipsize="end"
-            android:maxLines="1"
-            android:textColor="#FFFFFF"
-            android:textSize="19sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:id="@+id/videoSubtitle"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:ellipsize="end"
-            android:maxLines="1"
-            android:textColor="#B8BDC7"
-            android:textSize="14sp" />
-    </LinearLayout>
-
+    <!-- Thumbnail as primary focus - larger and on the left -->
     <FrameLayout
-        android:layout_width="0dp"
-        android:layout_height="56dp"
-        android:layout_weight="1"
-        android:layout_marginStart="6dp"
-        android:contentDescription="Thumbnail placeholder"
-        android:minWidth="48dp">
+        android:id="@+id/thumbnailContainer"
+        android:layout_width="120dp"
+        android:layout_height="76dp"
+        android:layout_marginEnd="10dp"
+        android:contentDescription="Thumbnail">
 
+        <!-- Placeholder shown while loading -->
         <TextView
             android:id="@+id/videoThumb"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:background="#FF1A1C20"
             android:gravity="center"
             android:text="▶"
-            android:textColor="#FFFFFF"
-            android:textSize="20sp" />
+            android:textColor="#555555"
+            android:textSize="28sp" />
 
+        <!-- Actual thumbnail image -->
         <ImageView
             android:id="@+id/videoThumbImage"
             android:layout_width="match_parent"
@@ -64,5 +38,66 @@
             android:scaleType="centerCrop"
             android:visibility="gone"
             android:contentDescription="Video thumbnail" />
+
+        <!-- Duration badge - bottom-right overlay -->
+        <TextView
+            android:id="@+id/durationBadge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|end"
+            android:layout_margin="3dp"
+            android:background="#BB000000"
+            android:paddingLeft="4dp"
+            android:paddingRight="4dp"
+            android:paddingTop="1dp"
+            android:paddingBottom="1dp"
+            android:textColor="#FFFFFF"
+            android:textSize="11sp"
+            android:textStyle="bold"
+            android:text="0:00" />
+
+        <!-- Quality badges - top-right overlay -->
+        <LinearLayout
+            android:id="@+id/qualityBadgeContainer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top|end"
+            android:layout_margin="2dp"
+            android:orientation="horizontal"
+            android:visibility="gone">
+        </LinearLayout>
     </FrameLayout>
+
+    <!-- Title & metadata - secondary and tertiary -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:gravity="center_vertical"
+        android:orientation="vertical"
+        android:paddingEnd="4dp">
+
+        <!-- Video title - secondary focus -->
+        <TextView
+            android:id="@+id/videoTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:maxLines="2"
+            android:textColor="#FFFFFF"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:lineSpacingExtra="2dp" />
+
+        <!-- Metadata - tertiary (folder, date, etc.) -->
+        <TextView
+            android:id="@+id/videoSubtitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="3dp"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:textColor="#9BA0AC"
+            android:textSize="12sp" />
+    </LinearLayout>
 </LinearLayout>

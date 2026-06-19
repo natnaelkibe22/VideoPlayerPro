@@ -1,8 +1,22 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("com.google.devtools.ksp")
 }
+
+val localProperties = Properties().apply {
+    val file = rootProject.file("local.properties")
+    if (file.exists()) {
+        file.inputStream().use { load(it) }
+    }
+}
+
+fun signingProperty(name: String): String? =
+    localProperties.getProperty(name)
+        ?: providers.gradleProperty(name).orNull
+        ?: providers.environmentVariable(name).orNull
 
 android {
     namespace = "com.natkibe.videoplayerpro"
@@ -12,16 +26,16 @@ android {
         applicationId = "com.natkibe.videoplayerpro"
         minSdk = 23
         targetSdk = 35
-        versionCode = 2
-        versionName = "0.8.0-video-only-micro-modular"
+        versionCode = 3
+        versionName = "0.8.1-video-only-micro-modular"
     }
 
     signingConfigs {
         create("release") {
-            storeFile = file(System.getProperty("user.home") + "/.android/debug.keystore")
-            storePassword = "android"
-            keyAlias = "androiddebugkey"
-            keyPassword = "android"
+            storeFile = rootProject.file(signingProperty("VP_RELEASE_STORE_FILE") ?: "release.keystore")
+            storePassword = signingProperty("VP_RELEASE_STORE_PASSWORD")
+            keyAlias = signingProperty("VP_RELEASE_KEY_ALIAS") ?: "release"
+            keyPassword = signingProperty("VP_RELEASE_KEY_PASSWORD")
         }
     }
 
@@ -30,6 +44,7 @@ android {
         create("autosky") {
             dimension = "target"
             applicationId = "com.natkibe.videoplayerpro.autosky"
+            targetSdk = 31
             versionNameSuffix = "-autosky-headunit"
             manifestPlaceholders["appLabel"] = "PlayerPro AutoSky"
         }
@@ -56,6 +71,18 @@ android {
     kotlinOptions {
         jvmTarget = "17"
     }
+
+    packaging {
+        jniLibs {
+            useLegacyPackaging = true
+        }
+    }
+
+    splits {
+        abi {
+            isEnable = false
+        }
+    }
 }
 
 dependencies {
@@ -68,6 +95,7 @@ dependencies {
     implementation("androidx.media3:media3-exoplayer:1.4.1")
     implementation("androidx.media3:media3-ui:1.4.1")
     implementation("androidx.media3:media3-session:1.4.1")
+    implementation("androidx.media:media:1.7.0")
 
     implementation("androidx.room:room-runtime:2.6.1")
     implementation("androidx.room:room-ktx:2.6.1")

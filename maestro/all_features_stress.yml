@@ -130,6 +130,9 @@ appId: com.natkibe.videoplayerpro.s26ultra
     visibilityPercentage: 50
     timeout: 30000
 - assertVisible: "vpp_maestro_07_stress_long.mp4"
+# Verify thumbnail metadata overlay (duration badge + either placeholder or loaded thumbnail)
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/durationBadge"
 - scrollUntilVisible:
     element: "vpp_maestro_07_stress_long.mp4"
     direction: UP
@@ -145,11 +148,11 @@ appId: com.natkibe.videoplayerpro.s26ultra
 - assertVisible:
     id: "com.natkibe.videoplayerpro.s26ultra:id/videoTitle"
 - assertVisible:
-    id: "com.natkibe.videoplayerpro.s26ultra:id/topSpeedButton"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/speedLabel"
 - assertVisible:
     id: "com.natkibe.videoplayerpro.s26ultra:id/topAudioOnlyButton"
 - tapOn:
-    id: "com.natkibe.videoplayerpro.s26ultra:id/topSpeedButton"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/speedLabel"
 - assertVisible: "Playback Speed"
 - assertVisible:
     id: "com.natkibe.videoplayerpro.s26ultra:id/playbackSpeedSlider"
@@ -191,6 +194,25 @@ appId: com.natkibe.videoplayerpro.s26ultra
     id: "com.natkibe.videoplayerpro.s26ultra:id/prevButton"
 - assertVisible:
     id: "com.natkibe.videoplayerpro.s26ultra:id/playerView"
+
+# Seek bar controls with time labels visible
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/seekBar"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/currentTime"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/totalTime"
+
+# Speed label accent when speed != 1.0x
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/speedLabel"
+- assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/playbackSpeedSlider"
+- tapOn:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/playbackSpeedSlider"
+    point: "70%,50%"
+- pressKey: Back
+
 - tapOn:
     id: "com.natkibe.videoplayerpro.s26ultra:id/repeatButton"
 - tapOn:
@@ -235,6 +257,8 @@ appId: com.natkibe.videoplayerpro.s26ultra
 - assertVisible:
     id: "com.natkibe.videoplayerpro.s26ultra:id/floatResizeHandle"
 - assertVisible:
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatSpeedText"
+- assertVisible:
     id: "com.natkibe.videoplayerpro.s26ultra:id/floatPreviousButton"
 - assertVisible:
     id: "com.natkibe.videoplayerpro.s26ultra:id/floatPlayPauseButton"
@@ -253,7 +277,7 @@ appId: com.natkibe.videoplayerpro.s26ultra
 - assertVisible:
     id: "com.natkibe.videoplayerpro.s26ultra:id/floatingPlayerControl"
 - tapOn:
-    id: "com.natkibe.videoplayerpro.s26ultra:id/floatSpeedButton"
+    id: "com.natkibe.videoplayerpro.s26ultra:id/floatSpeedText"
 - assertVisible:
     id: "com.natkibe.videoplayerpro.s26ultra:id/floatingSpeedPanel"
 - assertVisible:
@@ -268,8 +292,6 @@ appId: com.natkibe.videoplayerpro.s26ultra
 - assertVisible:
     id: "com.natkibe.videoplayerpro.s26ultra:id/floatingFolderPanel"
 - assertVisible: "vpp_maestro_01.mp4"
-- assertVisible:
-    id: "com.natkibe.videoplayerpro.s26ultra:id/videoThumbImage"
 - tapOn: "vpp_maestro_01.mp4"
 - extendedWaitUntil:
     visible:
@@ -279,6 +301,8 @@ appId: com.natkibe.videoplayerpro.s26ultra
     id: "com.natkibe.videoplayerpro.s26ultra:id/floatFoldersButton"
 - assertVisible:
     id: "com.natkibe.videoplayerpro.s26ultra:id/floatingPlayerControl"
+
+# Return to fullscreen with fullscreen button
 - tapOn:
     id: "com.natkibe.videoplayerpro.s26ultra:id/floatFullscreenButton"
 - extendedWaitUntil:

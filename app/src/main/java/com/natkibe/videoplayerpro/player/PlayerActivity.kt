@@ -1,5 +1,8 @@
 package com.natkibe.videoplayerpro.player
 
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -19,6 +22,7 @@ import android.widget.LinearLayout
 import android.widget.SeekBar
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
@@ -43,7 +47,12 @@ import com.natkibe.videoplayerpro.playlist.PlaylistDrawerController
 import com.natkibe.videoplayerpro.playlist.PlaylistInteractionListener
 import com.natkibe.videoplayerpro.playlist.PlaylistItemAdapter
 import com.natkibe.videoplayerpro.playlist.PlaylistItemUiModel
+import android.animation.ObjectAnimator
+import android.animation.ValueAnimator
 import android.view.animation.AlphaAnimation
+import android.view.animation.LinearInterpolator
+import androidx.core.app.NotificationCompat
+import androidx.media.app.NotificationCompat.MediaStyle
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import kotlinx.coroutines.Dispatchers
@@ -83,6 +92,7 @@ class PlayerActivity : AppCompatActivity() {
 
     // UI elements
     private lateinit var controlsOverlay: View
+    private lateinit var tapCatcher: View
     private lateinit var topBar: View
     private lateinit var centerControls: View
     private lateinit var bottomBar: View
@@ -94,11 +104,19 @@ class PlayerActivity : AppCompatActivity() {
     private lateinit var audioArtworkView: ImageView
     private lateinit var audioArtworkDeck: FrameLayout
     private lateinit var audioArtworkThumb: ImageView
+    private lateinit var audioEqualizerRing: ImageView
+    private lateinit var audioEqualizerBars: AudioEqualizerView
     private lateinit var playerErrorText: TextView
     private lateinit var errorActionBar: LinearLayout
     private lateinit var errorRetryButton: Button
     private lateinit var errorSkipButton: Button
     private lateinit var errorPlayAsMusicButton: Button
+
+    // Seek preview
+    private lateinit var seekPreviewFrame: FrameLayout
+    private lateinit var seekPreviewImage: ImageView
+    private lateinit var seekPreviewTime: TextView
+    private var seekPreviewJob: Job? = null
 
     // Bottom action ImageButtons
     private lateinit var playlistButton: ImageButton
@@ -110,6 +128,11 @@ class PlayerActivity : AppCompatActivity() {
     private lateinit var playlistAdapter: PlaylistItemAdapter
     private var playlistItems: List<PlaylistItemUiModel> = emptyList()
     private var audioArtworkJob: Job? = null
+
+    // Audio mode animations
+    private var discRotateAnimator: ObjectAnimator? = null
+    private var ringPulseAnimators: MutableList<ObjectAnimator> = mutableListOf()
+    private var equalizerAnimators: MutableList<ObjectAnimator> = mutableListOf()
 
     // Controls controller (auto-hide logic)
     private lateinit var controlsController: PlayerControlsController
@@ -127,9 +150,13 @@ class PlayerActivity : AppCompatActivity() {
     // New view refs for top bar
     private lateinit var speedLabel: TextView
     private lateinit var musicStatusLabel: TextView
+    private lateinit var folderNameLabel: TextView
     private lateinit var closeButton: ImageButton
-    private lateinit var topSpeedButton: ImageButton
     private lateinit var topAudioOnlyButton: ImageButton
+
+    // Notification
+    private var notificationManager: NotificationManager? = null
+    private var notificationReceiver: BroadcastReceiver? = null
 
     // State
     private var currentMode: PlayerMode = PlayerMode.FULLSCREEN
@@ -198,10 +225,12 @@ class PlayerActivity : AppCompatActivity() {
 
         override fun onDrawerOpen() {
             playlistButton.setImageResource(R.drawable.ic_close)
+            playlistButton.setColorFilter(Color.parseColor("#FF2F80ED"))
         }
 
         override fun onDrawerClose() {
             playlistButton.setImageResource(R.drawable.ic_playlist)
+            playlistButton.clearColorFilter()
         }
 
         override fun onToggleDrawer() {
@@ -212,6 +241,7 @@ class PlayerActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        configurePlayerSystemBars()
         setContentView(R.layout.activity_player)
 
         uri = intent.getStringExtra(EXTRA_VIDEO_URI) ?: return finish()
@@ -221,6 +251,7 @@ class PlayerActivity : AppCompatActivity() {
         // Initialize views
         playerView = findViewById(R.id.playerView)
         controlsOverlay = findViewById(R.id.controlsOverlay)
+        tapCatcher = findViewById(R.id.tapCatcher)
         topBar = findViewById(R.id.topBar)
         centerControls = findViewById(R.id.centerControls)
         bottomBar = findViewById(R.id.bottomBar)
@@ -232,7 +263,14 @@ class PlayerActivity : AppCompatActivity() {
         audioArtworkView = findViewById(R.id.audioArtworkView)
         audioArtworkDeck = findViewById(R.id.audioArtworkDeck)
         audioArtworkThumb = findViewById(R.id.audioArtworkThumb)
+        audioEqualizerRing = findViewById(R.id.audioEqualizerRing)
+        audioEqualizerBars = findViewById(R.id.audioEqualizerBars)
         playerErrorText = findViewById(R.id.playerErrorText)
+
+        // Seek preview views
+        seekPreviewFrame = findViewById(R.id.seekPreviewFrame)
+        seekPreviewImage = findViewById(R.id.seekPreviewImage)
+        seekPreviewTime = findViewById(R.id.seekPreviewTime)
 
         // Bottom action buttons
         playlistButton = findViewById(R.id.playlistButton)
@@ -243,12 +281,13 @@ class PlayerActivity : AppCompatActivity() {
         speedLabel = findViewById(R.id.speedLabel)
         musicStatusLabel = findViewById(R.id.musicStatusLabel)
         musicStatusLabel.contentDescription = "Play as Music active"
+        folderNameLabel = findViewById(R.id.folderNameLabel)
         closeButton = findViewById(R.id.closeButton)
-        topSpeedButton = findViewById(R.id.topSpeedButton)
         topAudioOnlyButton = findViewById(R.id.topAudioOnlyButton)
 
         // Set title
         videoTitleView.text = videoTitle.ifBlank { "Now Playing" }
+        folderNameLabel.text = folderName.ifBlank { "Current folder" }
 
         // Long-press on title opens diagnostics
         videoTitleView.setOnLongClickListener {
@@ -288,7 +327,7 @@ class PlayerActivity : AppCompatActivity() {
             // Shift bottom bar above navigation bar
             bottomBar.also { v ->
                 val lp = v.layoutParams as? android.widget.FrameLayout.LayoutParams
-                lp?.bottomMargin = navBarBottom
+                lp?.bottomMargin = navBarBottom + (18 * resources.displayMetrics.density).toInt()
                 v.layoutParams = lp
             }
             WindowInsetsCompat.CONSUMED
@@ -309,17 +348,26 @@ class PlayerActivity : AppCompatActivity() {
 
         initControlsController()
 
-        // Tap video to toggle controls. Right-edge drawer swipes are routed from
-        // dispatchTouchEvent so they still arrive when PlayerView children consume touch.
+        // Tap catcher captures taps reliably (unlike PlayerView which can eat events).
+        // When controls are visible, tapCatcher is GONE so taps reach control buttons.
+        // When controls are hidden, tapCatcher is VISIBLE and brings them back.
+        tapCatcher.setOnTouchListener { _, event ->
+            if (event.action == MotionEvent.ACTION_UP) {
+                controlsController.showControls()
+            }
+            true
+        }
+
+        // Tap video to toggle controls (fallback — tapCatcher is primary).
         playerView.setOnTouchListener { _, event ->
             if (event.action == MotionEvent.ACTION_UP) {
                 if (ignoreNextPlayerClick) {
                     ignoreNextPlayerClick = false
                 } else {
-                    controlsController.toggleControls()
+                    controlsController.showControls()
                 }
             }
-            false // don't consume, let PlayerView handle normal interactions internally
+            true
         }
 
         setupControls()
@@ -337,6 +385,11 @@ class PlayerActivity : AppCompatActivity() {
         registerReceiver(floatingClosedReceiver, floatingFilter,
             if (Build.VERSION.SDK_INT >= 33) RECEIVER_NOT_EXPORTED else 0
         )
+
+        // Set up media notification for system media controls visibility
+        notificationManager = getSystemService(NotificationManager::class.java)
+        ensureMainChannel()
+        registerNotificationReceiver()
     }
 
     override fun dispatchTouchEvent(event: MotionEvent): Boolean {
@@ -348,8 +401,11 @@ class PlayerActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         try { unregisterReceiver(floatingClosedReceiver) } catch (_: Exception) {}
+        removeMediaNotification()
+        try { notificationReceiver?.let { unregisterReceiver(it) } } catch (_: Exception) {}
         progressUpdateJob?.cancel()
         audioArtworkJob?.cancel()
+        cancelAudioAnimations()
         collectJob?.cancel()
         controlsController.destroy()
         playbackMenu.dismiss()
@@ -449,6 +505,7 @@ class PlayerActivity : AppCompatActivity() {
         speedSheet = PlaybackSpeedSheet(this@PlayerActivity) { speed ->
             playerEngine.dispatch(PlaybackCommand.SetSpeed(speed))
             speedLabel.text = "${speed}x"
+            musicStatusLabel.text = "${speed}x"
             Toast.makeText(this@PlayerActivity, "Speed: ${speed}x", Toast.LENGTH_SHORT).show()
         }
 
@@ -491,27 +548,39 @@ class PlayerActivity : AppCompatActivity() {
         // Menu button opens playback menu
         findViewById<ImageButton>(R.id.menuButton).setOnClickListener { showMenu() }
 
-        // Close button
-        closeButton.setOnClickListener {
-            floatingLaunchArmed = false
-            finish()
-        }
+        // Close button (back arrow)
+        closeButton.setOnClickListener { goBack() }
 
-        // Seek bar
+        // System back button: close drawer first if open, otherwise close player
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                goBack()
+            }
+        })
+
+        // Seek bar with preview
         seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                 val dur = playerEngine.state.value.durationMs
                 if (fromUser && dur > 0L) {
                     val pos = ((progress.toFloat() / 1000f) * dur).toLong()
                     currentTimeView.text = TimeFormat.duration(pos)
+                    // Update seek preview
+                    seekPreviewTime.text = TimeFormat.duration(pos)
+                    updateSeekPreview(pos)
                 }
             }
             override fun onStartTrackingTouch(seekBar: SeekBar?) {
                 isSeeking = true
                 controlsController.onSeekStart()
+                // Show seek preview
+                seekPreviewFrame.visibility = View.VISIBLE
             }
             override fun onStopTrackingTouch(seekBar: SeekBar?) {
                 isSeeking = false
+                // Hide seek preview
+                seekPreviewFrame.visibility = View.GONE
+                seekPreviewJob?.cancel()
                 val dur = playerEngine.state.value.durationMs
                 if (dur > 0L) {
                     val pos = ((seekBar?.progress?.toFloat() ?: 0f) / 1000f * dur).toLong()
@@ -528,9 +597,10 @@ class PlayerActivity : AppCompatActivity() {
             speedSheet.show(playerEngine.state.value.speed)
             controlsController.onUserInteraction()
         }
-        topSpeedButton.setOnClickListener {
+        speedLabel.setOnLongClickListener {
             speedSheet.show(playerEngine.state.value.speed)
             controlsController.onUserInteraction()
+            true
         }
         topAudioOnlyButton.setOnClickListener { toggleAudioOnly() }
         floatingButton.setOnClickListener { toggleFloating() }
@@ -586,17 +656,34 @@ class PlayerActivity : AppCompatActivity() {
                     // Update controls controller with playback state
                     controlsController.onPlaybackStateChanged(engineState.isPlaying)
 
-                    // Update speed label
+                    // Update speed label with active state
                     speedLabel.text = "${engineState.speed}x"
+                    musicStatusLabel.text = "${engineState.speed}x"
+                    if (Math.abs(engineState.speed - 1.0f) > 0.01f) {
+                        speedLabel.setTextColor(android.graphics.Color.parseColor("#FF2F80ED"))
+                    } else {
+                        speedLabel.setTextColor(android.graphics.Color.parseColor("#FFFFFFFF"))
+                    }
 
-                    // Update music status label visibility
-                    musicStatusLabel.visibility = if (engineState.isAudioOnly) View.VISIBLE else View.GONE
+                    // Update music status label visibility and active state
                     if (engineState.isAudioOnly) {
+                        musicStatusLabel.visibility = View.VISIBLE
+                        musicStatusLabel.setTextColor(android.graphics.Color.parseColor("#FFFFFFFF"))
                         speedLabel.visibility = View.GONE
                     } else {
+                        musicStatusLabel.visibility = View.GONE
                         speedLabel.visibility = View.VISIBLE
                     }
                     updateAudioArtwork(engineState.isAudioOnly, engineState.currentVideoUri?.toString())
+
+                    // Audio mode animations: tie to play/pause state
+                    if (engineState.isAudioOnly) {
+                        if (engineState.isPlaying) {
+                            resumeAudioAnimations()
+                        } else {
+                            pauseAudioAnimations()
+                        }
+                    }
 
                     // Update play/pause and duration display
                     updatePlayPauseIcon()
@@ -606,10 +693,35 @@ class PlayerActivity : AppCompatActivity() {
                     if (dur > 0L) {
                         totalTimeView.text = TimeFormat.duration(dur)
                     }
+
+                    // Keep media notification in sync with playback state:
+                    // only show when playing in fullscreen (non-floating, non-audio-only)
+                    if (currentMode == PlayerMode.FULLSCREEN && !engineState.isAudioOnly && !engineState.isFloating && engineState.isPlaying) {
+                        postMediaNotification()
+                    } else {
+                        removeMediaNotification()
+                    }
                 } catch (e: Exception) {
                     // Never crash on state updates
                 }
             }
+        }
+    }
+
+    @Suppress("DEPRECATION")
+    private fun configurePlayerSystemBars() {
+        window.statusBarColor = Color.BLACK
+        window.navigationBarColor = Color.BLACK
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            window.navigationBarDividerColor = Color.BLACK
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            var flags = window.decorView.systemUiVisibility
+            flags = flags and View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR.inv()
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                flags = flags and View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR.inv()
+            }
+            window.decorView.systemUiVisibility = flags
         }
     }
 
@@ -753,12 +865,16 @@ class PlayerActivity : AppCompatActivity() {
         val state = controlsController.state
         updatePlayPauseIcon()
 
+        // Hide tap catcher so it doesn't steal clicks from control buttons
+        tapCatcher.visibility = View.GONE
+
         if (state.headunitSafeMode) {
             // Instant without animation
             controlsOverlay.visibility = View.VISIBLE
             topBar.visibility = View.VISIBLE
             centerControls.visibility = View.VISIBLE
             bottomBar.visibility = View.VISIBLE
+            orderPlayerChrome()
             return
         }
 
@@ -789,10 +905,29 @@ class PlayerActivity : AppCompatActivity() {
         showView(topBar)
         showView(centerControls)
         showView(bottomBar)
+        orderPlayerChrome()
+    }
+
+    private fun orderPlayerChrome() {
+        if (::audioEqualizerBars.isInitialized && audioEqualizerBars.visibility == View.VISIBLE) {
+            audioEqualizerBars.bringToFront()
+            audioArtworkDeck.bringToFront()
+        }
+        centerControls.bringToFront()
+        topBar.bringToFront()
+        bottomBar.bringToFront()
+        if (::errorActionBar.isInitialized && errorActionBar.visibility == View.VISIBLE) {
+            playerErrorText.bringToFront()
+            errorActionBar.bringToFront()
+        }
     }
 
     private fun hideControls() {
         val state = controlsController.state
+
+        // Show tap catcher so taps are caught to re-show controls
+        tapCatcher.visibility = View.VISIBLE
+        tapCatcher.bringToFront()
 
         if (state.headunitSafeMode) {
             // Instant without animation
@@ -872,11 +1007,82 @@ class PlayerActivity : AppCompatActivity() {
         }
     }
 
+    // ── Audio mode animations ──────────────────────────────────────────────
+
+    private fun startAudioAnimations() {
+        if (discRotateAnimator != null) return // already running
+
+        // 1. Disc rotation: continuous 360° vinyl spin, ~20s per full rotation
+        discRotateAnimator = ObjectAnimator.ofFloat(audioArtworkThumb, "rotation", 0f, 360f).apply {
+            duration = 20000L
+            repeatCount = ValueAnimator.INFINITE
+            interpolator = LinearInterpolator()
+            start()
+        }
+
+        // 2. Subtle orbit breathing so the visualizer feels alive without fading the artwork.
+        val deckScaleX = ObjectAnimator.ofFloat(audioEqualizerBars, "scaleX", 0.995f, 1.012f, 0.995f).apply {
+            duration = 2200L; repeatCount = ValueAnimator.INFINITE; interpolator = LinearInterpolator()
+        }
+        val deckScaleY = ObjectAnimator.ofFloat(audioEqualizerBars, "scaleY", 0.995f, 1.012f, 0.995f).apply {
+            duration = 2200L; repeatCount = ValueAnimator.INFINITE; interpolator = LinearInterpolator()
+        }
+        ringPulseAnimators.clear()
+        ringPulseAnimators.addAll(listOf(deckScaleX, deckScaleY))
+        ringPulseAnimators.forEach { it.start() }
+
+        // 3. Keep the invisible compatibility ring in sync for pause/resume bookkeeping.
+        val eqRotate = ObjectAnimator.ofFloat(audioEqualizerRing, "rotation", 360f, 0f).apply {
+            duration = 30000L; repeatCount = ValueAnimator.INFINITE; interpolator = LinearInterpolator()
+        }
+        equalizerAnimators.clear()
+        equalizerAnimators.add(eqRotate)
+        equalizerAnimators.forEach { it.start() }
+
+        // 4. Equalizer bars: vertical bar visualizer
+        audioEqualizerBars.startAnimation()
+    }
+
+    private fun cancelAudioAnimations() {
+        discRotateAnimator?.cancel()
+        discRotateAnimator = null
+        ringPulseAnimators.forEach { it.cancel() }
+        ringPulseAnimators.clear()
+        audioEqualizerBars.scaleX = 1f
+        audioEqualizerBars.scaleY = 1f
+        audioArtworkDeck.alpha = 1f
+        equalizerAnimators.forEach { it.cancel() }
+        equalizerAnimators.clear()
+        audioEqualizerBars.cancelAnimation()
+    }
+
+    private fun pauseAudioAnimations() {
+        discRotateAnimator?.pause()
+        ringPulseAnimators.forEach { it.pause() }
+        equalizerAnimators.forEach { it.pause() }
+        audioEqualizerBars.pauseAnimation()
+    }
+
+    private fun resumeAudioAnimations() {
+        val disc = discRotateAnimator
+        if (disc == null && ringPulseAnimators.isEmpty() && equalizerAnimators.isEmpty()) {
+            startAudioAnimations()
+        } else {
+            disc?.resume()
+            ringPulseAnimators.forEach { it.resume() }
+            equalizerAnimators.forEach { it.resume() }
+            audioEqualizerBars.resumeAnimation()
+        }
+    }
+
     private fun updateAudioArtwork(isAudioOnly: Boolean, videoUri: String?) {
         audioArtworkJob?.cancel()
         if (!isAudioOnly) {
+            cancelAudioAnimations()
             audioArtworkView.visibility = View.GONE
             audioArtworkDeck.visibility = View.GONE
+            audioEqualizerRing.visibility = View.GONE
+            audioEqualizerBars.visibility = View.GONE
             playerView.visibility = View.VISIBLE
             return
         }
@@ -884,9 +1090,14 @@ class PlayerActivity : AppCompatActivity() {
         playerView.visibility = View.GONE
         // Fullscreen dim backdrop with blurred video thumbnail
         audioArtworkView.visibility = View.VISIBLE
+        // Equalizer ring (outermost, behind deck)
+        audioEqualizerRing.visibility = View.VISIBLE
         // Center deck: ring + disc with small thumbnail inside
         audioArtworkDeck.visibility = View.VISIBLE
+        // Equalizer bar visualizer between deck and bottom controls
+        audioEqualizerBars.visibility = View.VISIBLE
         audioArtworkThumb.setImageResource(R.drawable.ic_music_note)
+        orderPlayerChrome()
 
         val resolvedUri = videoUri ?: uri
         audioArtworkJob = lifecycleScope.launch(Dispatchers.IO) {
@@ -1006,6 +1217,34 @@ class PlayerActivity : AppCompatActivity() {
         }
     }
 
+    // ── Seek preview thumbnail ──────────────────────────────────────────
+
+    private fun updateSeekPreview(positionMs: Long) {
+        seekPreviewJob?.cancel()
+        if (uri.isBlank() || positionMs <= 0L) return
+
+        // Try to reuse cached thumbnail first
+        val cachedThumb = thumbnailLoader.memoryThumbnail(uri, 128, 80)
+        if (cachedThumb != null) {
+            seekPreviewImage.setImageBitmap(cachedThumb)
+            return
+        }
+
+        // Generate a preview thumbnail at the seek position
+        seekPreviewJob = lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                val bitmap = thumbnailLoader.seekPreviewThumbnail(uri, positionMs, 128, 80)
+                withContext(Dispatchers.Main) {
+                    if (seekPreviewFrame.visibility == View.VISIBLE && bitmap != null) {
+                        seekPreviewImage.setImageBitmap(bitmap)
+                    }
+                }
+            } catch (_: Exception) {
+                // Silently ignore preview failures
+            }
+        }
+    }
+
     // ── Progress save with throttling ────────────────────────────────────
 
     private fun saveProgress() {
@@ -1014,6 +1253,18 @@ class PlayerActivity : AppCompatActivity() {
         if (now - lastProgressSaveMs < progressSaveThrottleMs) return
         lastProgressSaveMs = now
         playerEngine.saveProgress()
+    }
+
+    // ── Navigation ───────────────────────────────────────────────────────
+
+    /** Go back: close playlist drawer if open, otherwise close player. */
+    private fun goBack() {
+        if (::playlistDrawerController.isInitialized && playlistDrawerController.isOpen()) {
+            playlistDrawerController.closeDrawer()
+        } else {
+            floatingLaunchArmed = false
+            finish()
+        }
     }
 
     // ── Toggle modes ─────────────────────────────────────────────────────
@@ -1093,6 +1344,9 @@ class PlayerActivity : AppCompatActivity() {
         if (playerEngine.state.value.isAudioOnly) {
             currentMode = PlayerMode.FULLSCREEN
             audioOnlyController.exit()
+            updateModeButtons(isAudioOnly = false, isFloating = playerEngine.state.value.isFloating)
+            updateAudioArtwork(isAudioOnly = false, videoUri = uri)
+            controlsController.showControls()
         } else {
             // If coming from floating mode, exit floating first
             if (playerEngine.state.value.isFloating) {
@@ -1102,6 +1356,12 @@ class PlayerActivity : AppCompatActivity() {
             currentMode = PlayerMode.AUDIO_ONLY
             saveProgress()
             audioOnlyController.enter()
+            speedLabel.visibility = View.GONE
+            musicStatusLabel.visibility = View.VISIBLE
+            musicStatusLabel.text = "${playerEngine.state.value.speed}x"
+            updateModeButtons(isAudioOnly = true, isFloating = false)
+            updateAudioArtwork(isAudioOnly = true, videoUri = uri)
+            controlsController.showControls()
         }
     }
 
@@ -1247,11 +1507,13 @@ class PlayerActivity : AppCompatActivity() {
 
     override fun onPause() {
         saveProgress()
+        removeMediaNotification()
         super.onPause()
     }
 
     override fun onStop() {
         saveProgress()
+        removeMediaNotification()
         super.onStop()
     }
 
@@ -1272,11 +1534,140 @@ class PlayerActivity : AppCompatActivity() {
             isAudioOnly = playerEngine.state.value.isAudioOnly,
             isFloating = playerEngine.state.value.isFloating
         )
+        // Show/update media notification when in fullscreen video mode and playing
+        if (currentMode == PlayerMode.FULLSCREEN && engineState.isPlaying) {
+            postMediaNotification()
+        }
+    }
+
+    // ── Media notification ───────────────────────────────────────────────
+
+    private fun ensureMainChannel() {
+        if (Build.VERSION.SDK_INT < 26) return
+        val channel = NotificationChannel(
+            CHANNEL_ID_MAIN,
+            "VideoPlayer Pro",
+            NotificationManager.IMPORTANCE_LOW
+        ).apply {
+            description = "Media controls for video playback"
+            setShowBadge(false)
+        }
+        notificationManager?.createNotificationChannel(channel)
+    }
+
+    private fun registerNotificationReceiver() {
+        notificationReceiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                when (intent?.action) {
+                    ACTION_MAIN_PLAY_PAUSE -> togglePlayPause()
+                    ACTION_MAIN_SKIP_PREV -> skipPrevious()
+                    ACTION_MAIN_SKIP_NEXT -> skipNext()
+                }
+            }
+        }
+        val filter = IntentFilter().apply {
+            addAction(ACTION_MAIN_PLAY_PAUSE)
+            addAction(ACTION_MAIN_SKIP_PREV)
+            addAction(ACTION_MAIN_SKIP_NEXT)
+        }
+        registerReceiver(
+            notificationReceiver!!,
+            filter,
+            if (Build.VERSION.SDK_INT >= 33) RECEIVER_NOT_EXPORTED else 0
+        )
+    }
+
+    private fun postMediaNotification() {
+        if (currentMode != PlayerMode.FULLSCREEN) return
+        val engine = playerEngine
+        val state = engine.state.value
+        val isPlaying = state.isPlaying
+        val title = state.currentTitle.ifBlank { videoTitle.ifBlank { "VideoPlayer Pro" } }
+        val subtitle = if (isPlaying) "Playing" else "Paused"
+
+        // Play/Pause toggle action
+        val playPauseIcon = if (isPlaying) R.drawable.ic_pause else R.drawable.ic_play
+        val playPauseLabel = if (isPlaying) "Pause" else "Play"
+        val playPauseAction = NotificationCompat.Action.Builder(
+            playPauseIcon,
+            playPauseLabel,
+            PendingIntent.getBroadcast(
+                this, REQUEST_MAIN_PLAY_PAUSE,
+                Intent(ACTION_MAIN_PLAY_PAUSE),
+                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+            )
+        ).build()
+
+        // Skip previous action
+        val skipPrevAction = NotificationCompat.Action.Builder(
+            R.drawable.ic_skip_previous,
+            "Previous",
+            PendingIntent.getBroadcast(
+                this, REQUEST_MAIN_SKIP_PREV,
+                Intent(ACTION_MAIN_SKIP_PREV),
+                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+            )
+        ).build()
+
+        // Skip next action
+        val skipNextAction = NotificationCompat.Action.Builder(
+            R.drawable.ic_skip_next,
+            "Next",
+            PendingIntent.getBroadcast(
+                this, REQUEST_MAIN_SKIP_NEXT,
+                Intent(ACTION_MAIN_SKIP_NEXT),
+                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+            )
+        ).build()
+
+        // Content intent: return to this activity
+        val contentIntent = PendingIntent.getActivity(
+            this, REQUEST_MAIN_CONTENT,
+            Intent(this, PlayerActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
+            },
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        )
+
+        val builder = NotificationCompat.Builder(this, CHANNEL_ID_MAIN)
+            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setContentTitle(title)
+            .setContentText(subtitle)
+            .setContentIntent(contentIntent)
+            .setOngoing(true)
+            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+            .setOnlyAlertOnce(true)
+            .setStyle(
+                MediaStyle()
+                    .setMediaSession(engine.getMediaSession()?.sessionCompatToken)
+                    .setShowActionsInCompactView(0, 1, 2)
+            )
+            .addAction(skipPrevAction)
+            .addAction(playPauseAction)
+            .addAction(skipNextAction)
+
+        notificationManager?.notify(NOTIFICATION_ID_MAIN, builder.build())
+    }
+
+    private fun removeMediaNotification() {
+        notificationManager?.cancel(NOTIFICATION_ID_MAIN)
     }
 
     companion object {
         const val EXTRA_VIDEO_URI = "video_uri"
         const val EXTRA_VIDEO_TITLE = "video_title"
         const val EXTRA_FOLDER_NAME = "folder_name"
+
+        private const val CHANNEL_ID_MAIN = "videoplayer_pro_main"
+        private const val NOTIFICATION_ID_MAIN = 2001
+
+        private const val ACTION_MAIN_PLAY_PAUSE = "com.natkibe.videoplayerpro.action.MAIN_PLAY_PAUSE"
+        private const val ACTION_MAIN_SKIP_PREV = "com.natkibe.videoplayerpro.action.MAIN_SKIP_PREV"
+        private const val ACTION_MAIN_SKIP_NEXT = "com.natkibe.videoplayerpro.action.MAIN_SKIP_NEXT"
+
+        private const val REQUEST_MAIN_PLAY_PAUSE = 10
+        private const val REQUEST_MAIN_SKIP_PREV = 11
+        private const val REQUEST_MAIN_SKIP_NEXT = 12
+        private const val REQUEST_MAIN_CONTENT = 13
     }
 }

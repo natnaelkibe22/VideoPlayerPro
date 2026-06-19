@@ -11,4 +11,5 @@
     <color name="overlay_dark">#88000000</color>
     <color name="overlay_light">#AA000000</color>
     <color name="error_red">#CC8B0000</color>
+    <color name="ic_launcher_background">#1A73E8</color>
 </resources>

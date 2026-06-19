@@ -14,5 +14,9 @@ data class VideoItemEntity(
     val durationMs: Long,
     val sizeBytes: Long,
     val dateModified: Long,
-    val lastIndexedAt: Long
+    val lastIndexedAt: Long,
+    /** Resolution string like "1920x1080". Null if unknown. */
+    val resolution: String? = null,
+    /** Frame rate if available, null otherwise. */
+    val frameRate: Float? = null
 )

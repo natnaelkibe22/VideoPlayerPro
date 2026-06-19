@@ -2,11 +2,15 @@ package com.natkibe.videoplayerpro.ui
 
 import android.graphics.Bitmap
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
+import android.widget.FrameLayout
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.natkibe.videoplayerpro.R
+import com.natkibe.videoplayerpro.core.ResolutionUtil
 import com.natkibe.videoplayerpro.core.TimeFormat
 import com.natkibe.videoplayerpro.data.VideoItemEntity
 
@@ -41,28 +45,57 @@ class VideoAdapter(
     override fun onBindViewHolder(holder: VideoViewHolder, position: Int) {
         val item = items[position]
         holder.title.text = item.displayName
-        holder.subtitle.text = "${item.folderName} • ${TimeFormat.duration(item.durationMs)} • ${item.storageRoot}"
-        // Default placeholder: simple box when thumbnails enabled, play icon otherwise
+
+        // Subtitle as metadata tertiary
+        val folderInfo = item.folderName.takeIf { it.isNotBlank() } ?: "Videos"
+        val durationStr = if (item.durationMs > 0L) TimeFormat.duration(item.durationMs) else ""
+        holder.subtitle.text = if (durationStr.isNotBlank()) {
+            "$folderInfo • $durationStr"
+        } else {
+            folderInfo
+        }
+
+        // Duration badge on thumbnail
+        holder.durationBadge.text = if (item.durationMs > 0L) {
+            TimeFormat.duration(item.durationMs)
+        } else {
+            ""
+        }
+        holder.durationBadge.visibility = if (item.durationMs > 0L) View.VISIBLE else View.GONE
+
+        // Quality badges on thumbnail
+        val badgeInfo = ResolutionUtil.parseBadges(item.resolution, item.frameRate)
+        if (badgeInfo.badges.isNotEmpty() && showThumbnails) {
+            holder.qualityBadgeContainer.visibility = View.VISIBLE
+            holder.qualityBadgeContainer.removeAllViews()
+            for (badge in badgeInfo.badges) {
+                val chip = createBadgeChip(holder.qualityBadgeContainer, badge)
+                holder.qualityBadgeContainer.addView(chip)
+            }
+        } else {
+            holder.qualityBadgeContainer.visibility = View.GONE
+        }
+
+        // Default placeholder
         holder.thumb.text = if (showThumbnails) "▣" else "▶"
 
         // Load actual thumbnail if enabled and provider available
         if (showThumbnails && thumbnailBitmapProvider != null) {
-            // Tag the uri on the thumbImage so we can validate stale loads
             holder.thumbImage.tag = item.uri
             val bmp = thumbnailBitmapProvider.invoke(item.uri)
             if (bmp != null) {
                 holder.thumbImage.setImageBitmap(bmp)
-                holder.thumbImage.visibility = android.view.View.VISIBLE
-                holder.thumb.visibility = android.view.View.GONE
+                holder.thumbImage.visibility = View.VISIBLE
+                holder.thumb.visibility = View.GONE
             } else {
                 holder.thumbImage.setImageDrawable(null)
-                holder.thumbImage.visibility = android.view.View.GONE
-                holder.thumb.visibility = android.view.View.VISIBLE
+                holder.thumbImage.visibility = View.GONE
+                holder.thumb.visibility = View.VISIBLE
                 onThumbnailMissing?.invoke(item.uri)
             }
         } else {
-            holder.thumbImage.visibility = android.view.View.GONE
-            holder.thumb.visibility = android.view.View.VISIBLE
+            holder.thumbImage.visibility = View.GONE
+            holder.thumb.visibility = View.VISIBLE
         }
 
         holder.itemView.contentDescription = "Video row"
@@ -75,6 +108,25 @@ class VideoAdapter(
         }
     }
 
+    private fun createBadgeChip(container: ViewGroup, text: String): TextView {
+        val chip = TextView(container.context).apply {
+            this.text = text
+            setTextColor(android.graphics.Color.WHITE)
+            textSize = 9f
+            setTypeface(null, android.graphics.Typeface.BOLD)
+            setBackgroundColor(0xBB2F80ED.toInt())
+            setPadding(4, 1, 4, 1)
+            gravity = android.view.Gravity.CENTER
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            ).apply {
+                marginStart = if (container.childCount > 0) 2 else 0
+            }
+        }
+        return chip
+    }
+
     override fun getItemCount(): Int = items.size
 
     class VideoViewHolder(root: ViewGroup) : RecyclerView.ViewHolder(root) {
@@ -82,5 +134,8 @@ class VideoAdapter(
         val thumbImage: ImageView = root.findViewById(R.id.videoThumbImage)
         val title: TextView = root.findViewById(R.id.videoTitle)
         val subtitle: TextView = root.findViewById(R.id.videoSubtitle)
+        val durationBadge: TextView = root.findViewById(R.id.durationBadge)
+        val qualityBadgeContainer: LinearLayout = root.findViewById(R.id.qualityBadgeContainer)
+        val thumbnailContainer: FrameLayout = root.findViewById(R.id.thumbnailContainer)
     }
 }
