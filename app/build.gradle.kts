@@ -18,9 +18,11 @@ fun signingProperty(name: String): String? =
         ?: providers.gradleProperty(name).orNull
         ?: providers.environmentVariable(name).orNull
 
+val requestedCompileSdk = (providers.gradleProperty("VP_COMPILE_SDK").orNull ?: "35").toInt()
+
 android {
     namespace = "com.natkibe.videoplayerpro"
-    compileSdk = 35
+    compileSdk = requestedCompileSdk
 
     defaultConfig {
         applicationId = "com.natkibe.videoplayerpro"
@@ -73,9 +75,21 @@ android {
     }
 
     packaging {
+        resources {
+            excludes += setOf(
+                "META-INF/*.version",
+                "META-INF/com/android/build/gradle/app-metadata.properties",
+                "META-INF/version-control-info.textproto"
+            )
+        }
         jniLibs {
             useLegacyPackaging = true
         }
+    }
+
+    dependenciesInfo {
+        includeInApk = false
+        includeInBundle = false
     }
 
     splits {
